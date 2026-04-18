@@ -1,0 +1,20 @@
+# OS build and local working files
+node_modules/
+dist/
+build/
+.tmp/
+.cache/
+*.log
+.env
+.env.*
+
+# Generated archives
+*.iso
+*.img
+*.qcow2
+*.vdi
+*.vmdk
+
+# Local workspace scratch
+OS/build/
+OS/assets/generated/
