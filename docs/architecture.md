@@ -16,10 +16,13 @@ That means building from a stable base and adding:
 ## Proposed layers
 
 ### 1. Base system
-A conventional Linux base, likely one of:
-- Arch-based, for aggressive customization and AUR support
-- Ubuntu or Debian-based, for broader stability and familiarity
-- Fedora-based, for a polished modern KDE stack
+The current primary direction is an Ubuntu-first base, chosen for stability, compatibility, and a smoother path to a polished desktop-focused distribution.
+
+Style and product influence should draw from:
+- Zorin OS for polish, onboarding, and clean desktop presentation
+- Garuda Linux for selected enthusiast-facing energy and stronger out-of-the-box tooling attitude
+
+A future Arch-derived branch can still exist later if it proves worthwhile, but the practical starting line is Ubuntu.
 
 ### 2. Desktop layer
 - KDE Plasma desktop

@@ -1,0 +1,11 @@
+[Unit]
+Description=Kismet OS first boot bootstrap
+After=graphical.target
+
+[Service]
+Type=oneshot
+ExecStart=/usr/local/bin/kismet-firstboot
+RemainAfterExit=yes
+
+[Install]
+WantedBy=default.target

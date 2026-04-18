@@ -1,0 +1,12 @@
+[General]
+ColorScheme=BreezeDark
+Name=Kismet
+
+[KDE]
+SingleClick=false
+
+[WM]
+activeBackground=21,180,232
+activeForeground=255,255,255
+inactiveBackground=22,32,64
+inactiveForeground=220,228,242

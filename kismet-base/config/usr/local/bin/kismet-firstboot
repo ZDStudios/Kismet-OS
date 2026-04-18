@@ -1,0 +1,15 @@
+#!/usr/bin/env bash
+set -euo pipefail
+
+echo "==> Kismet first boot tasks"
+
+echo "- applying shell defaults"
+echo "- checking Docker group membership"
+echo "- checking Ollama service"
+echo "- preparing Kismet desktop shortcuts"
+
+action_file="$HOME/.config/kismet/firstboot-ran"
+mkdir -p "$(dirname "$action_file")"
+date > "$action_file"
+
+echo "Kismet first boot scaffold complete"

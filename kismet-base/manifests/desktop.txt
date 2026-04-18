@@ -1,0 +1,10 @@
+plasma-desktop
+sddm
+konsole
+dolphin
+kate
+plasma-discover
+plasma-workspace-wayland
+kitty
+plymouth
+plymouth-themes

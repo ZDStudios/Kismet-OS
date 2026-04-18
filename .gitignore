@@ -14,6 +14,10 @@ build/
 *.qcow2
 *.vdi
 *.vmdk
+kismet-build/output/
+kismet-build/work/
+kismet-build/dev-preview-layout/
+kismet-build/stage-rootfs/
 
 # Local workspace scratch
 OS/build/

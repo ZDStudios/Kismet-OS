@@ -1,0 +1,8 @@
+[Plymouth Theme]
+Name=Kismet
+Description=Kismet OS boot splash
+ModuleName=script
+
+[script]
+ImageDir=/usr/share/plymouth/themes/kismet
+ScriptFile=/usr/share/plymouth/themes/kismet/kismet.script

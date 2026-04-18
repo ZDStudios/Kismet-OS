@@ -1,0 +1,12 @@
+services:
+  kismet-test-desktop:
+    image: dorowu/ubuntu-desktop-lxde-vnc
+    container_name: kismet-test-desktop
+    ports:
+      - "6080:80"
+      - "5901:5900"
+    environment:
+      - VNC_PW=kismet
+    volumes:
+      - ../:/workspace
+    restart: unless-stopped

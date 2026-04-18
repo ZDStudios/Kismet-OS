@@ -6,12 +6,14 @@
 - settle on base distro direction
 - define package baseline
 - clean up landing page language
+- lock primary base to Ubuntu-first with Zorin and Garuda influence
 
 ## Beta 0.2
 - draft package manifests
 - prototype desktop theming assets
 - define AI service setup flow
 - create first install/setup scripts
+- build the Ubuntu-first bootstrap layer
 
 ## Beta 0.3
 - build first developer preview image or setup path

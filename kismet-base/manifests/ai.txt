@@ -1,0 +1,3 @@
+# Installed via package or vendor script depending on target image
+ollama
+# openclaw installation to be layered separately

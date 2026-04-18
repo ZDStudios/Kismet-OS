@@ -1,0 +1,6 @@
+[General]
+Background=/usr/share/backgrounds/kismet/kismet-wallpaper.png
+ScreenWidth=1920
+ScreenHeight=1080
+CursorTheme=breeze_cursors
+Font=Inter,10,-1,5,50,0,0,0,0,0

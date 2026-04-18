@@ -31,6 +31,7 @@ Kismet OS is being shaped around a few principles:
 - practical automation before science fiction
 
 The current concept leans toward:
+- Ubuntu-first base
 - KDE Plasma
 - themed SDDM login
 - Plymouth boot splash
@@ -38,6 +39,7 @@ The current concept leans toward:
 - OpenClaw integration
 - Ollama for local models
 - a polished developer environment out of the box
+- Zorin-like polish with a touch of Garuda-style energy
 
 ## Why this exists
 

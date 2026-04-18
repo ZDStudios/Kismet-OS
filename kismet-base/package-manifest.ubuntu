@@ -1,0 +1,57 @@
+# Kismet OS starter package manifest (Ubuntu-first)
+# Intended as the first practical baseline, not the final distro image.
+
+# Desktop
+plasma-desktop
+sddm
+konsole
+dolphin
+kate
+plasma-discover
+plasma-workspace-wayland
+
+# System visuals
+plymouth
+plymouth-themes
+
+# Core utilities
+curl
+wget
+git
+vim
+neovim
+htop
+fastfetch
+unzip
+zip
+tmux
+zsh
+openssh-client
+openssh-server
+flatpak
+ca-certificates
+software-properties-common
+apt-transport-https
+
+# Build / dev
+build-essential
+cmake
+gdb
+python3
+python3-pip
+python3-venv
+nodejs
+npm
+
+# Containers / infra
+/docker handled via official install script or apt repo/
+
+# AI / local tools
+ollama
+
+# Nice-to-have shell/dev UX
+ripgrep
+fd-find
+jq
+gh
+kitty

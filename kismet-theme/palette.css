@@ -1,0 +1,18 @@
+:root {
+  --kismet-bg: #0d1325;
+  --kismet-bg-soft: #162040;
+  --kismet-surface: #eaf0f9;
+  --kismet-surface-strong: #ffffff;
+  --kismet-primary: #15b4e8;
+  --kismet-primary-dark: #0d9fce;
+  --kismet-secondary: #7c5cff;
+  --kismet-text: #20314f;
+  --kismet-text-muted: #7184a5;
+  --kismet-line: #c8d5e8;
+}
+
+/* Design notes:
+   - Keep the polish clean and premium.
+   - Zorin-like clarity first.
+   - Use stronger accent moments sparingly, not everywhere.
+*/
