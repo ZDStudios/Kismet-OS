@@ -7,11 +7,12 @@
   <meta name="description" content="Kismet OS is an AI-first Linux concept focused on local intelligence, developer ergonomics, and a polished desktop experience." />
   <link rel="preconnect" href="https://fonts.googleapis.com" />
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
-  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet" />
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800;900&display=swap" rel="stylesheet" />
   <style>
     :root {
       --bg: #0b1020;
       --bg-soft: #11182d;
+      --bg-deep: #09101d;
       --panel: rgba(17, 24, 45, 0.82);
       --panel-strong: #121a31;
       --text: #ecf2ff;
@@ -19,11 +20,13 @@
       --line: rgba(159, 176, 211, 0.18);
       --accent: #7dd3fc;
       --accent-2: #a78bfa;
+      --accent-3: #67e8f9;
       --success: #86efac;
+      --warning: #fcd34d;
       --shadow: 0 30px 80px rgba(0, 0, 0, 0.38);
       --radius: 22px;
       --radius-sm: 14px;
-      --max: 1160px;
+      --max: 1180px;
     }
 
     * { box-sizing: border-box; }
@@ -45,6 +48,7 @@
       align-items: center;
       justify-content: space-between;
       padding: 22px 0;
+      gap: 18px;
     }
     .brand {
       display: flex;
@@ -68,7 +72,9 @@
       gap: 24px;
       color: var(--muted);
       font-size: 0.95rem;
+      flex-wrap: wrap;
     }
+    .nav-links a:hover { color: var(--text); }
     .button {
       display: inline-flex;
       align-items: center;
@@ -92,9 +98,9 @@
     .button:hover { transform: translateY(-1px); }
 
     .hero {
-      padding: 40px 0 32px;
+      padding: 38px 0 40px;
       display: grid;
-      grid-template-columns: 1.15fr 0.85fr;
+      grid-template-columns: 1.08fr 0.92fr;
       gap: 32px;
       align-items: center;
     }
@@ -114,16 +120,16 @@
     }
     h1 {
       margin: 18px 0 18px;
-      font-size: clamp(3rem, 7vw, 5.6rem);
-      line-height: 0.96;
-      letter-spacing: -0.06em;
+      font-size: clamp(3.2rem, 7vw, 6rem);
+      line-height: 0.94;
+      letter-spacing: -0.07em;
       max-width: 760px;
     }
     .hero p {
       margin: 0;
       color: var(--muted);
       font-size: 1.08rem;
-      line-height: 1.8;
+      line-height: 1.85;
       max-width: 640px;
     }
     .hero-actions {
@@ -131,6 +137,21 @@
       gap: 14px;
       margin-top: 28px;
       flex-wrap: wrap;
+    }
+    .hero-meta {
+      display: flex;
+      gap: 12px;
+      margin-top: 18px;
+      flex-wrap: wrap;
+    }
+    .pill {
+      border: 1px solid var(--line);
+      background: rgba(255,255,255,0.03);
+      color: var(--muted);
+      padding: 8px 12px;
+      border-radius: 999px;
+      font-size: 0.84rem;
+      font-weight: 600;
     }
     .hero-card, .panel {
       background: var(--panel);
@@ -160,7 +181,7 @@
     .dot.green { background: #4ade80; }
     .screen-grid {
       display: grid;
-      grid-template-columns: 1.4fr 1fr;
+      grid-template-columns: 1.35fr 1fr;
       gap: 16px;
     }
     .screen-panel {
@@ -178,11 +199,18 @@
     .muted { color: #8ca0c8; }
     .good { color: var(--success); }
     .accent { color: var(--accent); }
+    .warning { color: var(--warning); }
 
-    section { padding: 40px 0; }
+    section { padding: 42px 0; }
+    .section-head {
+      display: flex;
+      flex-direction: column;
+      gap: 12px;
+      max-width: 780px;
+    }
     .section-title {
-      margin: 0 0 10px;
-      font-size: clamp(2rem, 4vw, 3rem);
+      margin: 0;
+      font-size: clamp(2.1rem, 4vw, 3.2rem);
       line-height: 1.04;
       letter-spacing: -0.05em;
     }
@@ -233,6 +261,7 @@
       border: 1px solid var(--line);
       background: rgba(255,255,255,0.025);
       color: var(--muted);
+      line-height: 1.65;
     }
     .tag {
       display: inline-flex;
@@ -244,7 +273,58 @@
       font-weight: 700;
       letter-spacing: 0.04em;
       text-transform: uppercase;
-      margin-bottom: 14px;
+      width: fit-content;
+    }
+    .beta-grid {
+      display: grid;
+      grid-template-columns: 1.15fr 0.85fr;
+      gap: 22px;
+      margin-top: 28px;
+    }
+    .timeline {
+      display: grid;
+      gap: 16px;
+    }
+    .timeline-item {
+      padding: 18px;
+      border-radius: 16px;
+      background: rgba(255,255,255,0.03);
+      border: 1px solid var(--line);
+    }
+    .timeline-item strong {
+      display: block;
+      margin-bottom: 8px;
+      font-size: 0.95rem;
+      letter-spacing: -0.02em;
+    }
+    .timeline-item p {
+      margin: 0;
+      color: var(--muted);
+      line-height: 1.7;
+      font-size: 0.92rem;
+    }
+    .repo-list {
+      display: grid;
+      gap: 10px;
+      margin-top: 18px;
+    }
+    .repo-list div {
+      padding: 12px 14px;
+      border-radius: 12px;
+      background: rgba(255,255,255,0.03);
+      border: 1px solid var(--line);
+      font-family: "SFMono-Regular", Consolas, monospace;
+      font-size: 0.84rem;
+      color: #d6e5ff;
+    }
+    .quote {
+      margin-top: 22px;
+      padding: 20px;
+      border-radius: 16px;
+      background: linear-gradient(135deg, rgba(125, 211, 252, 0.08), rgba(167, 139, 250, 0.08));
+      border: 1px solid rgba(125, 211, 252, 0.18);
+      color: #d8e7ff;
+      line-height: 1.8;
     }
     .footer {
       padding: 28px 0 50px;
@@ -258,8 +338,8 @@
     .small { font-size: 0.88rem; color: var(--muted); }
 
     @media (max-width: 960px) {
-      .hero, .split, .grid-3, .screen-grid { grid-template-columns: 1fr; }
-      .nav { flex-wrap: wrap; gap: 16px; }
+      .hero, .split, .grid-3, .screen-grid, .beta-grid { grid-template-columns: 1fr; }
+      .nav { flex-wrap: wrap; }
       .nav-links { width: 100%; overflow: auto; }
     }
   </style>
@@ -275,6 +355,7 @@
         <a href="#vision">Vision</a>
         <a href="#architecture">Architecture</a>
         <a href="#beta">Beta</a>
+        <a href="#repo">Repository</a>
         <a href="https://github.com/ZDStudios/Kismet-OS" target="_blank" rel="noreferrer">GitHub</a>
       </div>
     </nav>
@@ -284,12 +365,17 @@
         <div class="eyebrow">Beta concept repo</div>
         <h1>Linux, with better instincts.</h1>
         <p>
-          Kismet OS is an AI-first desktop Linux concept focused on local models, developer tooling,
-          and an environment that feels deliberately assembled instead of endlessly hand-tuned.
+          Kismet OS is an AI-first desktop Linux concept focused on local intelligence, developer ergonomics,
+          and a polished environment that feels deliberately built instead of endlessly reassembled.
         </p>
         <div class="hero-actions">
           <a class="button primary" href="https://github.com/ZDStudios/Kismet-OS" target="_blank" rel="noreferrer">View repository</a>
           <a class="button secondary" href="#beta">See beta scope</a>
+        </div>
+        <div class="hero-meta">
+          <span class="pill">KDE Plasma direction</span>
+          <span class="pill">Local AI workflows</span>
+          <span class="pill">Developer-first setup</span>
         </div>
       </div>
 
@@ -307,17 +393,17 @@
               <div class="muted">models: ollama available</div>
               <br />
               <div><span class="accent">kismet</span> $ roadmap</div>
-              <div class="muted">beta.1, architecture and UX</div>
-              <div class="muted">beta.2, setup scripts and theming</div>
-              <div class="muted">beta.3, installable preview</div>
+              <div class="muted">beta.1  architecture and UX</div>
+              <div class="muted">beta.2  setup scripts and theming</div>
+              <div class="muted">beta.3  installable preview</div>
             </div>
             <div class="screen-panel">
               <div class="tag">Current direction</div>
-              <div class="small">KDE Plasma, SDDM theming, local AI services, and a cleaner developer-first setup path.</div>
+              <div class="small">A clean Plasma desktop, useful local AI, and a Linux setup that acts like a product instead of a weekend survival craft.</div>
               <div class="checklist">
                 <div>OpenClaw integration path</div>
                 <div>Ollama local model workflow</div>
-                <div>Minimal desktop, fewer pointless defaults</div>
+                <div>Minimal desktop with fewer pointless defaults</div>
               </div>
             </div>
           </div>
@@ -326,15 +412,17 @@
     </section>
 
     <section id="vision">
-      <span class="tag">Vision</span>
-      <h2 class="section-title">A calmer, sharper take on the AI desktop.</h2>
-      <p class="section-copy">
-        Kismet OS is not pretending to be a finished autonomous machine overlord. The point is to build a desktop Linux environment that already feels better on day one, then add deeper intelligence in ways that stay useful, inspectable, and sane.
-      </p>
+      <div class="section-head">
+        <span class="tag">Vision</span>
+        <h2 class="section-title">A calmer, sharper take on the AI desktop.</h2>
+        <p class="section-copy">
+          Kismet OS is not pretending to be a finished autonomous machine overlord. The point is to build a desktop Linux environment that already feels better on day one, then add deeper intelligence in ways that stay useful, inspectable, and sane.
+        </p>
+      </div>
       <div class="grid-3">
         <div class="card">
           <h3>Local-first by default</h3>
-          <p>Local models and on-device workflows should be first-class, not an afterthought taped on after install.</p>
+          <p>Local models and on-device workflows should be first-class, not an afterthought glued on after install.</p>
         </div>
         <div class="card">
           <h3>Developer-ready</h3>
@@ -345,46 +433,100 @@
           <p>The vision can be ambitious. The repo should still tell the truth about what exists today and what is still ahead.</p>
         </div>
       </div>
+      <div class="quote">
+        The long game is intelligence woven into the environment. The short game is making the environment worth using before the intelligence gets clever.
+      </div>
     </section>
 
     <section id="architecture">
-      <span class="tag">Architecture</span>
-      <h2 class="section-title">Start with a strong system layer, not marketing fog.</h2>
+      <div class="section-head">
+        <span class="tag">Architecture</span>
+        <h2 class="section-title">Start with a strong system layer, not marketing fog.</h2>
+        <p class="section-copy">
+          The first real version of Kismet OS should be an opinionated Linux environment with coherent theming, a serious developer stack, and a disciplined local AI layer. Reinventing the kernel can wait until there is something worth booting every day.
+        </p>
+      </div>
       <div class="split">
         <div class="panel" style="padding: 24px;">
           <h3 style="margin-top:0; letter-spacing:-0.03em;">Planned stack</h3>
           <div class="checklist">
-            <div>Base distro with a clear maintenance strategy</div>
-            <div>KDE Plasma desktop and branded login, splash, and boot flow</div>
+            <div>Base distro with a clear maintenance strategy and clean upgrade path</div>
+            <div>KDE Plasma desktop plus branded login, splash, and boot flow</div>
             <div>Developer package baseline with zsh, Docker, Node, Python, and tooling</div>
-            <div>Ollama and optional OpenClaw integrations</div>
-            <div>Future control layer for services, permissions, and model management</div>
+            <div>Ollama and optional OpenClaw integrations for local AI workflows</div>
+            <div>A future control layer for services, permissions, updates, and model management</div>
           </div>
         </div>
         <div class="panel" style="padding: 24px;">
           <h3 style="margin-top:0; letter-spacing:-0.03em;">Design rule</h3>
           <p class="section-copy" style="max-width:none;">
-            If a feature sounds impressive but cannot be implemented safely, inspected easily, or explained clearly, it probably does not belong in the first real release.
+            If a feature sounds impressive but cannot be implemented safely, inspected easily, or explained clearly, it probably does not belong in the first release.
           </p>
+          <div class="repo-list">
+            <div>desktop/   plasma theme, login, splash, boot visuals</div>
+            <div>system/    services, helpers, post-install automation</div>
+            <div>ai/        local models, orchestration, safe integrations</div>
+            <div>docs/      architecture, roadmap, packaging notes</div>
+          </div>
         </div>
       </div>
     </section>
 
     <section id="beta">
-      <span class="tag">Beta scope</span>
-      <h2 class="section-title">What this repository actually covers today.</h2>
+      <div class="section-head">
+        <span class="tag">Beta</span>
+        <h2 class="section-title">What this repository actually covers right now.</h2>
+        <p class="section-copy">
+          This is now framed as a genuine early-stage product repo. It has a clearer landing page, proper documentation, and a believable starting point for real build work, which is already more useful than pretending the impossible bits are finished.
+        </p>
+      </div>
+      <div class="beta-grid">
+        <div class="timeline">
+          <div class="timeline-item">
+            <strong>Beta 0.1</strong>
+            <p>Architecture, product direction, repo cleanup, and the first pass at the public-facing identity.</p>
+          </div>
+          <div class="timeline-item">
+            <strong>Beta 0.2</strong>
+            <p>Package manifests, desktop theme work, install scripts, and local AI service setup.</p>
+          </div>
+          <div class="timeline-item">
+            <strong>Beta 0.3</strong>
+            <p>An actual installable preview path, tested on real hardware instead of pure imagination and optimism.</p>
+          </div>
+        </div>
+        <div class="panel" style="padding: 24px;">
+          <h3 style="margin-top:0; letter-spacing:-0.03em;">Current beta includes</h3>
+          <div class="checklist">
+            <div>Refined landing page with the original visual feel preserved</div>
+            <div>README that reads like a person wrote it on purpose</div>
+            <div>Vision, architecture, roadmap, and brand notes</div>
+            <div>Cleaner framing for future real implementation work</div>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <section id="repo">
+      <div class="section-head">
+        <span class="tag">Repository</span>
+        <h2 class="section-title">A better foundation for what comes next.</h2>
+        <p class="section-copy">
+          The repo is no longer just a one-page declaration of intent. It now has enough shape to support actual iteration, theming work, and future OS build steps without looking like it was abandoned after the first burst of enthusiasm.
+        </p>
+      </div>
       <div class="grid-3">
         <div class="card">
-          <h3>Public landing page</h3>
-          <p>A cleaner front door for the idea, without pretending the impossible parts are already boxed and shipped.</p>
+          <h3>Better README</h3>
+          <p>Clearer, more grounded, and a lot less likely to make technically literate people narrow their eyes at the screen.</p>
         </div>
         <div class="card">
-          <h3>Project documentation</h3>
-          <p>Vision, architecture, roadmap, and brand notes that can anchor real build work instead of vibes alone.</p>
+          <h3>Real docs</h3>
+          <p>Vision, architecture, roadmap, and brand notes are now in place so future work has a spine.</p>
         </div>
         <div class="card">
-          <h3>Starter beta posture</h3>
-          <p>A repo that looks like a serious early project, not a one-file concept page left alone in the dark.</p>
+          <h3>Same style, better substance</h3>
+          <p>The page still looks sleek and modern, but now it carries itself like a project with a pulse.</p>
         </div>
       </div>
     </section>
