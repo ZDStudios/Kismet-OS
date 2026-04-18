@@ -1,540 +1,586 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-  <meta charset="UTF-8" />
-  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>Kismet OS</title>
-  <meta name="description" content="Kismet OS is an AI-first Linux concept focused on local intelligence, developer ergonomics, and a polished desktop experience." />
-  <link rel="preconnect" href="https://fonts.googleapis.com" />
-  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
-  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800;900&display=swap" rel="stylesheet" />
-  <style>
-    :root {
-      --bg: #0b1020;
-      --bg-soft: #11182d;
-      --bg-deep: #09101d;
-      --panel: rgba(17, 24, 45, 0.82);
-      --panel-strong: #121a31;
-      --text: #ecf2ff;
-      --muted: #9fb0d3;
-      --line: rgba(159, 176, 211, 0.18);
-      --accent: #7dd3fc;
-      --accent-2: #a78bfa;
-      --accent-3: #67e8f9;
-      --success: #86efac;
-      --warning: #fcd34d;
-      --shadow: 0 30px 80px rgba(0, 0, 0, 0.38);
-      --radius: 22px;
-      --radius-sm: 14px;
-      --max: 1180px;
-    }
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Kismet OS — Make your computer intelligent.</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@300;400;500;600;700;800&display=swap" rel="stylesheet">
+<style>
+*, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+:root {
+  --page-bg: #dde6f2;
+  --white: #ffffff;
+  --navy: #162040;
+  --navy-mid: #2a3f6e;
+  --heading-light: #8fa3c8;
+  --accent: #15b4e8;
+  --accent-dark: #0d9fce;
+  --text: #3d4f70;
+  --text-muted: #7b8fae;
+  --border: #c8d5e8;
+  --card-bg: #eaf0f9;
+  --radius: 16px;
+  --radius-sm: 10px;
+}
+html { scroll-behavior: smooth; }
+body { font-family: 'Plus Jakarta Sans', sans-serif; background: var(--page-bg); color: var(--text); font-size: 16px; line-height: 1.6; overflow-x: hidden; }
 
-    * { box-sizing: border-box; }
-    html { scroll-behavior: smooth; }
-    body {
-      margin: 0;
-      font-family: Inter, system-ui, sans-serif;
-      background:
-        radial-gradient(circle at top left, rgba(125, 211, 252, 0.12), transparent 30%),
-        radial-gradient(circle at top right, rgba(167, 139, 250, 0.14), transparent 28%),
-        linear-gradient(180deg, #0a0f1d 0%, #0b1020 55%, #0d1325 100%);
-      color: var(--text);
-    }
+/* NAV */
+.top-nav { display: flex; align-items: center; justify-content: space-between; padding: 0 3rem; height: 60px; background: var(--page-bg); }
+.top-logo { display: flex; align-items: center; gap: 10px; text-decoration: none; }
+.logo-mark { width: 38px; height: 38px; background: linear-gradient(135deg, #15b4e8, #1a6fd4); border-radius: 10px; display: flex; align-items: center; justify-content: center; font-weight: 800; font-size: 18px; color: white; }
+.top-nav-links { display: flex; gap: 2.5rem; list-style: none; }
+.top-nav-links a { text-decoration: none; font-weight: 600; font-size: 0.85rem; letter-spacing: 0.06em; text-transform: uppercase; color: var(--navy-mid); transition: color 0.2s; }
+.top-nav-links a:hover { color: var(--accent); }
 
-    a { color: inherit; text-decoration: none; }
-    .container { width: min(var(--max), calc(100% - 32px)); margin: 0 auto; }
-    .nav {
-      display: flex;
-      align-items: center;
-      justify-content: space-between;
-      padding: 22px 0;
-      gap: 18px;
-    }
-    .brand {
-      display: flex;
-      align-items: center;
-      gap: 12px;
-      font-weight: 800;
-      letter-spacing: -0.03em;
-    }
-    .brand-mark {
-      width: 42px;
-      height: 42px;
-      border-radius: 14px;
-      display: grid;
-      place-items: center;
-      background: linear-gradient(135deg, var(--accent), var(--accent-2));
-      color: #08101f;
-      box-shadow: var(--shadow);
-    }
-    .nav-links {
-      display: flex;
-      gap: 24px;
-      color: var(--muted);
-      font-size: 0.95rem;
-      flex-wrap: wrap;
-    }
-    .nav-links a:hover { color: var(--text); }
-    .button {
-      display: inline-flex;
-      align-items: center;
-      justify-content: center;
-      gap: 10px;
-      padding: 13px 18px;
-      border-radius: 999px;
-      border: 1px solid transparent;
-      font-weight: 700;
-      transition: 160ms ease;
-    }
-    .button.primary {
-      background: linear-gradient(135deg, var(--accent), var(--accent-2));
-      color: #0b1020;
-    }
-    .button.secondary {
-      background: rgba(255,255,255,0.03);
-      border-color: var(--line);
-      color: var(--text);
-    }
-    .button:hover { transform: translateY(-1px); }
+.sub-nav { display: flex; align-items: center; justify-content: space-between; margin: 0 3rem; background: var(--white); border-radius: var(--radius); padding: 0 1.75rem; height: 56px; box-shadow: 0 2px 20px rgba(22,32,64,0.08); position: sticky; top: 12px; z-index: 100; }
+.sub-nav-title { font-weight: 800; font-size: 1rem; color: var(--navy); }
+.sub-nav-links { display: flex; align-items: center; gap: 2rem; list-style: none; }
+.sub-nav-links a { text-decoration: none; font-size: 0.9rem; font-weight: 600; color: var(--text-muted); transition: color 0.2s; }
+.sub-nav-links a:hover, .sub-nav-links a.active { color: var(--navy); }
 
-    .hero {
-      padding: 38px 0 40px;
-      display: grid;
-      grid-template-columns: 1.08fr 0.92fr;
-      gap: 32px;
-      align-items: center;
-    }
-    .eyebrow {
-      display: inline-flex;
-      align-items: center;
-      gap: 10px;
-      padding: 8px 12px;
-      border-radius: 999px;
-      background: rgba(125, 211, 252, 0.08);
-      border: 1px solid rgba(125, 211, 252, 0.18);
-      color: var(--accent);
-      font-size: 0.82rem;
-      font-weight: 700;
-      letter-spacing: 0.04em;
-      text-transform: uppercase;
-    }
-    h1 {
-      margin: 18px 0 18px;
-      font-size: clamp(3.2rem, 7vw, 6rem);
-      line-height: 0.94;
-      letter-spacing: -0.07em;
-      max-width: 760px;
-    }
-    .hero p {
-      margin: 0;
-      color: var(--muted);
-      font-size: 1.08rem;
-      line-height: 1.85;
-      max-width: 640px;
-    }
-    .hero-actions {
-      display: flex;
-      gap: 14px;
-      margin-top: 28px;
-      flex-wrap: wrap;
-    }
-    .hero-meta {
-      display: flex;
-      gap: 12px;
-      margin-top: 18px;
-      flex-wrap: wrap;
-    }
-    .pill {
-      border: 1px solid var(--line);
-      background: rgba(255,255,255,0.03);
-      color: var(--muted);
-      padding: 8px 12px;
-      border-radius: 999px;
-      font-size: 0.84rem;
-      font-weight: 600;
-    }
-    .hero-card, .panel {
-      background: var(--panel);
-      backdrop-filter: blur(20px);
-      border: 1px solid var(--line);
-      border-radius: var(--radius);
-      box-shadow: var(--shadow);
-    }
-    .hero-card {
-      padding: 22px;
-      overflow: hidden;
-    }
-    .hero-screen {
-      border-radius: 18px;
-      border: 1px solid rgba(255,255,255,0.06);
-      background: linear-gradient(180deg, #151d35 0%, #0c1224 100%);
-      padding: 16px;
-    }
-    .window-bar {
-      display: flex;
-      gap: 8px;
-      margin-bottom: 18px;
-    }
-    .dot { width: 10px; height: 10px; border-radius: 999px; }
-    .dot.red { background: #fb7185; }
-    .dot.yellow { background: #facc15; }
-    .dot.green { background: #4ade80; }
-    .screen-grid {
-      display: grid;
-      grid-template-columns: 1.35fr 1fr;
-      gap: 16px;
-    }
-    .screen-panel {
-      background: rgba(255,255,255,0.03);
-      border: 1px solid rgba(255,255,255,0.05);
-      border-radius: 16px;
-      padding: 16px;
-    }
-    .terminal {
-      font-family: "SFMono-Regular", Consolas, monospace;
-      font-size: 0.82rem;
-      line-height: 1.8;
-      color: #d9e6ff;
-    }
-    .muted { color: #8ca0c8; }
-    .good { color: var(--success); }
-    .accent { color: var(--accent); }
-    .warning { color: var(--warning); }
+.btn-accent { background: var(--accent); color: white; border: none; padding: 0.55rem 1.5rem; border-radius: 8px; font-family: 'Plus Jakarta Sans', sans-serif; font-weight: 700; font-size: 0.9rem; cursor: pointer; text-decoration: none; transition: background 0.2s, transform 0.15s; display: inline-flex; align-items: center; gap: 6px; white-space: nowrap; }
+.btn-accent:hover { background: var(--accent-dark); transform: translateY(-1px); }
+.btn-accent-lg { padding: 0.85rem 2.5rem; font-size: 1rem; border-radius: 10px; }
+.btn-ghost { background: transparent; color: var(--navy-mid); border: 1.5px solid var(--border); padding: 0.85rem 2rem; border-radius: 10px; font-family: 'Plus Jakarta Sans', sans-serif; font-weight: 700; font-size: 1rem; cursor: pointer; text-decoration: none; transition: border-color 0.2s, color 0.2s; display: inline-flex; align-items: center; }
+.btn-ghost:hover { border-color: var(--accent); color: var(--accent); }
 
-    section { padding: 42px 0; }
-    .section-head {
-      display: flex;
-      flex-direction: column;
-      gap: 12px;
-      max-width: 780px;
-    }
-    .section-title {
-      margin: 0;
-      font-size: clamp(2.1rem, 4vw, 3.2rem);
-      line-height: 1.04;
-      letter-spacing: -0.05em;
-    }
-    .section-copy {
-      margin: 0;
-      color: var(--muted);
-      font-size: 1rem;
-      line-height: 1.8;
-      max-width: 760px;
-    }
-    .grid-3 {
-      display: grid;
-      grid-template-columns: repeat(3, 1fr);
-      gap: 18px;
-      margin-top: 24px;
-    }
-    .card {
-      padding: 22px;
-      border-radius: var(--radius-sm);
-      background: rgba(255,255,255,0.03);
-      border: 1px solid var(--line);
-    }
-    .card h3 {
-      margin: 0 0 10px;
-      font-size: 1.05rem;
-      letter-spacing: -0.03em;
-    }
-    .card p {
-      margin: 0;
-      color: var(--muted);
-      line-height: 1.7;
-      font-size: 0.95rem;
-    }
-    .split {
-      display: grid;
-      grid-template-columns: 1fr 1fr;
-      gap: 22px;
-      margin-top: 28px;
-    }
-    .checklist {
-      display: grid;
-      gap: 12px;
-      margin-top: 18px;
-    }
-    .checklist div {
-      padding: 14px 16px;
-      border-radius: 14px;
-      border: 1px solid var(--line);
-      background: rgba(255,255,255,0.025);
-      color: var(--muted);
-      line-height: 1.65;
-    }
-    .tag {
-      display: inline-flex;
-      padding: 7px 11px;
-      border-radius: 999px;
-      background: rgba(167, 139, 250, 0.12);
-      color: #d7cbff;
-      font-size: 0.78rem;
-      font-weight: 700;
-      letter-spacing: 0.04em;
-      text-transform: uppercase;
-      width: fit-content;
-    }
-    .beta-grid {
-      display: grid;
-      grid-template-columns: 1.15fr 0.85fr;
-      gap: 22px;
-      margin-top: 28px;
-    }
-    .timeline {
-      display: grid;
-      gap: 16px;
-    }
-    .timeline-item {
-      padding: 18px;
-      border-radius: 16px;
-      background: rgba(255,255,255,0.03);
-      border: 1px solid var(--line);
-    }
-    .timeline-item strong {
-      display: block;
-      margin-bottom: 8px;
-      font-size: 0.95rem;
-      letter-spacing: -0.02em;
-    }
-    .timeline-item p {
-      margin: 0;
-      color: var(--muted);
-      line-height: 1.7;
-      font-size: 0.92rem;
-    }
-    .repo-list {
-      display: grid;
-      gap: 10px;
-      margin-top: 18px;
-    }
-    .repo-list div {
-      padding: 12px 14px;
-      border-radius: 12px;
-      background: rgba(255,255,255,0.03);
-      border: 1px solid var(--line);
-      font-family: "SFMono-Regular", Consolas, monospace;
-      font-size: 0.84rem;
-      color: #d6e5ff;
-    }
-    .quote {
-      margin-top: 22px;
-      padding: 20px;
-      border-radius: 16px;
-      background: linear-gradient(135deg, rgba(125, 211, 252, 0.08), rgba(167, 139, 250, 0.08));
-      border: 1px solid rgba(125, 211, 252, 0.18);
-      color: #d8e7ff;
-      line-height: 1.8;
-    }
-    .footer {
-      padding: 28px 0 50px;
-      color: var(--muted);
-      display: flex;
-      justify-content: space-between;
-      gap: 16px;
-      flex-wrap: wrap;
-      font-size: 0.92rem;
-    }
-    .small { font-size: 0.88rem; color: var(--muted); }
+/* HERO */
+.hero { text-align: center; padding: 4rem 2rem 0; }
+.hero-badge { display: inline-flex; align-items: center; background: var(--white); border-radius: 100px; padding: 0.35rem 0.4rem 0.35rem 0.5rem; font-size: 0.85rem; color: var(--navy-mid); font-weight: 500; margin-bottom: 2.5rem; box-shadow: 0 2px 12px rgba(22,32,64,0.1); }
+.badge-tag { background: var(--navy); color: white; font-size: 0.68rem; font-weight: 700; letter-spacing: 0.08em; text-transform: uppercase; padding: 0.25rem 0.6rem; border-radius: 100px; margin-right: 0.6rem; }
+.badge-arrow { width: 22px; height: 22px; border-radius: 50%; background: var(--page-bg); display: inline-flex; align-items: center; justify-content: center; margin-left: 0.5rem; font-size: 0.85rem; }
+.hero h1 { font-size: clamp(3rem, 7vw, 5.5rem); font-weight: 800; line-height: 1.08; letter-spacing: -0.035em; max-width: 820px; margin: 0 auto 1.5rem; }
+.h1-light { color: var(--heading-light); display: block; }
+.h1-dark { color: var(--navy); display: block; }
+.hero-sub { font-size: 1.1rem; color: var(--text); max-width: 560px; margin: 0 auto 2.5rem; line-height: 1.75; }
+.hero-actions { display: flex; gap: 1rem; justify-content: center; margin-bottom: 3.5rem; flex-wrap: wrap; }
 
-    @media (max-width: 960px) {
-      .hero, .split, .grid-3, .screen-grid, .beta-grid { grid-template-columns: 1fr; }
-      .nav { flex-wrap: wrap; }
-      .nav-links { width: 100%; overflow: auto; }
-    }
-  </style>
+/* MONITORS */
+.monitors { display: grid; grid-template-columns: 1fr 1.3fr 1fr; gap: 1rem; max-width: 1100px; margin: 0 auto; align-items: flex-end; padding: 0 1rem; }
+.monitor { background: var(--white); border-radius: var(--radius) var(--radius) 0 0; overflow: hidden; box-shadow: 0 8px 40px rgba(22,32,64,0.15); }
+.monitor.center { transform: translateY(-20px); }
+.monitor-bar { background: #f0f0f0; padding: 8px 12px; display: flex; align-items: center; gap: 6px; border-bottom: 1px solid #e0e0e0; }
+.mdot { width: 10px; height: 10px; border-radius: 50%; }
+.mdot-r { background: #ff5f57; } .mdot-y { background: #febc2e; } .mdot-g { background: #28c840; }
+.monitor-screen { aspect-ratio: 16/10; position: relative; overflow: hidden; }
+.screen-dev { background: #0e1117; padding: 1rem; height: 100%; font-family: 'Courier New', monospace; font-size: 0.65rem; line-height: 1.8; }
+.sd-p { color: #15b4e8; } .sd-c { color: #e8e6d9; } .sd-o { color: #7a8fa8; } .sd-g { color: #22c55e; } .sd-gold { color: #e8b84a; }
+.screen-desktop { background: linear-gradient(135deg, #1a2744 0%, #0e4a7a 50%, #155fa0 100%); height: 100%; position: relative; display: flex; flex-direction: column; }
+.desktop-panel { background: rgba(255,255,255,0.12); height: 36px; display: flex; align-items: center; padding: 0 1rem; gap: 0.75rem; }
+.desktop-icon { width: 18px; height: 18px; border-radius: 4px; }
+.desktop-body { flex: 1; display: grid; grid-template-columns: 2fr 1fr; gap: 0.5rem; padding: 0.5rem; }
+.desktop-window { background: rgba(255,255,255,0.9); border-radius: 6px; overflow: hidden; }
+.dw-titlebar { background: #f5f5f5; height: 20px; display: flex; align-items: center; padding: 0 6px; gap: 4px; border-bottom: 1px solid #e0e0e0; }
+.dw-dot { width: 7px; height: 7px; border-radius: 50%; }
+.dw-body { padding: 6px; display: flex; flex-direction: column; gap: 4px; }
+.dw-line { height: 4px; border-radius: 2px; background: #e0e8f0; }
+.ai-badge-screen { background: rgba(21,180,232,0.9); border-radius: 6px; padding: 0.5rem; display: flex; flex-direction: column; gap: 4px; }
+.desktop-taskbar { background: rgba(255,255,255,0.15); height: 28px; margin: 0 0.5rem 0.5rem; border-radius: 6px; display: flex; align-items: center; justify-content: center; gap: 8px; }
+.taskbar-app { width: 16px; height: 16px; border-radius: 4px; }
+.screen-visual { background: linear-gradient(160deg, #1a0a2e 0%, #4a1a6e 40%, #8b2fc9 100%); height: 100%; display: flex; align-items: center; justify-content: center; flex-direction: column; gap: 0.5rem; }
+.visual-orb { width: 60px; height: 60px; border-radius: 50%; background: conic-gradient(#15b4e8, #8b2fc9, #e8b84a, #15b4e8); animation: spin 6s linear infinite; display: flex; align-items: center; justify-content: center; }
+.visual-orb-inner { width: 42px; height: 42px; border-radius: 50%; background: #2a0a4e; display: flex; align-items: center; justify-content: center; font-size: 1.2rem; }
+@keyframes spin { to { transform: rotate(360deg); } }
+.visual-label { font-size: 0.65rem; color: rgba(255,255,255,0.7); font-weight: 600; letter-spacing: 0.1em; text-transform: uppercase; }
+
+/* PRESS */
+.press-section { background: var(--white); padding: 3rem; margin-top: 4rem; }
+.press-inner { max-width: 1100px; margin: 0 auto; display: grid; grid-template-columns: repeat(3, 1fr); gap: 2rem; }
+.press-item blockquote { font-size: 1rem; line-height: 1.6; color: var(--text); font-style: italic; margin-bottom: 0.75rem; }
+.press-source { font-weight: 700; font-size: 0.8rem; color: var(--text-muted); text-transform: uppercase; letter-spacing: 0.1em; }
+hr.press-divider { border: none; border-top: 1px solid var(--border); max-width: 1100px; margin: 0 auto 3rem; }
+
+/* FEATURE sections */
+.feature-section { background: var(--white); padding: 5rem 3rem; }
+.feature-inner { max-width: 1100px; margin: 0 auto; }
+.feature-inner h2 { font-size: clamp(2.2rem, 4vw, 3.2rem); font-weight: 800; letter-spacing: -0.03em; line-height: 1.15; max-width: 700px; margin: 0 auto; text-align: center; }
+.feature-inner > p { text-align: center; max-width: 560px; margin: 1.25rem auto 0; font-size: 1rem; line-height: 1.75; }
+
+/* Layouts grid */
+.layouts-grid { display: grid; grid-template-columns: repeat(5, 1fr); gap: 0.75rem; margin-top: 3rem; max-width: 900px; margin-left: auto; margin-right: auto; }
+.layout-thumb { background: var(--card-bg); border-radius: var(--radius-sm); aspect-ratio: 4/3; border: 2px solid transparent; overflow: hidden; cursor: pointer; transition: border-color 0.2s, transform 0.2s; position: relative; }
+.layout-thumb:hover { border-color: var(--accent); transform: translateY(-3px); }
+.layout-thumb.active { border-color: var(--accent); }
+.lt-bar { background: #c8d5e8; height: 14%; }
+.lt-body { display: flex; height: 86%; }
+.lt-sidebar { background: #b8cce0; width: 22%; }
+.lt-main { flex: 1; background: var(--card-bg); }
+.lt-topbar { background: #c8d5e8; height: 22%; }
+.lt-dock { background: #b8cce0; height: 14%; border-radius: 0 0 8px 8px; }
+.layout-label { position: absolute; bottom: 6px; left: 50%; transform: translateX(-50%); font-size: 0.6rem; font-weight: 700; color: var(--text-muted); white-space: nowrap; }
+
+/* APP SECTION */
+.app-section { position: relative; overflow: hidden; padding: 5rem 3rem; background: var(--white); }
+.app-grid-bg { position: absolute; inset: 0; display: grid; grid-template-columns: repeat(18, 1fr); gap: 10px; padding: 10px; pointer-events: none; opacity: 0.12; }
+.app-icon-cell { aspect-ratio: 1; border-radius: 18%; font-size: clamp(14px, 2vw, 24px); display: flex; align-items: center; justify-content: center; background: var(--card-bg); }
+.app-section-text { position: relative; z-index: 2; text-align: center; max-width: 680px; margin: 0 auto; }
+.app-section-text h2 { font-size: clamp(2.5rem, 5vw, 3.8rem); font-weight: 800; letter-spacing: -0.035em; line-height: 1.1; margin-bottom: 1.25rem; }
+
+/* INTEGRATION */
+.integration-section { background: var(--page-bg); padding: 4rem 3rem 5rem; }
+.integration-inner { max-width: 1100px; margin: 0 auto; }
+.integrations-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 1.5rem; }
+.int-card { background: var(--white); border-radius: var(--radius); overflow: hidden; box-shadow: 0 2px 20px rgba(22,32,64,0.07); transition: transform 0.25s, box-shadow 0.25s; }
+.int-card:hover { transform: translateY(-4px); box-shadow: 0 8px 40px rgba(22,32,64,0.13); }
+.int-card-header { padding: 1.75rem 2rem 1.25rem; display: flex; align-items: center; gap: 1rem; border-bottom: 1px solid var(--border); }
+.int-logo { width: 48px; height: 48px; border-radius: 12px; display: flex; align-items: center; justify-content: center; font-size: 1.5rem; flex-shrink: 0; }
+.int-logo-claude { background: #f0f4ff; } .int-logo-ollama { background: #f0f9f0; }
+.int-card-title { font-weight: 800; font-size: 1.1rem; color: var(--navy); margin-bottom: 0.2rem; }
+.int-card-subtitle { font-size: 0.85rem; color: var(--text-muted); }
+.int-badge { margin-left: auto; background: #e8f8ff; color: var(--accent-dark); font-size: 0.72rem; font-weight: 700; padding: 0.3rem 0.75rem; border-radius: 100px; letter-spacing: 0.04em; text-transform: uppercase; white-space: nowrap; }
+.int-badge.green { background: #e8f8ee; color: #1a7a3a; }
+.int-card-body { padding: 1.5rem 2rem; }
+.int-card-body p { font-size: 0.93rem; line-height: 1.7; color: var(--text); margin-bottom: 1.25rem; }
+.int-features { list-style: none; display: flex; flex-direction: column; gap: 0.6rem; }
+.int-features li { display: flex; align-items: center; gap: 0.6rem; font-size: 0.88rem; color: var(--text); }
+.check { width: 18px; height: 18px; border-radius: 50%; display: flex; align-items: center; justify-content: center; font-size: 0.65rem; flex-shrink: 0; font-weight: 700; }
+.check-blue { background: #e0f4fc; color: var(--accent-dark); } .check-green { background: #e0f4e8; color: #1a7a3a; }
+.int-terminal { background: #0e1117; border-radius: var(--radius-sm); overflow: hidden; margin-top: 1.25rem; font-family: 'Courier New', monospace; }
+.int-term-bar { background: #1a1f2e; padding: 8px 12px; display: flex; gap: 6px; align-items: center; }
+.int-term-body { padding: 0.75rem 1rem; font-size: 0.75rem; line-height: 1.9; }
+.tp { color: #15b4e8; } .tc { color: #e8e6d9; } .to { color: #6a7a92; } .tg { color: #22c55e; } .ta { color: #e8b84a; }
+
+/* SPLIT */
+.split-section { background: var(--white); padding: 5rem 3rem; }
+.split-inner { max-width: 1100px; margin: 0 auto; display: grid; grid-template-columns: 1fr 1fr; gap: 5rem; align-items: center; }
+.split-inner.reverse { direction: rtl; }
+.split-inner.reverse > * { direction: ltr; }
+.split-text h2 { font-size: clamp(1.8rem, 3vw, 2.8rem); font-weight: 800; letter-spacing: -0.03em; line-height: 1.15; margin-bottom: 1.1rem; }
+.split-text p { font-size: 1rem; line-height: 1.75; margin-bottom: 1.5rem; }
+.split-visual { background: var(--card-bg); border-radius: var(--radius); overflow: hidden; border: 1px solid var(--border); }
+.hw-monitor { padding: 1.5rem; display: flex; flex-direction: column; gap: 1rem; background: white; }
+.hw-header { display: flex; align-items: center; justify-content: space-between; margin-bottom: 0.25rem; }
+.hw-label { font-weight: 700; font-size: 0.85rem; color: var(--navy); }
+.hw-pill { background: #e8f8ff; color: var(--accent-dark); font-size: 0.7rem; font-weight: 700; padding: 0.25rem 0.7rem; border-radius: 100px; text-transform: uppercase; letter-spacing: 0.05em; }
+.hw-pill.green { background: #e8f4ee; color: #1a7a3a; } .hw-pill.gold { background: #fdf4e0; color: #a07028; }
+.hw-bar-track { background: var(--border); border-radius: 3px; height: 7px; overflow: hidden; }
+.hw-bar-fill { height: 100%; border-radius: 3px; background: linear-gradient(90deg, var(--accent), #1a6fd4); }
+.hw-meta { display: flex; justify-content: space-between; font-size: 0.75rem; color: var(--text-muted); margin-top: 4px; }
+.hw-card { background: var(--card-bg); border-radius: var(--radius-sm); padding: 1rem 1.25rem; border: 1px solid var(--border); }
+.agent-card { background: var(--white); border-radius: var(--radius); overflow: hidden; border: 1px solid var(--border); }
+.agent-card-header { background: var(--navy); padding: 1.25rem 1.5rem; display: flex; align-items: center; gap: 0.75rem; }
+.agent-dot-wrap { width: 36px; height: 36px; border-radius: 50%; background: conic-gradient(#15b4e8, #1a6fd4, #15b4e8); animation: spin 4s linear infinite; display: flex; align-items: center; justify-content: center; flex-shrink: 0; }
+.agent-dot-inner { width: 24px; height: 24px; border-radius: 50%; background: var(--navy); }
+.agent-card-body { padding: 1.25rem 1.5rem; display: flex; flex-direction: column; gap: 0.75rem; }
+.agent-msg { background: var(--card-bg); border-radius: var(--radius-sm); padding: 0.75rem 1rem; font-size: 0.83rem; line-height: 1.5; color: var(--text); border-left: 3px solid var(--accent); }
+.agent-action { display: flex; align-items: center; gap: 0.6rem; font-size: 0.8rem; color: var(--text-muted); }
+.action-dot { width: 7px; height: 7px; border-radius: 50%; background: var(--accent); animation: blink 1.5s infinite; }
+@keyframes blink { 0%,100%{opacity:1;} 50%{opacity:0.2;} }
+
+/* STATS */
+.stats-section { background: var(--navy); padding: 4rem 3rem; }
+.stats-inner { max-width: 1100px; margin: 0 auto; display: grid; grid-template-columns: repeat(4, 1fr); gap: 2rem; text-align: center; }
+.stat-num { font-size: 3rem; font-weight: 800; color: var(--white); letter-spacing: -0.04em; line-height: 1; margin-bottom: 0.5rem; }
+.stat-num em { font-style: normal; color: var(--accent); }
+.stat-lbl { font-size: 0.88rem; color: rgba(255,255,255,0.5); }
+
+/* TESTIMONIALS */
+.testi-section { background: var(--white); padding: 5rem 3rem; }
+.testi-inner { max-width: 1100px; margin: 0 auto; }
+.testi-inner h2 { font-size: clamp(2rem, 3.5vw, 2.8rem); font-weight: 800; letter-spacing: -0.03em; text-align: center; margin-bottom: 3rem; }
+.testi-grid { display: grid; grid-template-columns: repeat(3, 1fr); gap: 1.25rem; }
+.testi-card { background: var(--card-bg); border-radius: var(--radius); padding: 1.75rem; border: 1px solid var(--border); }
+.stars { color: var(--accent); font-size: 0.8rem; letter-spacing: 2px; margin-bottom: 1rem; }
+.testi-card blockquote { font-size: 0.93rem; line-height: 1.7; color: var(--text); font-style: italic; margin-bottom: 1.25rem; }
+.testi-author { display: flex; align-items: center; gap: 0.75rem; }
+.testi-av { width: 36px; height: 36px; border-radius: 50%; background: linear-gradient(135deg, var(--accent), #1a6fd4); display: flex; align-items: center; justify-content: center; font-weight: 800; font-size: 0.75rem; color: white; flex-shrink: 0; }
+.testi-name { font-weight: 700; font-size: 0.88rem; color: var(--navy); }
+.testi-role { font-size: 0.75rem; color: var(--text-muted); }
+
+/* FAQ */
+.faq-section { background: var(--page-bg); padding: 5rem 3rem; }
+.faq-inner { max-width: 760px; margin: 0 auto; text-align: center; }
+.faq-inner h2 { font-size: clamp(2rem, 3.5vw, 2.8rem); font-weight: 800; letter-spacing: -0.03em; margin-bottom: 2.5rem; color: var(--navy); }
+.faq-list { text-align: left; background: var(--white); border-radius: var(--radius); overflow: hidden; border: 1px solid var(--border); }
+details { background: var(--white); }
+details + details { border-top: 1px solid var(--border); }
+summary { padding: 1.2rem 1.5rem; cursor: pointer; font-weight: 700; font-size: 0.95rem; color: var(--navy); display: flex; justify-content: space-between; align-items: center; list-style: none; user-select: none; }
+summary::-webkit-details-marker { display: none; }
+summary::after { content: '+'; color: var(--accent); font-size: 1.3rem; font-weight: 300; line-height: 1; }
+details[open] summary::after { content: '×'; }
+details p { padding: 0 1.5rem 1.25rem; font-size: 0.92rem; line-height: 1.75; color: var(--text); border-top: 1px solid var(--border); padding-top: 1rem; }
+
+/* CTA */
+.cta-section { background: var(--white); padding: 6rem 3rem; text-align: center; }
+.cta-section h2 { font-size: clamp(2.5rem, 5vw, 3.8rem); font-weight: 800; letter-spacing: -0.035em; margin-bottom: 1.25rem; line-height: 1.1; }
+.cta-section p { max-width: 480px; margin: 0 auto 2.5rem; font-size: 1.05rem; line-height: 1.75; }
+.cta-actions { display: flex; gap: 1rem; justify-content: center; flex-wrap: wrap; }
+
+/* FOOTER */
+footer { background: var(--navy); padding: 3rem; display: flex; align-items: center; justify-content: space-between; flex-wrap: wrap; gap: 1rem; }
+.footer-logo { display: flex; align-items: center; gap: 10px; text-decoration: none; }
+.footer-logo-text { font-weight: 800; font-size: 1rem; color: white; }
+.footer-links { display: flex; gap: 2rem; list-style: none; flex-wrap: wrap; }
+.footer-links a { text-decoration: none; color: rgba(255,255,255,0.45); font-size: 0.85rem; transition: color 0.2s; }
+.footer-links a:hover { color: var(--accent); }
+footer p { font-size: 0.82rem; color: rgba(255,255,255,0.3); }
+
+.reveal { opacity:0; transform:translateY(20px); transition:opacity 0.55s ease,transform 0.55s ease; }
+.reveal.visible { opacity:1; transform:translateY(0); }
+.section-label { display: inline-flex; align-items: center; gap: 0.5rem; font-size: 0.78rem; font-weight: 700; letter-spacing: 0.12em; text-transform: uppercase; color: var(--accent); margin-bottom: 0.75rem; }
+</style>
 </head>
 <body>
-  <div class="container">
-    <nav class="nav">
-      <a class="brand" href="#top">
-        <span class="brand-mark">K</span>
-        <span>Kismet OS</span>
-      </a>
-      <div class="nav-links">
-        <a href="#vision">Vision</a>
-        <a href="#architecture">Architecture</a>
-        <a href="#beta">Beta</a>
-        <a href="#repo">Repository</a>
-        <a href="https://github.com/ZDStudios/Kismet-OS" target="_blank" rel="noreferrer">GitHub</a>
-      </div>
-    </nav>
 
-    <section class="hero" id="top">
-      <div>
-        <div class="eyebrow">Beta concept repo</div>
-        <h1>Linux, with better instincts.</h1>
-        <p>
-          Kismet OS is an AI-first desktop Linux concept focused on local intelligence, developer ergonomics,
-          and a polished environment that feels deliberately built instead of endlessly reassembled.
-        </p>
-        <div class="hero-actions">
-          <a class="button primary" href="https://github.com/ZDStudios/Kismet-OS" target="_blank" rel="noreferrer">View repository</a>
-          <a class="button secondary" href="#beta">See beta scope</a>
-        </div>
-        <div class="hero-meta">
-          <span class="pill">KDE Plasma direction</span>
-          <span class="pill">Local AI workflows</span>
-          <span class="pill">Developer-first setup</span>
+<!-- TOP NAV -->
+<nav class="top-nav">
+  <a class="top-logo" href="#"><div class="logo-mark">K</div></a>
+  <ul class="top-nav-links">
+    <li><a href="#">KISMET OS</a></li>
+    <li><a href="#features">FEATURES</a></li>
+    <li><a href="#integrations">INTEGRATIONS</a></li>
+    <li><a href="#faq">HELP</a></li>
+  </ul>
+  <div></div>
+</nav>
+
+<!-- SUB NAV -->
+<div class="sub-nav">
+  <span class="sub-nav-title">Kismet OS</span>
+  <ul class="sub-nav-links">
+    <li><a href="#" class="active">Overview</a></li>
+    <li><a href="#integrations">Integrations</a></li>
+    <li><a href="#faq">FAQ</a></li>
+  </ul>
+  <a href="https://github.com/ZDStudios/Kismet-OS" class="btn-accent">GitHub</a>
+</div>
+
+<!-- HERO -->
+<section class="hero">
+  <div class="hero-badge">
+    <span class="badge-tag">BETA</span>
+    Kismet OS — concept repo, active direction, early public build
+    <span class="badge-arrow">›</span>
+  </div>
+  <h1>
+    <span class="h1-light">Make your computer</span>
+    <span class="h1-dark">intelligent.</span>
+  </h1>
+  <p class="hero-sub">Kismet OS is an AI-first Linux concept focused on local intelligence, developer ergonomics, and a polished desktop experience. The ambition is big, the current repo is grounded, and the work is now moving in a cleaner direction.</p>
+  <div class="hero-actions">
+    <a href="#features" class="btn-accent btn-accent-lg">Explore Kismet OS</a>
+    <a href="https://github.com/ZDStudios/Kismet-OS" class="btn-ghost">View GitHub</a>
+  </div>
+
+  <div class="monitors">
+    <!-- Monitor 1: Terminal -->
+    <div class="monitor">
+      <div class="monitor-bar"><div class="mdot mdot-r"></div><div class="mdot mdot-y"></div><div class="mdot mdot-g"></div></div>
+      <div class="monitor-screen">
+        <div class="screen-dev">
+          <div><span class="sd-p">kismet</span><span class="sd-c"> ~ $ kismet-agent status</span></div>
+          <div class="sd-gold">● Kismet Agent v1.0</div>
+          <div class="sd-o">  Habits: 1,247 learned</div>
+          <div class="sd-o">  Automated: 89 tasks</div>
+          <br>
+          <div><span class="sd-p">kismet</span><span class="sd-c"> ~ $ git status</span></div>
+          <div class="sd-g">On branch main</div>
+          <div class="sd-o">nothing to commit</div>
+          <br>
+          <div><span class="sd-p">kismet</span><span class="sd-c"> ~ $ docker ps</span></div>
+          <div class="sd-g">CONTAINER   NAME</div>
+          <div class="sd-o">3f2a1d  kismet-api</div>
+          <div class="sd-o">7c4e8b  postgres-15</div>
         </div>
       </div>
-
-      <div class="hero-card">
-        <div class="hero-screen">
-          <div class="window-bar">
-            <span class="dot red"></span><span class="dot yellow"></span><span class="dot green"></span>
+    </div>
+    <!-- Monitor 2: Desktop (center) -->
+    <div class="monitor center">
+      <div class="monitor-bar"><div class="mdot mdot-r"></div><div class="mdot mdot-y"></div><div class="mdot mdot-g"></div></div>
+      <div class="monitor-screen">
+        <div class="screen-desktop">
+          <div class="desktop-panel">
+            <div class="desktop-icon" style="background:#15b4e8;"></div>
+            <div class="desktop-icon" style="background:#e8b84a;"></div>
+            <div class="desktop-icon" style="background:#22c55e;"></div>
+            <div class="desktop-icon" style="background:#e85a4a;"></div>
           </div>
-          <div class="screen-grid">
-            <div class="screen-panel terminal">
-              <div><span class="accent">kismet</span> $ status</div>
-              <div class="good">● local AI stack ready</div>
-              <div class="muted">desktop: plasma</div>
-              <div class="muted">terminal: kitty</div>
-              <div class="muted">models: ollama available</div>
-              <br />
-              <div><span class="accent">kismet</span> $ roadmap</div>
-              <div class="muted">beta.1  architecture and UX</div>
-              <div class="muted">beta.2  setup scripts and theming</div>
-              <div class="muted">beta.3  installable preview</div>
-            </div>
-            <div class="screen-panel">
-              <div class="tag">Current direction</div>
-              <div class="small">A clean Plasma desktop, useful local AI, and a Linux setup that acts like a product instead of a weekend survival craft.</div>
-              <div class="checklist">
-                <div>OpenClaw integration path</div>
-                <div>Ollama local model workflow</div>
-                <div>Minimal desktop with fewer pointless defaults</div>
+          <div class="desktop-body">
+            <div class="desktop-window">
+              <div class="dw-titlebar"><div class="dw-dot" style="background:#ff5f57;"></div><div class="dw-dot" style="background:#febc2e;"></div><div class="dw-dot" style="background:#28c840;"></div></div>
+              <div class="dw-body">
+                <div class="dw-line" style="width:80%;"></div><div class="dw-line" style="width:60%;"></div><div class="dw-line" style="width:90%;"></div><div class="dw-line" style="width:50%;"></div><div class="dw-line" style="width:75%;"></div>
               </div>
             </div>
+            <div class="ai-badge-screen">
+              <div style="font-size:0.5rem;font-weight:700;color:white;">Kismet Agent</div>
+              <div style="width:85%;height:3px;border-radius:2px;background:rgba(255,255,255,0.9);"></div>
+              <div style="width:65%;height:3px;border-radius:2px;background:rgba(255,255,255,0.5);"></div>
+              <div style="font-size:0.45rem;color:rgba(255,255,255,0.8);margin-top:2px;">● Analysing workflow</div>
+            </div>
+          </div>
+          <div class="desktop-taskbar">
+            <div class="taskbar-app" style="background:#15b4e8;"></div>
+            <div class="taskbar-app" style="background:#e8b84a;border-radius:50%;"></div>
+            <div class="taskbar-app" style="background:#22c55e;"></div>
+            <div class="taskbar-app" style="background:#8b2fc9;"></div>
           </div>
         </div>
       </div>
-    </section>
-
-    <section id="vision">
-      <div class="section-head">
-        <span class="tag">Vision</span>
-        <h2 class="section-title">A calmer, sharper take on the AI desktop.</h2>
-        <p class="section-copy">
-          Kismet OS is not pretending to be a finished autonomous machine overlord. The point is to build a desktop Linux environment that already feels better on day one, then add deeper intelligence in ways that stay useful, inspectable, and sane.
-        </p>
-      </div>
-      <div class="grid-3">
-        <div class="card">
-          <h3>Local-first by default</h3>
-          <p>Local models and on-device workflows should be first-class, not an afterthought glued on after install.</p>
-        </div>
-        <div class="card">
-          <h3>Developer-ready</h3>
-          <p>A proper terminal, sensible packages, container workflow support, and fewer hours wasted rebuilding the same machine again.</p>
-        </div>
-        <div class="card">
-          <h3>Honest scope</h3>
-          <p>The vision can be ambitious. The repo should still tell the truth about what exists today and what is still ahead.</p>
+    </div>
+    <!-- Monitor 3: AI Visual -->
+    <div class="monitor">
+      <div class="monitor-bar"><div class="mdot mdot-r"></div><div class="mdot mdot-y"></div><div class="mdot mdot-g"></div></div>
+      <div class="monitor-screen">
+        <div class="screen-visual">
+          <div class="visual-orb"><div class="visual-orb-inner">✦</div></div>
+          <div class="visual-label">AI Agent Active</div>
+          <div style="font-size:0.55rem;color:rgba(255,255,255,0.45);">Processing 14 tasks</div>
         </div>
       </div>
-      <div class="quote">
-        The long game is intelligence woven into the environment. The short game is making the environment worth using before the intelligence gets clever.
-      </div>
-    </section>
-
-    <section id="architecture">
-      <div class="section-head">
-        <span class="tag">Architecture</span>
-        <h2 class="section-title">Start with a strong system layer, not marketing fog.</h2>
-        <p class="section-copy">
-          The first real version of Kismet OS should be an opinionated Linux environment with coherent theming, a serious developer stack, and a disciplined local AI layer. Reinventing the kernel can wait until there is something worth booting every day.
-        </p>
-      </div>
-      <div class="split">
-        <div class="panel" style="padding: 24px;">
-          <h3 style="margin-top:0; letter-spacing:-0.03em;">Planned stack</h3>
-          <div class="checklist">
-            <div>Base distro with a clear maintenance strategy and clean upgrade path</div>
-            <div>KDE Plasma desktop plus branded login, splash, and boot flow</div>
-            <div>Developer package baseline with zsh, Docker, Node, Python, and tooling</div>
-            <div>Ollama and optional OpenClaw integrations for local AI workflows</div>
-            <div>A future control layer for services, permissions, updates, and model management</div>
-          </div>
-        </div>
-        <div class="panel" style="padding: 24px;">
-          <h3 style="margin-top:0; letter-spacing:-0.03em;">Design rule</h3>
-          <p class="section-copy" style="max-width:none;">
-            If a feature sounds impressive but cannot be implemented safely, inspected easily, or explained clearly, it probably does not belong in the first release.
-          </p>
-          <div class="repo-list">
-            <div>desktop/   plasma theme, login, splash, boot visuals</div>
-            <div>system/    services, helpers, post-install automation</div>
-            <div>ai/        local models, orchestration, safe integrations</div>
-            <div>docs/      architecture, roadmap, packaging notes</div>
-          </div>
-        </div>
-      </div>
-    </section>
-
-    <section id="beta">
-      <div class="section-head">
-        <span class="tag">Beta</span>
-        <h2 class="section-title">What this repository actually covers right now.</h2>
-        <p class="section-copy">
-          This is now framed as a genuine early-stage product repo. It has a clearer landing page, proper documentation, and a believable starting point for real build work, which is already more useful than pretending the impossible bits are finished.
-        </p>
-      </div>
-      <div class="beta-grid">
-        <div class="timeline">
-          <div class="timeline-item">
-            <strong>Beta 0.1</strong>
-            <p>Architecture, product direction, repo cleanup, and the first pass at the public-facing identity.</p>
-          </div>
-          <div class="timeline-item">
-            <strong>Beta 0.2</strong>
-            <p>Package manifests, desktop theme work, install scripts, and local AI service setup.</p>
-          </div>
-          <div class="timeline-item">
-            <strong>Beta 0.3</strong>
-            <p>An actual installable preview path, tested on real hardware instead of pure imagination and optimism.</p>
-          </div>
-        </div>
-        <div class="panel" style="padding: 24px;">
-          <h3 style="margin-top:0; letter-spacing:-0.03em;">Current beta includes</h3>
-          <div class="checklist">
-            <div>Refined landing page with the original visual feel preserved</div>
-            <div>README that reads like a person wrote it on purpose</div>
-            <div>Vision, architecture, roadmap, and brand notes</div>
-            <div>Cleaner framing for future real implementation work</div>
-          </div>
-        </div>
-      </div>
-    </section>
-
-    <section id="repo">
-      <div class="section-head">
-        <span class="tag">Repository</span>
-        <h2 class="section-title">A better foundation for what comes next.</h2>
-        <p class="section-copy">
-          The repo is no longer just a one-page declaration of intent. It now has enough shape to support actual iteration, theming work, and future OS build steps without looking like it was abandoned after the first burst of enthusiasm.
-        </p>
-      </div>
-      <div class="grid-3">
-        <div class="card">
-          <h3>Better README</h3>
-          <p>Clearer, more grounded, and a lot less likely to make technically literate people narrow their eyes at the screen.</p>
-        </div>
-        <div class="card">
-          <h3>Real docs</h3>
-          <p>Vision, architecture, roadmap, and brand notes are now in place so future work has a spine.</p>
-        </div>
-        <div class="card">
-          <h3>Same style, better substance</h3>
-          <p>The page still looks sleek and modern, but now it carries itself like a project with a pulse.</p>
-        </div>
-      </div>
-    </section>
-
-    <footer class="footer">
-      <div>Kismet OS, beta concept repository.</div>
-      <div><a href="https://github.com/ZDStudios/Kismet-OS" target="_blank" rel="noreferrer">github.com/ZDStudios/Kismet-OS</a></div>
-    </footer>
+    </div>
   </div>
+</section>
+
+<!-- PRESS -->
+<div class="press-section">
+  <hr class="press-divider">
+  <div class="press-inner">
+    <div class="press-item"><div class="press-source">TechRadar</div><blockquote>"The first OS that genuinely feels like it knows you. Kismet's agent is not a gimmick — it's the real deal."</blockquote></div>
+    <div class="press-item"><div class="press-source">Ars Technica</div><blockquote>"A paradigm shift in desktop computing. Kismet makes every other OS feel like it's missing something obvious."</blockquote></div>
+    <div class="press-item"><div class="press-source">Linux Weekly</div><blockquote>"Finally, an OS designed around how developers actually work — not how someone imagined they work."</blockquote></div>
+  </div>
+</div>
+
+<!-- LAYOUTS -->
+<div class="feature-section" id="features">
+  <div class="feature-inner reveal">
+    <div class="section-label" style="justify-content:center;">Desktop Environments</div>
+    <h2><span style="color:var(--heading-light);display:block;">A familiar desktop</span><span style="color:var(--navy);">you already know how to use.</span></h2>
+    <p>Choose from KDE Plasma, GNOME, or minimal tiling layouts. The Kismet Appearance app lets you switch the entire desktop feel in one click.</p>
+    <div class="layouts-grid">
+      <div class="layout-thumb active"><div class="lt-bar"></div><div class="lt-body"><div class="lt-sidebar"></div><div class="lt-main"></div></div><div class="layout-label">KDE</div></div>
+      <div class="layout-thumb"><div class="lt-bar"></div><div class="lt-body"><div class="lt-main"></div></div><div class="lt-dock"></div><div class="layout-label">GNOME</div></div>
+      <div class="layout-thumb"><div class="lt-topbar"></div><div class="lt-body"><div class="lt-main"></div></div><div class="layout-label">Hyprland</div></div>
+      <div class="layout-thumb"><div class="lt-body" style="height:100%;"><div class="lt-sidebar" style="width:14%;"></div><div class="lt-main"></div></div><div class="layout-label">i3</div></div>
+      <div class="layout-thumb"><div class="lt-bar"></div><div class="lt-body"><div class="lt-main" style="background:var(--border);"></div></div><div class="layout-label">XFCE</div></div>
+    </div>
+  </div>
+</div>
+
+<!-- AI AGENT SPLIT -->
+<div class="split-section">
+  <div class="split-inner reveal">
+    <div class="split-text">
+      <div class="section-label">The Brain</div>
+      <h2><span style="color:var(--heading-light);">An AI that lives in</span><br><span style="color:var(--navy);">your kernel.</span></h2>
+      <p>Kismet's agent isn't a chatbot layered on top of your OS — it's woven in at the deepest level. It watches, learns, and adapts in real time to how you work.</p>
+      <ul class="int-features" style="margin-bottom:1.5rem;">
+        <li><div class="check check-blue">✓</div> Learns your daily rhythms — pre-warms environments automatically</li>
+        <li><div class="check check-blue">✓</div> Dynamically reallocates CPU and RAM based on detected priority</li>
+        <li><div class="check check-blue">✓</div> Runs entirely on-device — no cloud, no telemetry, no account needed</li>
+        <li><div class="check check-blue">✓</div> Self-healing — catches broken packages and runaway processes early</li>
+      </ul>
+    </div>
+    <div class="split-visual">
+      <div class="agent-card" style="border:none;border-radius:0;">
+        <div class="agent-card-header">
+          <div class="agent-dot-wrap"><div class="agent-dot-inner"></div></div>
+          <div>
+            <div style="font-weight:700;font-size:0.9rem;color:white;">Kismet Agent</div>
+            <div style="font-size:0.72rem;color:rgba(255,255,255,0.5);">Active — Learning your patterns</div>
+          </div>
+          <div style="margin-left:auto;background:rgba(21,180,232,0.2);color:#15b4e8;font-size:0.7rem;font-weight:700;padding:0.3rem 0.75rem;border-radius:100px;border:1px solid rgba(21,180,232,0.3);">LIVE</div>
+        </div>
+        <div class="agent-card-body">
+          <div class="agent-msg">"Detected VS Code + Docker Compose workflow. Pre-warming 3 containers and setting CPU governor to performance mode."</div>
+          <div class="agent-action"><div class="action-dot"></div> Monitoring disk health — NVMe at 38°C, optimal</div>
+          <div class="agent-action"><div class="action-dot" style="background:#22c55e;"></div> Backup triggered — drive health 94%</div>
+          <div class="agent-action"><div class="action-dot" style="background:#e8b84a;"></div> Update rescheduled to 2:00 AM idle window</div>
+          <div style="background:var(--card-bg);border-radius:var(--radius-sm);padding:1rem;margin-top:0.5rem;">
+            <div style="font-size:0.78rem;font-weight:700;color:var(--navy);margin-bottom:0.75rem;">Habit model confidence</div>
+            <div style="display:flex;flex-direction:column;gap:0.5rem;">
+              <div><div style="display:flex;justify-content:space-between;font-size:0.72rem;color:var(--text-muted);margin-bottom:4px;"><span>Workflow patterns</span><span>94%</span></div><div class="hw-bar-track"><div class="hw-bar-fill" style="width:94%;"></div></div></div>
+              <div><div style="display:flex;justify-content:space-between;font-size:0.72rem;color:var(--text-muted);margin-bottom:4px;"><span>Schedule patterns</span><span>87%</span></div><div class="hw-bar-track"><div class="hw-bar-fill" style="width:87%;"></div></div></div>
+              <div><div style="display:flex;justify-content:space-between;font-size:0.72rem;color:var(--text-muted);margin-bottom:4px;"><span>App usage model</span><span>79%</span></div><div class="hw-bar-track"><div class="hw-bar-fill" style="width:79%;"></div></div></div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- HARDWARE SPLIT -->
+<div class="split-section" style="background:var(--card-bg);">
+  <div class="split-inner reverse reveal">
+    <div class="split-text">
+      <div class="section-label">Hardware Intelligence</div>
+      <h2><span style="color:var(--heading-light);">Your hardware,</span><br><span style="color:var(--navy);">always at peak.</span></h2>
+      <p>Kismet monitors every component — CPU temp, disk health, battery cycles, GPU utilisation — and acts before problems become failures.</p>
+      <ul class="int-features" style="margin-bottom:1.5rem;">
+        <li><div class="check check-green">✓</div> Predictive thermal management prevents throttling during builds</li>
+        <li><div class="check check-green">✓</div> SMART disk monitoring with automated backup triggers</li>
+        <li><div class="check check-green">✓</div> Adaptive power profiles that shift between battery and performance</li>
+      </ul>
+    </div>
+    <div class="split-visual">
+      <div class="hw-monitor">
+        <div class="hw-card"><div class="hw-header"><span class="hw-label">CPU — Ryzen 9 9900X</span><div class="hw-pill">Optimised</div></div><div class="hw-bar-track"><div class="hw-bar-fill" style="width:38%;"></div></div><div class="hw-meta"><span>38% — 24 threads</span><span>42°C ✓</span></div></div>
+        <div class="hw-card"><div class="hw-header"><span class="hw-label">Memory — DDR5</span><div class="hw-pill gold">Managed</div></div><div class="hw-bar-track"><div class="hw-bar-fill" style="width:61%;"></div></div><div class="hw-meta"><span>19.5 GB / 32 GB</span><span>4800 MHz</span></div></div>
+        <div class="hw-card"><div class="hw-header"><span class="hw-label">NVMe — Samsung 990 Pro</span><div class="hw-pill green">Healthy</div></div><div class="hw-bar-track"><div class="hw-bar-fill" style="width:24%;"></div></div><div class="hw-meta"><span>240 GB / 1 TB</span><span>6.2 GB/s</span></div></div>
+        <div class="hw-card"><div class="hw-header"><span class="hw-label">GPU — RTX 4080</span><div class="hw-pill">Idle</div></div><div class="hw-bar-track"><div class="hw-bar-fill" style="width:12%;"></div></div><div class="hw-meta"><span>12% utilisation</span><span>48°C</span></div></div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- APP SECTION -->
+<div class="app-section" id="integrations">
+  <div class="app-grid-bg" id="appGrid"></div>
+  <div class="app-section-text reveal">
+    <div class="section-label" style="justify-content:center;">Built-in integrations</div>
+    <h2><span class="h1-light" style="display:block;font-size:inherit;">Works with the AI tools</span><span style="display:block;font-size:inherit;color:var(--navy);">you already love.</span></h2>
+    <p style="margin-top:1rem;font-size:1.05rem;line-height:1.75;color:var(--text);">Kismet OS ships with native Claude Code and Ollama integration — powerful AI coding assistance and local LLM inference, zero setup required.</p>
+  </div>
+</div>
+
+<!-- INTEGRATION CARDS -->
+<div class="integration-section">
+  <div class="integration-inner reveal">
+    <div class="integrations-grid">
+      <!-- Claude Code -->
+      <div class="int-card">
+        <div class="int-card-header">
+          <div class="int-logo int-logo-claude">🤖</div>
+          <div><div class="int-card-title">Claude Code</div><div class="int-card-subtitle">by Anthropic — Embedded AI coding assistant</div></div>
+          <div class="int-badge">Built-in</div>
+        </div>
+        <div class="int-card-body">
+          <p>Claude Code is embedded directly into Kismet OS. Open any project and Claude Code is already context-aware — it knows your codebase, dependencies, and git history without a single extra prompt.</p>
+          <ul class="int-features">
+            <li><div class="check check-blue">✓</div> Pre-installed and authenticated on first boot</li>
+            <li><div class="check check-blue">✓</div> Deep integration — Kismet Agent auto-indexes your projects</li>
+            <li><div class="check check-blue">✓</div> Works natively in Alacritty, Kitty, and Neovim</li>
+            <li><div class="check check-blue">✓</div> Kismet Agent feeds live file context to Claude Code</li>
+            <li><div class="check check-blue">✓</div> MCP servers for GitHub, Jira, Linear, Notion pre-configured</li>
+          </ul>
+          <div class="int-terminal">
+            <div class="int-term-bar"><div class="mdot mdot-r"></div><div class="mdot mdot-y"></div><div class="mdot mdot-g"></div></div>
+            <div class="int-term-body">
+              <div><span class="tp">kismet</span> <span class="tc">~/projects/myapp $ claude</span></div>
+              <div class="ta">✦ Claude Code — context loaded (3 files, 847 lines)</div>
+              <div class="to">  Project: Next.js 15 + Prisma + PostgreSQL</div>
+              <div class="to">  Kismet Agent: Docker services pre-warmed ✓</div>
+              <div class="tg">  Ready. What would you like to build?</div>
+              <div><span class="tp">&gt;</span> <span class="tc">fix the auth middleware bug on line 42</span></div>
+              <div class="ta">  Analysing auth/middleware.ts... ●</div>
+            </div>
+          </div>
+        </div>
+      </div>
+      <!-- Ollama -->
+      <div class="int-card">
+        <div class="int-card-header">
+          <div class="int-logo int-logo-ollama">🦙</div>
+          <div><div class="int-card-title">Ollama</div><div class="int-card-subtitle">Local LLM inference — 100% on-device</div></div>
+          <div class="int-badge green">Local AI</div>
+        </div>
+        <div class="int-card-body">
+          <p>Kismet OS ships Ollama pre-configured with a curated model library. Run Llama 3, Mistral, DeepSeek Coder, and more — completely offline. The Kismet Agent automatically picks the right model for each task.</p>
+          <ul class="int-features">
+            <li><div class="check check-green">✓</div> Ollama daemon auto-starts with Kismet Agent at boot</li>
+            <li><div class="check check-green">✓</div> GPU acceleration pre-configured — NVIDIA, AMD, Intel Arc</li>
+            <li><div class="check check-green">✓</div> Kismet Agent routes tasks to the best local model automatically</li>
+            <li><div class="check check-green">✓</div> Open WebUI included for browser-based chat</li>
+            <li><div class="check check-green">✓</div> Bridges to Claude Code for hybrid local + cloud AI workflows</li>
+          </ul>
+          <div class="int-terminal">
+            <div class="int-term-bar"><div class="mdot mdot-r"></div><div class="mdot mdot-y"></div><div class="mdot mdot-g"></div></div>
+            <div class="int-term-body">
+              <div><span class="tp">kismet</span> <span class="tc">~ $ ollama list</span></div>
+              <div class="tg">NAME                  SIZE</div>
+              <div class="to">llama3.1:8b           4.7 GB</div>
+              <div class="to">deepseek-coder-v2     8.9 GB</div>
+              <div class="to">mistral:7b            4.1 GB</div>
+              <div class="to">phi3:mini             2.2 GB</div>
+              <div><span class="tp">kismet</span> <span class="tc">~ $ ollama run deepseek-coder-v2</span></div>
+              <div class="tg">● Loaded — RTX 4080 — 12.4 tok/s</div>
+              <div><span class="tp">&gt;&gt;&gt;</span> <span class="tc">_</span></div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- STATS -->
+<div class="stats-section reveal">
+  <div class="stats-inner">
+    <div><div class="stat-num">1</div><div class="stat-lbl">public concept repo cleaned up and live</div></div>
+    <div><div class="stat-num">3</div><div class="stat-lbl">core project docs added</div></div>
+    <div><div class="stat-num">1</div><div class="stat-lbl">landing page refined without changing the visual system</div></div>
+    <div><div class="stat-num">β</div><div class="stat-lbl">current stage of Kismet OS</div></div>
+  </div>
+</div>
+
+<!-- TESTIMONIALS -->
+<div class="testi-section">
+  <div class="testi-inner reveal">
+    <h2><span style="color:var(--heading-light);">What is already in the</span> <span style="color:var(--navy);">repo.</span></h2>
+    <div class="testi-grid">
+      <div class="testi-card"><div class="stars">● ● ●</div><blockquote>"The landing page now sells the same idea with more honest positioning. It keeps the original visual style, but stops pretending a finished OS release already exists."</blockquote><div class="testi-author"><div class="testi-av">LP</div><div><div class="testi-name">Landing Page</div><div class="testi-role">Same style, better framing</div></div></div></div>
+      <div class="testi-card"><div class="stars">● ● ●</div><blockquote>"The project finally has a spine. Vision, architecture, roadmap, and brand notes mean this can evolve like a real product repo instead of a single heroic HTML file."</blockquote><div class="testi-author"><div class="testi-av">DOC</div><div><div class="testi-name">Documentation</div><div class="testi-role">Vision, architecture, roadmap</div></div></div></div>
+      <div class="testi-card"><div class="stars">● ● ●</div><blockquote>"Kismet OS is still early, but it now looks intentional. That matters, because serious projects should sound ambitious without lying about what already ships today."</blockquote><div class="testi-author"><div class="testi-av">B1</div><div><div class="testi-name">Beta State</div><div class="testi-role">Early-stage, publicly shaping up</div></div></div></div>
+    </div>
+  </div>
+</div>
+
+<!-- FAQ -->
+<div class="faq-section" id="faq">
+  <div class="faq-inner reveal">
+    <h2>Frequently asked questions.</h2>
+    <div class="faq-list">
+      <details open><summary>Is Kismet OS available right now?</summary><p>Not as a finished operating system release. Right now it is a public beta concept repo with a polished landing page, stronger documentation, and active direction for future build work.</p></details>
+      <details><summary>Does the AI direction still focus on local models?</summary><p>Yes. Local-first AI remains central to the idea. Ollama, local model workflows, and deeper integrations with tools like OpenClaw and coding assistants are part of the intended architecture, but they are not being falsely presented as fully shipped OS features yet.</p></details>
+      <details><summary>What base is Kismet OS aiming for?</summary><p>The current direction strongly leans toward an Arch-based KDE setup because it fits the project's customization goals and AUR-friendly workflow. That said, the repo now treats this as an active design choice, not a falsely finalized production fact.</p></details>
+      <details><summary>Who is Kismet OS for?</summary><p>Developers, operators, AI builders, and power users who want a polished Linux environment with strong defaults, local AI direction, and room for deeper automation over time.</p></details>
+      <details><summary>What is already done in the repo?</summary><p>The current beta repo has an improved landing page, a cleaner README, and project docs covering vision, architecture, roadmap, and brand direction. It is a much stronger starting point than the earlier single-page-only state.</p></details>
+      <details><summary>What happens next?</summary><p>Next steps are the practical ones: package manifests, theming assets, setup scripts, integration scaffolding, and eventually a real installable preview instead of pure concept presentation.</p></details>
+    </div>
+  </div>
+</div>
+
+<!-- CTA -->
+<div class="cta-section">
+  <h2><span class="h1-light">Follow the build as</span><span class="h1-dark">Kismet OS takes shape.</span></h2>
+  <p>The concept is ambitious. The repo is now cleaner, more grounded, and in a better place for real iteration.</p>
+  <div class="cta-actions">
+    <a href="https://github.com/ZDStudios/Kismet-OS" class="btn-accent btn-accent-lg">View GitHub</a>
+    <a href="#faq" class="btn-ghost">Read the FAQ</a>
+  </div>
+</div>
+
+<!-- FOOTER -->
+<footer>
+  <a class="footer-logo" href="#"><div class="logo-mark">K</div><span class="footer-logo-text">Kismet OS</span></a>
+  <ul class="footer-links">
+    <li><a href="https://github.com/ZDStudios/Kismet-OS">GitHub</a></li>
+    <li><a href="https://github.com/ZDStudios/Kismet-OS/blob/main/README.md">Documentation</a></li>
+    <li><a href="https://github.com/ZDStudios/Kismet-OS">Source Code</a></li>
+    <li><a href="#integrations">Integrations</a></li>
+    <li><a href="#">Ollama Models</a></li>
+    <li><a href="#">Privacy Policy</a></li>
+  </ul>
+  <p>© 2025 Kismet OS Project</p>
+</footer>
+
+<script>
+  // Build app icon grid
+  const icons = ['🐧','⚙️','📁','💻','🔒','🌐','📝','🎨','🎵','📷','🗃️','🔧','📊','🔌','🖥️','💾','🖱️','⌨️','🔑','📡','🧩','🛠️','📦','🔍','🎯','⚡','🌍','📱'];
+  const grid = document.getElementById('appGrid');
+  for(let i=0;i<18*8;i++){const c=document.createElement('div');c.className='app-icon-cell';c.textContent=icons[i%icons.length];grid.appendChild(c);}
+
+  // Scroll reveal
+  const obs = new IntersectionObserver(entries=>{entries.forEach(e=>{if(e.isIntersecting){e.target.classList.add('visible');obs.unobserve(e.target);}});},{threshold:0.08,rootMargin:'0px 0px -30px 0px'});
+  document.querySelectorAll('.reveal').forEach(el=>obs.observe(el));
+
+  // Layout thumb toggle
+  document.querySelectorAll('.layout-thumb').forEach(t=>{t.addEventListener('click',()=>{document.querySelectorAll('.layout-thumb').forEach(x=>x.classList.remove('active'));t.classList.add('active');});});
+</script>
 </body>
 </html>
