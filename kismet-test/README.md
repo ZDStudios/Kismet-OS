@@ -6,11 +6,25 @@ This directory is for fast visual and UX testing of Kismet OS ideas without wait
 Use a lightweight Linux desktop container with VNC/web access to:
 - inspect wallpapers and theme direction
 - prototype shell and desktop defaults
-- test onboarding/welcome flow ideas
+- test onboarding and first-boot wizard ideas
 - sanity check Kismet branding decisions
+- smoke-test staged config files before another heavy ISO attempt
 
 ## Compose file
 - `docker-compose.vnc.yml`
+
+## Build and run
+
+```bash
+cd kismet-test
+docker compose -f docker-compose.vnc.yml up --build -d
+```
+
+The preview container now:
+- mounts the repo at `/workspace`
+- copies Kismet skel defaults into `/root`
+- installs `kismet-firstboot-wizard` into the container for quick UX testing
+- exposes a simple health check for the web desktop
 
 ## Access targets
 - Web VNC: http://localhost:6080

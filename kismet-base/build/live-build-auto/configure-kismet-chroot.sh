@@ -2,6 +2,10 @@
 set -euo pipefail
 
 export DEBIAN_FRONTEND=noninteractive
+LOG_FILE=/var/log/kismet-chroot-setup.log
+exec > >(tee -a "$LOG_FILE") 2>&1
+
+echo "==> Kismet chroot setup started at $(date -Is)"
 
 apt-get update
 apt-get install -y \
@@ -58,5 +62,9 @@ else
   echo "Claude Code package lookup failed during chroot build, leaving install to first boot" >&2
 fi
 
+mkdir -p /etc/skel/.kismet
+printf '%s\n' "$LOG_FILE" > /etc/skel/.kismet/chroot-log-path
+
+echo "==> Kismet chroot setup completed at $(date -Is)"
 apt-get clean
 rm -rf /var/lib/apt/lists/*
