@@ -8,6 +8,7 @@ cd "$ROOT_DIR"
 docker build -f kismet-build/Dockerfile.ubuntu-build -t kismet-ubuntu-build .
 
 docker run --rm -it \
+  --privileged \
   -v "$ROOT_DIR":/workspace \
   -w /workspace \
   kismet-ubuntu-build \

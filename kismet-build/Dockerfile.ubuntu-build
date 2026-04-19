@@ -13,6 +13,16 @@ RUN apt-get update && apt-get install -y \
     xz-utils \
     sudo \
     git \
+    live-build \
+    debootstrap \
+    dosfstools \
+    mtools \
+    grub-pc-bin \
+    grub-efi-amd64-bin \
+    isolinux \
+    syslinux-common \
+    memtest86+ \
+    apt-utils \
     && rm -rf /var/lib/apt/lists/*
 
 WORKDIR /workspace
