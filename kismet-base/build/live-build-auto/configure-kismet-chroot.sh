@@ -10,18 +10,21 @@ apt-get install -y \
   curl wget git vim neovim htop unzip zip tmux zsh openssh-client openssh-server flatpak \
   ca-certificates software-properties-common apt-transport-https \
   build-essential cmake gdb python3 python3-pip python3-venv python3-fastapi python3-uvicorn python3-watchdog python3-requests python3-pydantic \
-  nodejs npm ripgrep fd-find jq gh \
-  ollama
+  nodejs npm ripgrep fd-find jq gh
+
+if ! command -v docker >/dev/null 2>&1; then
+  curl -fsSL https://get.docker.com | sh || true
+fi
+
+if ! command -v ollama >/dev/null 2>&1; then
+  curl -fsSL https://ollama.com/install.sh | sh || true
+fi
 
 systemctl enable sddm || true
 systemctl enable ollama || true
 systemctl enable kismet-agent || true
 systemctl enable kismet-ollama-loader || true
 systemctl enable kismet-firstboot || true
-
-if ! command -v docker >/dev/null 2>&1; then
-  curl -fsSL https://get.docker.com | sh || true
-fi
 
 mkdir -p /etc/openclaw/config.d
 cat > /etc/openclaw/ollama.env <<'EOF'

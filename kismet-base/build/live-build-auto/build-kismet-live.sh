@@ -78,7 +78,6 @@ ripgrep
 fd-find
 jq
 gh
-ollama
 EOF
 
 cp -a "$ROOT_DIR/kismet-base/config/." "$OVERLAY_DIR/"
