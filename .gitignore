@@ -22,3 +22,6 @@ kismet-build/stage-rootfs/
 # Local workspace scratch
 OS/build/
 OS/assets/generated/
+
+__pycache__/
+*.pyc

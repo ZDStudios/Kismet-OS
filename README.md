@@ -15,11 +15,18 @@ What exists today:
 - a practical roadmap for the first real builds
 
 What does **not** exist yet:
-- a finished ISO
+- a polished, production-ready ISO release
 - a production-ready installer
 - a true kernel-resident autonomous agent
 
-That distinction matters.
+What now exists in-repo:
+- a real `kismet-agent` local daemon scaffold
+- a `kismet-ctl` CLI
+- an Ollama model preload service path
+- a first-boot setup wizard with hardware-aware model suggestions
+- a live-build based ISO configuration path for Ubuntu 24.04 + KDE Plasma
+
+That distinction still matters.
 
 ## Project direction
 

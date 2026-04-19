@@ -8,6 +8,16 @@ echo "- checking Docker group membership"
 echo "- checking Ollama service"
 echo "- preparing Kismet desktop shortcuts"
 
+if command -v systemctl >/dev/null 2>&1; then
+  sudo systemctl enable --now kismet-agent.service || true
+fi
+
+if command -v kdialog >/dev/null 2>&1 && [ -n "${DISPLAY:-}" ]; then
+  kdialog --title "Kismet OS" --yesno "Launch the Kismet first boot wizard now?" && /usr/local/bin/kismet-firstboot-wizard || true
+else
+  /usr/local/bin/kismet-firstboot-wizard || true
+fi
+
 action_file="$HOME/.config/kismet/firstboot-ran"
 mkdir -p "$(dirname "$action_file")"
 date > "$action_file"

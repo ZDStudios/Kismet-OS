@@ -1,0 +1,12 @@
+[Unit]
+Description=Kismet OS Ollama model preloader
+After=network-online.target ollama.service
+Wants=network-online.target
+
+[Service]
+Type=oneshot
+ExecStart=/usr/local/bin/kismet-ollama-loader
+RemainAfterExit=yes
+
+[Install]
+WantedBy=multi-user.target

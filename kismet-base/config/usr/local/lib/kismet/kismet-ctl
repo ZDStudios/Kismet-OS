@@ -1,0 +1,75 @@
+#!/usr/bin/env python3
+from __future__ import annotations
+
+import argparse
+import json
+import sys
+import urllib.error
+import urllib.request
+
+BASE_URL = "http://127.0.0.1:7731"
+
+
+def request(path: str, method: str = "GET", payload: dict | None = None) -> dict:
+    data = None
+    headers = {"Accept": "application/json"}
+    if payload is not None:
+        data = json.dumps(payload).encode("utf-8")
+        headers["Content-Type"] = "application/json"
+    req = urllib.request.Request(f"{BASE_URL}{path}", data=data, headers=headers, method=method)
+    with urllib.request.urlopen(req, timeout=10) as resp:
+        return json.loads(resp.read().decode("utf-8"))
+
+
+def print_json(data: dict) -> None:
+    print(json.dumps(data, indent=2))
+
+
+def main() -> int:
+    parser = argparse.ArgumentParser(description="Control Kismet OS services")
+    sub = parser.add_subparsers(dest="command", required=True)
+
+    sub.add_parser("status")
+    sub.add_parser("models")
+    habits = sub.add_parser("habit")
+    habits.add_argument("category")
+    habits.add_argument("action")
+    habits.add_argument("--detail")
+    habits.add_argument("--score", type=int, default=1)
+
+    config = sub.add_parser("config")
+    config.add_argument("--set", action="append", default=[], metavar="KEY=VALUE")
+
+    try:
+        args = parser.parse_args()
+        if args.command == "status":
+            print_json(request("/status"))
+        elif args.command == "models":
+            print_json(request("/recommendations/models"))
+        elif args.command == "habit":
+            print_json(request("/habits/events", method="POST", payload={
+                "category": args.category,
+                "action": args.action,
+                "detail": args.detail,
+                "score": args.score,
+                "metadata": {},
+            }))
+        elif args.command == "config":
+            payload: dict[str, object] = {}
+            for item in args.set:
+                if "=" not in item:
+                    raise SystemExit(f"Invalid config pair: {item}")
+                key, value = item.split("=", 1)
+                if value.lower() in {"true", "false"}:
+                    payload[key] = value.lower() == "true"
+                else:
+                    payload[key] = value
+            print_json(request("/config", method="POST", payload=payload))
+        return 0
+    except urllib.error.URLError as exc:
+        print(f"kismet-ctl: could not reach agent at {BASE_URL}: {exc}", file=sys.stderr)
+        return 1
+
+
+if __name__ == "__main__":
+    raise SystemExit(main())

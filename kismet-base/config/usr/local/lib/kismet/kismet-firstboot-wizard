@@ -1,0 +1,181 @@
+#!/usr/bin/env python3
+from __future__ import annotations
+
+import json
+import os
+import shutil
+import subprocess
+from pathlib import Path
+
+AGENT_URL = "http://127.0.0.1:7731/recommendations/models"
+CONFIG_DIR = Path.home() / ".kismet"
+CONFIG_DIR.mkdir(parents=True, exist_ok=True)
+USER_CONFIG = CONFIG_DIR / "firstboot.json"
+SYSTEM_MODEL_ENV = Path("/etc/kismet/models.env")
+OPENCLAW_OLLAMA_CONFIG = Path("/etc/openclaw/ollama.env")
+INSTALL_LOG = CONFIG_DIR / "firstboot-install.log"
+
+
+def fetch_recommendations() -> dict:
+    import urllib.request
+    with urllib.request.urlopen(AGENT_URL, timeout=10) as resp:
+        return json.loads(resp.read().decode("utf-8"))
+
+
+def ask_bool_cli(prompt: str, default: bool = True) -> bool:
+    suffix = "[Y/n]" if default else "[y/N]"
+    raw = input(f"{prompt} {suffix} ").strip().lower()
+    if not raw:
+        return default
+    return raw in {"y", "yes"}
+
+
+def detect_claude_code_pkg() -> str:
+    return os.environ.get("KISMET_CLAUDE_CODE_PACKAGE", "@anthropic-ai/claude-code")
+
+
+def write_file(path: Path, content: str, sudo: bool = False) -> None:
+    if sudo:
+        path.parent.mkdir(parents=True, exist_ok=True)
+        tmp = CONFIG_DIR / f".{path.name}.tmp"
+        tmp.write_text(content, encoding="utf-8")
+        subprocess.run(["sudo", "install", "-Dm644", str(tmp), str(path)], check=False)
+        tmp.unlink(missing_ok=True)
+    else:
+        path.parent.mkdir(parents=True, exist_ok=True)
+        path.write_text(content, encoding="utf-8")
+
+
+def run_logged(label: str, command: list[str] | str, shell: bool = False) -> dict:
+    proc = subprocess.run(command, shell=shell, capture_output=True, text=True)
+    with INSTALL_LOG.open("a", encoding="utf-8") as handle:
+        handle.write(f"\n## {label}\n")
+        handle.write(f"command: {command}\n")
+        handle.write(f"exit: {proc.returncode}\n")
+        if proc.stdout:
+            handle.write("stdout:\n" + proc.stdout + "\n")
+        if proc.stderr:
+            handle.write("stderr:\n" + proc.stderr + "\n")
+    return {"ok": proc.returncode == 0, "code": proc.returncode, "stdout": proc.stdout, "stderr": proc.stderr}
+
+
+def gui_available() -> bool:
+    return bool(os.environ.get("DISPLAY")) and shutil.which("kdialog") is not None
+
+
+def kdialog_yesno(prompt: str, default: bool = True) -> bool:
+    args = ["kdialog", "--title", "Kismet OS", "--yes-label", "Yes", "--no-label", "No", "--yesno", prompt]
+    proc = subprocess.run(args, check=False)
+    if proc.returncode == 0:
+        return True
+    if proc.returncode == 1:
+        return False
+    return default
+
+
+def kdialog_input(prompt: str, default: str = "") -> str:
+    proc = subprocess.run(["kdialog", "--title", "Kismet OS", "--inputbox", prompt, default], capture_output=True, text=True, check=False)
+    if proc.returncode == 0:
+        return proc.stdout.strip()
+    return default
+
+
+def collect_answers(profile: dict, recommended: list[dict]) -> dict:
+    suggested_models = [item["name"] for item in recommended]
+    if gui_available():
+        summary = [
+            "Welcome to Kismet OS",
+            "",
+            f"Detected profile: {profile.get('tier', 'unknown')}",
+            f"CPU: {profile.get('cpu', 'unknown')}",
+            f"RAM: {profile.get('memory_gib', '?')} GiB",
+            "",
+            "Suggested Ollama models:",
+        ]
+        summary.extend([f"• {item['name']} - {item['reason']}" for item in recommended])
+        subprocess.run(["kdialog", "--title", "Kismet OS", "--msgbox", "\n".join(summary)], check=False)
+        raw_models = kdialog_input("Models to preload (space separated)", " ".join(suggested_models)).strip()
+        return {
+            "models": raw_models.split() if raw_models else suggested_models,
+            "install_ollama": kdialog_yesno("Install and enable Ollama?", True),
+            "install_openclaw": kdialog_yesno("Install OpenClaw?", True),
+            "install_claude_code": kdialog_yesno("Install Claude Code?", True),
+            "connect_openclaw_ollama": kdialog_yesno("Connect OpenClaw and Claude Code to local Ollama defaults?", True),
+        }
+
+    print("==> Welcome to Kismet OS")
+    print(f"Detected profile: {profile.get('tier', 'unknown')} | CPU: {profile.get('cpu', 'unknown')} | RAM: {profile.get('memory_gib', '?')} GiB")
+    print("Suggested Ollama models:")
+    for item in recommended:
+        print(f"  - {item['name']}: {item['reason']}")
+    raw_models = input("Models to preload (space-separated, blank for suggested): ").strip()
+    return {
+        "models": raw_models.split() if raw_models else suggested_models,
+        "install_ollama": ask_bool_cli("Install and enable Ollama?", True),
+        "install_openclaw": ask_bool_cli("Install OpenClaw?", True),
+        "install_claude_code": ask_bool_cli("Install Claude Code?", True),
+        "connect_openclaw_ollama": ask_bool_cli("Configure OpenClaw and Claude Code to use local Ollama by default where possible?", True),
+    }
+
+
+def main() -> int:
+    INSTALL_LOG.parent.mkdir(parents=True, exist_ok=True)
+    INSTALL_LOG.write_text("# Kismet first boot install log\n", encoding="utf-8")
+    try:
+        rec = fetch_recommendations()
+    except Exception as exc:
+        rec = {"profile": {"tier": "balanced"}, "recommended": []}
+        with INSTALL_LOG.open("a", encoding="utf-8") as handle:
+            handle.write(f"recommendation fetch failed: {exc}\n")
+
+    profile = rec.get("profile", {})
+    recommended = rec.get("recommended", [])
+    answers = collect_answers(profile, recommended)
+    models = answers["models"]
+
+    state = {
+        "profile": profile,
+        **answers,
+    }
+    write_file(USER_CONFIG, json.dumps(state, indent=2))
+
+    results: dict[str, dict] = {}
+
+    if answers["install_ollama"]:
+        results["ollama_enable"] = run_logged("enable ollama", ["sudo", "systemctl", "enable", "--now", "ollama.service"])
+        write_file(SYSTEM_MODEL_ENV, f"KISMET_OLLAMA_MODELS='{' '.join(models)}'\nKISMET_OLLAMA_KEEP_ALIVE='30m'\n", sudo=True)
+        results["ollama_loader_enable"] = run_logged("enable ollama loader", ["sudo", "systemctl", "enable", "kismet-ollama-loader.service"])
+        results["ollama_loader_start"] = run_logged("start ollama loader", ["sudo", "systemctl", "start", "kismet-ollama-loader.service"])
+
+    if answers["install_openclaw"]:
+        installer = shutil.which("openclaw")
+        if installer:
+            results["openclaw_present"] = {"ok": True, "code": 0, "stdout": "openclaw already present", "stderr": ""}
+        else:
+            results["openclaw_install"] = run_logged("install openclaw", ["bash", "-lc", "curl -fsSL https://openclaw.ai/install.sh | sh"])
+
+    if answers["install_claude_code"]:
+        pkg = detect_claude_code_pkg()
+        if shutil.which("claude"):
+            results["claude_code_present"] = {"ok": True, "code": 0, "stdout": "claude already present", "stderr": ""}
+        else:
+            results["claude_code_install"] = run_logged("install claude code", ["sudo", "npm", "install", "-g", pkg])
+
+    if answers["connect_openclaw_ollama"]:
+        write_file(OPENCLAW_OLLAMA_CONFIG, "OLLAMA_HOST=http://127.0.0.1:11434\nOPENCLAW_OLLAMA_ENABLED=true\n", sudo=True)
+
+    failed = [name for name, result in results.items() if not result.get("ok", False)]
+    message = "Kismet first boot setup complete." if not failed else f"Kismet first boot completed with some failed steps: {', '.join(failed)}"
+
+    if gui_available():
+        subprocess.run(["kdialog", "--title", "Kismet OS", "--msgbox", message + f"\n\nSelections saved to {USER_CONFIG}\nLog: {INSTALL_LOG}"], check=False)
+    else:
+        print(message)
+        print("Selections saved to", USER_CONFIG)
+        print("Log:", INSTALL_LOG)
+
+    return 0 if not failed else 1
+
+
+if __name__ == "__main__":
+    raise SystemExit(main())

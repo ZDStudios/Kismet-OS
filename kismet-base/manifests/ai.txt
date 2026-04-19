@@ -1,3 +1,9 @@
 # Installed via package or vendor script depending on target image
 ollama
-# openclaw installation to be layered separately
+python3-fastapi
+python3-uvicorn
+python3-watchdog
+python3-requests
+python3-pydantic
+npm
+# openclaw installation is layered via first-boot/bootstrap hooks
