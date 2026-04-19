@@ -1,7 +1,7 @@
 #!/usr/bin/env bash
 set -euo pipefail
 
-ROOT_DIR="$(cd "$(dirname "$0")/../.." && pwd)"
+ROOT_DIR="$(cd "$(dirname "$0")/../../.." && pwd)"
 BUILD_DIR="$ROOT_DIR/kismet-base/build/live-build-auto/work"
 CONFIG_DIR="$BUILD_DIR/config"
 OVERLAY_DIR="$CONFIG_DIR/includes.chroot"
@@ -11,6 +11,11 @@ AUTO_DIR="$CONFIG_DIR/auto"
 
 rm -rf "$BUILD_DIR"
 mkdir -p "$OVERLAY_DIR" "$HOOK_DIR" "$AUTO_DIR" "$(dirname "$PACKAGE_LIST")"
+mkdir -p \
+  "$OVERLAY_DIR/usr/share/plymouth/themes/kismet" \
+  "$OVERLAY_DIR/usr/share/backgrounds/kismet" \
+  "$OVERLAY_DIR/usr/share/sddm/themes/kismet" \
+  "$OVERLAY_DIR/usr/local/lib/kismet"
 
 cat > "$AUTO_DIR/config" <<'EOF'
 #!/bin/sh
