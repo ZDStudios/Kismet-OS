@@ -6,6 +6,7 @@ import os
 import shutil
 import subprocess
 from pathlib import Path
+from typing import Callable
 
 AGENT_URL = "http://127.0.0.1:7731/recommendations/models"
 CONFIG_DIR = Path.home() / ".kismet"
@@ -14,6 +15,7 @@ USER_CONFIG = CONFIG_DIR / "firstboot.json"
 SYSTEM_MODEL_ENV = Path("/etc/kismet/models.env")
 OPENCLAW_OLLAMA_CONFIG = Path("/etc/openclaw/ollama.env")
 INSTALL_LOG = CONFIG_DIR / "firstboot-install.log"
+OPENCLAW_TEMPLATE = Path("/etc/openclaw/config.d/20-kismet-local-ollama.json")
 
 
 def fetch_recommendations() -> dict:
@@ -80,27 +82,87 @@ def kdialog_input(prompt: str, default: str = "") -> str:
     return default
 
 
+def gui_menu(title: str, text: str, options: list[tuple[str, str]], default_tag: str) -> str:
+    cmd = ["kdialog", "--title", "Kismet OS", "--menu", text]
+    for tag, label in options:
+        cmd.extend([tag, label])
+    proc = subprocess.run(cmd, capture_output=True, text=True, check=False)
+    if proc.returncode == 0 and proc.stdout.strip():
+        return proc.stdout.strip()
+    return default_tag
+
+
+def gui_checklist(title: str, text: str, options: list[tuple[str, str, bool]]) -> list[str]:
+    cmd = ["kdialog", "--title", title, "--separate-output", "--checklist", text]
+    for tag, label, enabled in options:
+        cmd.extend([tag, label, "on" if enabled else "off"])
+    proc = subprocess.run(cmd, capture_output=True, text=True, check=False)
+    if proc.returncode == 0:
+        return [line.strip() for line in proc.stdout.splitlines() if line.strip()]
+    return [tag for tag, _, enabled in options if enabled]
+
+
 def collect_answers(profile: dict, recommended: list[dict]) -> dict:
     suggested_models = [item["name"] for item in recommended]
     if gui_available():
-        summary = [
-            "Welcome to Kismet OS",
-            "",
-            f"Detected profile: {profile.get('tier', 'unknown')}",
-            f"CPU: {profile.get('cpu', 'unknown')}",
-            f"RAM: {profile.get('memory_gib', '?')} GiB",
-            "",
-            "Suggested Ollama models:",
-        ]
-        summary.extend([f"• {item['name']} - {item['reason']}" for item in recommended])
-        subprocess.run(["kdialog", "--title", "Kismet OS", "--msgbox", "\n".join(summary)], check=False)
-        raw_models = kdialog_input("Models to preload (space separated)", " ".join(suggested_models)).strip()
+        subprocess.run([
+            "kdialog", "--title", "Kismet OS", "--msgbox",
+            "\n".join([
+                "Welcome to Kismet OS",
+                "",
+                "This setup wizard will configure your local AI stack and developer tooling.",
+                f"Detected profile: {profile.get('tier', 'unknown')}",
+                f"CPU: {profile.get('cpu', 'unknown')}",
+                f"RAM: {profile.get('memory_gib', '?')} GiB",
+            ])
+        ], check=False)
+
+        profile_choice = gui_menu(
+            "Kismet OS",
+            "Choose your preferred AI profile",
+            [
+                ("minimal", "Minimal, lowest resource usage"),
+                ("balanced", "Balanced, sensible defaults"),
+                ("builder", "Builder, stronger coding and assistant models"),
+                ("max", "Maximum local AI footprint"),
+            ],
+            "balanced",
+        )
+
+        defaults_by_profile = {
+            "minimal": ["llama3.2:1b", "qwen2.5-coder:1.5b"],
+            "balanced": suggested_models or ["llama3.2:3b", "qwen2.5-coder:3b", "nomic-embed-text"],
+            "builder": ["qwen2.5-coder:7b", "llama3.1:8b", "nomic-embed-text"],
+            "max": ["qwen2.5-coder:14b", "llama3.1:8b", "deepseek-r1:14b", "nomic-embed-text"],
+        }
+        model_defaults = defaults_by_profile.get(profile_choice, suggested_models)
+        choices = gui_checklist(
+            "Kismet OS",
+            "Select Ollama models to preload",
+            [(name, name, name in model_defaults) for name in [
+                "llama3.2:1b", "llama3.2:3b", "llama3.1:8b", "qwen2.5-coder:1.5b", "qwen2.5-coder:3b", "qwen2.5-coder:7b", "qwen2.5-coder:14b", "phi4-mini", "deepseek-r1:14b", "nomic-embed-text"
+            ]],
+        )
+        if not choices:
+            choices = model_defaults
+
+        tasks = set(gui_checklist(
+            "Kismet OS",
+            "Select setup actions",
+            [
+                ("ollama", "Install and enable Ollama", True),
+                ("openclaw", "Install OpenClaw", True),
+                ("claude", "Install Claude Code", True),
+                ("connect", "Connect OpenClaw and Claude Code to local Ollama defaults", True),
+            ],
+        ))
         return {
-            "models": raw_models.split() if raw_models else suggested_models,
-            "install_ollama": kdialog_yesno("Install and enable Ollama?", True),
-            "install_openclaw": kdialog_yesno("Install OpenClaw?", True),
-            "install_claude_code": kdialog_yesno("Install Claude Code?", True),
-            "connect_openclaw_ollama": kdialog_yesno("Connect OpenClaw and Claude Code to local Ollama defaults?", True),
+            "profile_mode": profile_choice,
+            "models": choices,
+            "install_ollama": "ollama" in tasks,
+            "install_openclaw": "openclaw" in tasks,
+            "install_claude_code": "claude" in tasks,
+            "connect_openclaw_ollama": "connect" in tasks,
         }
 
     print("==> Welcome to Kismet OS")
@@ -110,12 +172,35 @@ def collect_answers(profile: dict, recommended: list[dict]) -> dict:
         print(f"  - {item['name']}: {item['reason']}")
     raw_models = input("Models to preload (space-separated, blank for suggested): ").strip()
     return {
+        "profile_mode": "balanced",
         "models": raw_models.split() if raw_models else suggested_models,
         "install_ollama": ask_bool_cli("Install and enable Ollama?", True),
         "install_openclaw": ask_bool_cli("Install OpenClaw?", True),
         "install_claude_code": ask_bool_cli("Install Claude Code?", True),
         "connect_openclaw_ollama": ask_bool_cli("Configure OpenClaw and Claude Code to use local Ollama by default where possible?", True),
     }
+
+
+def render_openclaw_template(models: list[str]) -> str:
+    preferred = models[0] if models else "llama3.2:3b"
+    return json.dumps(
+        {
+            "kismet": {
+                "generated": True,
+                "ollama": {
+                    "baseUrl": "http://127.0.0.1:11434",
+                    "preferredModel": preferred,
+                    "embeddingModel": "nomic-embed-text" if "nomic-embed-text" in models else None,
+                    "fallbackModels": models[1:4],
+                },
+                "notes": [
+                    "Template generated by Kismet first boot wizard.",
+                    "Merge this with the host OpenClaw config according to the local deployment layout.",
+                ],
+            }
+        },
+        indent=2,
+    ) + "\n"
 
 
 def main() -> int:
@@ -163,6 +248,7 @@ def main() -> int:
 
     if answers["connect_openclaw_ollama"]:
         write_file(OPENCLAW_OLLAMA_CONFIG, "OLLAMA_HOST=http://127.0.0.1:11434\nOPENCLAW_OLLAMA_ENABLED=true\n", sudo=True)
+        write_file(OPENCLAW_TEMPLATE, render_openclaw_template(models), sudo=True)
 
     failed = [name for name, result in results.items() if not result.get("ok", False)]
     message = "Kismet first boot setup complete." if not failed else f"Kismet first boot completed with some failed steps: {', '.join(failed)}"
