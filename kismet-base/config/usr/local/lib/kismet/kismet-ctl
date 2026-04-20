@@ -1,72 +1,87 @@
 #!/usr/bin/env python3
+"""CLI for the Kismet preview agent."""
+
 from __future__ import annotations
 
 import argparse
 import json
 import sys
-import urllib.error
-import urllib.request
+from datetime import timedelta
+from urllib import error, request
 
 BASE_URL = "http://127.0.0.1:7731"
 
 
-def request(path: str, method: str = "GET", payload: dict | None = None) -> dict:
+def api_call(path: str, method: str = "GET", payload: dict | None = None):
     data = None
     headers = {"Accept": "application/json"}
     if payload is not None:
         data = json.dumps(payload).encode("utf-8")
         headers["Content-Type"] = "application/json"
-    req = urllib.request.Request(f"{BASE_URL}{path}", data=data, headers=headers, method=method)
-    with urllib.request.urlopen(req, timeout=10) as resp:
-        return json.loads(resp.read().decode("utf-8"))
+    req = request.Request(f"{BASE_URL}{path}", data=data, headers=headers, method=method)
+    with request.urlopen(req, timeout=10) as response:
+        return json.loads(response.read().decode("utf-8"))
 
 
-def print_json(data: dict) -> None:
-    print(json.dumps(data, indent=2))
+def cmd_status(_args):
+    status = api_call("/status")
+    hardware = api_call("/hardware")
+    uptime = timedelta(seconds=status.get("uptime_seconds", 0))
+    print(f"Kismet Agent {status.get('version', '?')} [{status.get('status', '?')}]")
+    print(f"Uptime: {uptime}")
+    print(f"Habits learned: {status.get('habits_learned', 0)}")
+    print(f"Tasks automated: {status.get('tasks_automated', 0)}")
+    cpu = hardware.get("cpu", {})
+    mem = hardware.get("memory", {})
+    print(f"CPU: {cpu.get('percent', 0)}% {cpu.get('model', '')}")
+    print(f"Memory: {mem.get('used_gb', 0)} / {mem.get('total_gb', 0)} GB")
+
+
+def cmd_hardware(_args):
+    print(json.dumps(api_call("/hardware"), indent=2))
+
+
+def cmd_habits(args):
+    path = f"/habits?limit={args.limit}" if args.verbose else "/habits/stats"
+    print(json.dumps(api_call(path), indent=2))
+
+
+def cmd_ollama(args):
+    if args.ollama_cmd == "list":
+        print(json.dumps(api_call("/ollama/models"), indent=2))
+    elif args.ollama_cmd == "pull":
+        print(json.dumps(api_call("/ollama/pull", method="POST", payload={"model": args.model}), indent=2))
+
+
+def cmd_scheduler(args):
+    if args.scheduler_cmd == "list":
+        print(json.dumps(api_call("/scheduler/tasks"), indent=2))
+    else:
+        print(json.dumps(api_call("/scheduler/run", method="POST", payload={"task": args.task}), indent=2))
 
 
 def main() -> int:
-    parser = argparse.ArgumentParser(description="Control Kismet OS services")
+    parser = argparse.ArgumentParser(description="Kismet preview CLI")
     sub = parser.add_subparsers(dest="command", required=True)
-
-    sub.add_parser("status")
-    sub.add_parser("models")
-    habits = sub.add_parser("habit")
-    habits.add_argument("category")
-    habits.add_argument("action")
-    habits.add_argument("--detail")
-    habits.add_argument("--score", type=int, default=1)
-
-    config = sub.add_parser("config")
-    config.add_argument("--set", action="append", default=[], metavar="KEY=VALUE")
-
+    sub.add_parser("status").set_defaults(func=cmd_status)
+    sub.add_parser("hardware").set_defaults(func=cmd_hardware)
+    habits = sub.add_parser("habits")
+    habits.add_argument("-v", "--verbose", action="store_true")
+    habits.add_argument("-n", "--limit", type=int, default=20)
+    habits.set_defaults(func=cmd_habits)
+    ollama = sub.add_parser("ollama")
+    ollama.add_argument("ollama_cmd", choices=["list", "pull"])
+    ollama.add_argument("model", nargs="?")
+    ollama.set_defaults(func=cmd_ollama)
+    scheduler = sub.add_parser("scheduler")
+    scheduler.add_argument("scheduler_cmd", choices=["list", "run"])
+    scheduler.add_argument("task", nargs="?")
+    scheduler.set_defaults(func=cmd_scheduler)
+    args = parser.parse_args()
     try:
-        args = parser.parse_args()
-        if args.command == "status":
-            print_json(request("/status"))
-        elif args.command == "models":
-            print_json(request("/recommendations/models"))
-        elif args.command == "habit":
-            print_json(request("/habits/events", method="POST", payload={
-                "category": args.category,
-                "action": args.action,
-                "detail": args.detail,
-                "score": args.score,
-                "metadata": {},
-            }))
-        elif args.command == "config":
-            payload: dict[str, object] = {}
-            for item in args.set:
-                if "=" not in item:
-                    raise SystemExit(f"Invalid config pair: {item}")
-                key, value = item.split("=", 1)
-                if value.lower() in {"true", "false"}:
-                    payload[key] = value.lower() == "true"
-                else:
-                    payload[key] = value
-            print_json(request("/config", method="POST", payload=payload))
+        args.func(args)
         return 0
-    except urllib.error.URLError as exc:
+    except error.URLError as exc:
         print(f"kismet-ctl: could not reach agent at {BASE_URL}: {exc}", file=sys.stderr)
         return 1
 

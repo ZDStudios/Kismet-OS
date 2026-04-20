@@ -13,8 +13,8 @@ apt-get install -y \
   kitty plymouth plymouth-themes \
   curl wget git vim neovim htop unzip zip tmux zsh openssh-client openssh-server flatpak \
   ca-certificates software-properties-common apt-transport-https \
-  build-essential cmake gdb python3 python3-pip python3-venv python3-fastapi python3-uvicorn python3-watchdog python3-requests python3-pydantic \
-  nodejs npm ripgrep fd-find jq gh
+  build-essential cmake gdb python3 python3-flask python3-psutil python3-requests python3-pip python3-venv python3-inotify python3-watchdog python3-pydantic \
+  nodejs npm ripgrep fd-find jq gh smartmontools lm-sensors
 
 if ! command -v docker >/dev/null 2>&1; then
   curl -fsSL https://get.docker.com | sh || true
@@ -28,6 +28,7 @@ systemctl enable sddm || true
 systemctl enable ollama || true
 systemctl enable kismet-agent || true
 systemctl enable kismet-ollama-loader || true
+systemctl enable kismet-ollama-bridge || true
 systemctl enable kismet-firstboot || true
 
 mkdir -p /etc/openclaw/config.d

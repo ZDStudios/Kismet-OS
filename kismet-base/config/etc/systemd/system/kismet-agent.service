@@ -1,14 +1,15 @@
 [Unit]
-Description=Kismet OS local system agent
-After=network-online.target
+Description=Kismet OS preview system agent
+After=network-online.target ollama.service kismet-ollama-loader.service
 Wants=network-online.target
 
 [Service]
 Type=simple
-ExecStart=/usr/bin/python3 /usr/local/lib/kismet/kismet_agent_runner.py
+ExecStart=/usr/bin/python3 /usr/local/lib/kismet/kismet_agent.py
 Restart=on-failure
 RestartSec=5
 Environment=PYTHONUNBUFFERED=1
+Environment=PYTHONPATH=/usr/local/lib/kismet
 
 [Install]
 WantedBy=multi-user.target
