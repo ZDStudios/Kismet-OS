@@ -42,13 +42,13 @@ lb config noauto \
   --archive-areas "main restricted universe multiverse" \
   --binary-images iso-hybrid \
   --debian-installer false \
-  --apt-indices false \
+  --apt-indices true \
   --bootappend-live "boot=live components quiet splash" \
   --iso-application "Kismet OS" \
   --iso-publisher "Kismet OS" \
   --iso-volume "KISMET_OS" \
   --syslinux-theme live-build \
-  --build-with-chroot false
+  --build-with-chroot true
 EOF
 chmod +x "$AUTO_DIR/config"
 
@@ -87,6 +87,7 @@ cd "$BUILD_DIR"
   echo "Workdir: $BUILD_DIR"
   echo "Log: $LOG_FILE"
   lb clean --purge || true
+  rm -rf cache/bootstrap cache/chroot cache/rootfs cache/binary || true
   cp -a "$CONFIG_DIR/." .
   ./auto/config
   lb build
