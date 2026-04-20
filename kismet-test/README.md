@@ -25,6 +25,16 @@ The preview container now:
 - copies Kismet skel defaults into `/root`
 - installs `kismet-firstboot-wizard` into the container for quick UX testing
 - exposes a simple health check for the web desktop
+- has a smoke-test entrypoint script at `smoke-preview-container.sh`
+
+## Smoke test
+
+```bash
+cd kismet-test
+./smoke-preview-container.sh
+```
+
+This boots the preview desktop, waits for the container to become healthy, checks the web desktop on port 6080, and verifies that `kismet-firstboot-wizard` is installed.
 
 ## Access targets
 - Web VNC: http://localhost:6080

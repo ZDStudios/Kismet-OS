@@ -6,6 +6,7 @@ RUN apt-get update && apt-get install -y \
     xorriso \
     libarchive-tools \
     squashfs-tools \
+    python3 \
     curl \
     wget \
     ca-certificates \

@@ -8,10 +8,13 @@ CONFIG_DIR="$BUILD_DIR/config"
 OVERLAY_DIR="$CONFIG_DIR/includes.chroot"
 HOOK_DIR="$CONFIG_DIR/hooks/live"
 PACKAGE_LIST="$CONFIG_DIR/package-lists/kismet.list.chroot"
+BINARY_PACKAGE_LIST="$CONFIG_DIR/package-lists/kismet-binary.list.binary"
 AUTO_DIR="$CONFIG_DIR/auto"
 LOG_DIR="$ROOT_DIR/kismet-base/build/live-build-auto/logs"
 PROFILE="${KISMET_PROFILE:-minimal}"
 KEEP_WORK="${KISMET_KEEP_WORK:-0}"
+UBUNTU_MIRROR="${KISMET_UBUNTU_MIRROR:-http://archive.ubuntu.com/ubuntu}"
+SECURITY_MIRROR="${KISMET_SECURITY_MIRROR:-http://security.ubuntu.com/ubuntu}"
 TIMESTAMP="$(date +%Y%m%d-%H%M%S)"
 LOG_FILE="$LOG_DIR/live-build-$PROFILE-$TIMESTAMP.log"
 
@@ -26,12 +29,16 @@ mkdir -p \
   "$OVERLAY_DIR/usr/share/sddm/themes/kismet" \
   "$OVERLAY_DIR/usr/local/lib/kismet"
 
-cat > "$AUTO_DIR/config" <<'EOF'
+cat > "$AUTO_DIR/config" <<EOF
 #!/bin/sh
 set -e
 lb config noauto \
   --mode ubuntu \
   --distribution noble \
+  --mirror-bootstrap "$UBUNTU_MIRROR" \
+  --mirror-chroot "$UBUNTU_MIRROR" \
+  --mirror-binary "$UBUNTU_MIRROR" \
+  --mirror-binary-security "$SECURITY_MIRROR" \
   --archive-areas "main restricted universe multiverse" \
   --binary-images iso-hybrid \
   --debian-installer false \
@@ -39,7 +46,9 @@ lb config noauto \
   --bootappend-live "boot=live components quiet splash" \
   --iso-application "Kismet OS" \
   --iso-publisher "Kismet OS" \
-  --iso-volume "KISMET_OS"
+  --iso-volume "KISMET_OS" \
+  --syslinux-theme live-build \
+  --build-with-chroot false
 EOF
 chmod +x "$AUTO_DIR/config"
 
@@ -67,6 +76,9 @@ cp -a "$ROOT_DIR/kismet-theme/wallpapers/." "$OVERLAY_DIR/usr/share/backgrounds/
 cp -a "$ROOT_DIR/kismet-theme/sddm/." "$OVERLAY_DIR/usr/share/sddm/themes/kismet/"
 cp -f "$ROOT_DIR/kismet-base/build/live-build-auto/configure-kismet-chroot.sh" "$HOOK_DIR/9999-kismet-setup.chroot"
 chmod +x "$HOOK_DIR/9999-kismet-setup.chroot"
+cat > "$BINARY_PACKAGE_LIST" <<'EOF'
+dctrl-tools
+EOF
 
 cd "$BUILD_DIR"
 {

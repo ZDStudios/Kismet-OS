@@ -10,5 +10,5 @@ This directory is the beginnings of the Kismet OS build pipeline.
 - `build-ubuntu-preview.sh` — runs the current preview build pipeline scaffold
 
 ## Current result
-Not a finished ISO yet.
-But now the project has a reproducible place where ISO/remaster work can accumulate instead of being rethought from scratch every session.
+The preview pipeline can now emit a rebuilt ISO artifact at `kismet-build/output/kismet-os-dev-preview.iso`.
+It is still an early preview path, but it now repacks the real Ubuntu live filesystem, refreshes key size metadata, and preserves the source ISO boot structure during rebuild.
