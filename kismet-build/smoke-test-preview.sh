@@ -63,8 +63,13 @@ pass "GDM is the default display manager"
 # Verify GDM auto-login for live user
 if [ -f "$EDIT_DIR/etc/gdm3/custom.conf" ]; then
   grep -q 'AutomaticLogin=live' "$EDIT_DIR/etc/gdm3/custom.conf" || fail "GDM auto-login for live user not configured"
-  grep -q 'disable-user-list' "$EDIT_DIR/etc/gdm3/custom.conf" || fail "GDM user list hiding not configured"
-  pass "GDM auto-login and user list hiding configured"
+  pass "GDM auto-login for live user configured"
+fi
+
+# Verify GDM user list hiding (via dconf database)
+if [ -f "$EDIT_DIR/etc/dconf/db/gdm.d/00-kismet-greeter" ]; then
+  grep -q 'disable-user-list=true' "$EDIT_DIR/etc/dconf/db/gdm.d/00-kismet-greeter" || fail "GDM disable-user-list not set in dconf"
+  pass "GDM user list hiding configured via dconf"
 fi
 
 # Verify kismet assets

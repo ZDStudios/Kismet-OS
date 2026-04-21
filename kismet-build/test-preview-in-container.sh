@@ -39,8 +39,9 @@ run_inner() {
 
 case "$MODE" in
   build)
-    echo "==> Full build: branding + live-user + repack + smoke"
-    run_inner 'bash ./kismet-build/force-kismet-branding.sh
+    echo "==> Full build: layout + branding + live-user + repack + smoke + branding-scan"
+    run_inner 'bash ./kismet-build/make-dev-preview-layout.sh
+               bash ./kismet-build/force-kismet-branding.sh
                bash ./kismet-build/setup-live-user.sh
                bash ./kismet-build/repack-live-rootfs.sh
                bash ./kismet-build/rebuild-iso.sh
@@ -63,11 +64,13 @@ case "$MODE" in
 
   qemu-boot|boot)
     echo "==> Full build + QEMU boot test"
-    run_inner 'bash ./kismet-build/force-kismet-branding.sh
+    run_inner 'bash ./kismet-build/make-dev-preview-layout.sh
+               bash ./kismet-build/force-kismet-branding.sh
                bash ./kismet-build/setup-live-user.sh
                bash ./kismet-build/repack-live-rootfs.sh
                bash ./kismet-build/rebuild-iso.sh
                bash ./kismet-build/smoke-test-preview.sh
+               python3 ./kismet-build/scan-preview-branding.py
                bash ./kismet-build/boot-preview-in-qemu.sh'
     echo "==> QEMU boot test completed"
     ;;
