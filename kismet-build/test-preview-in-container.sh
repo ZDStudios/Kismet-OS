@@ -12,11 +12,17 @@ case "$MODE" in
   smoke)
     INNER='./kismet-build/smoke-test-preview.sh'
     ;;
+  branding-scan)
+    INNER='./kismet-build/scan-preview-branding.py'
+    ;;
   build-and-smoke)
     INNER='./kismet-build/build-ubuntu-preview.sh && ./kismet-build/smoke-test-preview.sh'
     ;;
+  build-smoke-scan)
+    INNER='./kismet-build/build-ubuntu-preview.sh && ./kismet-build/smoke-test-preview.sh && ./kismet-build/scan-preview-branding.py'
+    ;;
   *)
-    echo "Usage: $0 [smoke|build-and-smoke]" >&2
+    echo "Usage: $0 [smoke|branding-scan|build-and-smoke|build-smoke-scan]" >&2
     exit 1
     ;;
 esac

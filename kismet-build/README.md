@@ -10,7 +10,9 @@ This directory is the beginnings of the Kismet OS build pipeline.
 - `build-ubuntu-preview.sh` — runs the current preview build pipeline scaffold
 - `run-pipeline-in-container.sh` — runs the preview pipeline in the Ubuntu Docker build image
 - `smoke-test-preview.sh` — validates the rebuilt ISO, squashfs metadata, Kismet branding, and patched installer surfaces
-- `test-preview-in-container.sh` — runs smoke tests, or a full build plus smoke tests, inside the Ubuntu Docker build image
+- `scan-preview-branding.py` — scans the editable rootfs for non-whitelisted Ubuntu branding regressions
+- `test-preview-in-container.sh` — runs smoke tests, branding scans, or a full build plus validation inside the Ubuntu Docker build image
+- `boot-preview-in-qemu.sh` — host-side QEMU smoke boot helper that can capture a boot screenshot and serial log
 
 ## Current result
 The preview pipeline can now emit a rebuilt ISO artifact at `kismet-build/output/kismet-os-dev-preview.iso`.
