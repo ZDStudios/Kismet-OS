@@ -1,21 +1,33 @@
 [General]
 ColorScheme=BreezeDark
-Name=Kismet Zorin
+Name=Kismet Night Glass
+shadeSortColumn=true
 
 [KDE]
 SingleClick=false
 LookAndFeelPackage=org.kde.breezedark.desktop
+widgetStyle=Breeze
 
 [Colors:Window]
-BackgroundNormal=24,28,37
-ForegroundNormal=235,239,244
+BackgroundNormal=17,22,30
+ForegroundNormal=237,242,248
+DecorationFocus=28,180,255
+DecorationHover=98,210,255
+
+[Colors:View]
+BackgroundNormal=14,19,26
+ForegroundNormal=233,240,248
+
+[Colors:Button]
+BackgroundNormal=27,34,45
+ForegroundNormal=237,242,248
 
 [Colors:Selection]
-BackgroundNormal=28,120,224
+BackgroundNormal=28,156,224
 ForegroundNormal=255,255,255
 
 [WM]
-activeBackground=28,120,224
-activeForeground=255,255,255
-inactiveBackground=32,38,50
-inactiveForeground=220,228,242
+activeBackground=18,24,33
+activeForeground=245,248,252
+inactiveBackground=28,34,45
+inactiveForeground=198,208,224

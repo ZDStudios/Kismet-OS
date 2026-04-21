@@ -94,7 +94,7 @@ def collect_answers(profile: dict, recommended: list[dict]) -> dict:
             "\n".join([
                 "Welcome to Kismet OS",
                 "",
-                "This wizard configures the Zorin-inspired desktop, the local AI stack, and Windows app compatibility.",
+                "This wizard configures the polished Kismet desktop, the local AI suite, and Windows app compatibility.",
                 f"Detected profile: {profile.get('tier', 'unknown')}",
                 f"CPU: {profile.get('cpu', 'unknown')}",
                 f"RAM: {profile.get('memory_gib', '?')} GiB",
@@ -118,6 +118,7 @@ def collect_answers(profile: dict, recommended: list[dict]) -> dict:
             "Choose your desktop layout",
             [
                 ("zorin-inspired-plasma", "Zorin-inspired Plasma, recommended"),
+                ("zorin-mac-polish", "Zorin plus macOS-style polish"),
                 ("classic-plasma", "Classic Plasma"),
             ],
             "zorin-inspired-plasma",
@@ -156,6 +157,7 @@ def collect_answers(profile: dict, recommended: list[dict]) -> dict:
                 ("openclaw", "Install OpenClaw", True),
                 ("claude", "Install Claude Code", True),
                 ("windows", "Enable Windows app compatibility helpers", True),
+                ("agent-hub", "Enable the Kismet AI Center and unified launchers", True),
             ],
         ))
         preferred_provider = gui_menu(
@@ -174,6 +176,7 @@ def collect_answers(profile: dict, recommended: list[dict]) -> dict:
             "install_openclaw": "openclaw" in tasks,
             "install_claude_code": "claude" in tasks,
             "enable_windows_compat": "windows" in tasks,
+            "install_agent_hub": "agent-hub" in tasks,
             "connect_openclaw_ollama": True,
         }
 
@@ -196,6 +199,7 @@ def collect_answers(profile: dict, recommended: list[dict]) -> dict:
         "install_openclaw": ask_bool_cli("Install OpenClaw?", True),
         "install_claude_code": ask_bool_cli("Install Claude Code?", True),
         "enable_windows_compat": ask_bool_cli("Enable Windows app compatibility helpers?", True),
+        "install_agent_hub": True,
         "connect_openclaw_ollama": True,
     }
 
@@ -233,10 +237,17 @@ def render_ai_stack(answers: dict) -> str:
                 "openclaw": "OpenClaw",
                 "ollama": "Ollama",
             }.get(name, name.title()),
+            "installHint": {
+                "hermes": "Connect the preferred Hermes package source, then install it from Kismet AI Center or first boot.",
+                "opencode": "Connect the preferred OpenCode package source, then install it from Kismet AI Center or first boot.",
+                "openclaw": "Install OpenClaw through the Kismet first boot wizard.",
+                "ollama": "Install Ollama through the Kismet first boot wizard.",
+            }.get(name, "Install from the Kismet AI Center."),
         }
         for name in ["hermes", "opencode", "openclaw", "ollama"]
     }
     payload = {
+        "identity": "Kismet AI Suite",
         "kernelAware": True,
         "desktopMode": answers.get("desktop_mode", "zorin-inspired-plasma"),
         "modelStrategy": "auto-recommend",
@@ -245,7 +256,7 @@ def render_ai_stack(answers: dict) -> str:
         "providers": providers,
         "windowsCompatibility": {
             "enabled": answers.get("enable_windows_compat", True),
-            "preferredRuntimes": ["lutris", "wine", "winetricks"],
+            "preferredRuntimes": ["lutris", "wine64", "wine", "winetricks"],
         },
     }
     return json.dumps(payload, indent=2) + "\n"

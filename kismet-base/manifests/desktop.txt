@@ -13,3 +13,5 @@ plymouth-themes
 wine64
 winetricks
 lutris
+winbind
+fonts-wine

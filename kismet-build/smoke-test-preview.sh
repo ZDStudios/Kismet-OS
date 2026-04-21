@@ -7,8 +7,11 @@ EXTRACT_DIR="$WORK_DIR/ubuntu-iso"
 EDIT_DIR="$WORK_DIR/live-rootfs-edit"
 OUTPUT_ISO="$ROOT_DIR/kismet-build/output/kismet-os-dev-preview.iso"
 BASE_ISO="$ROOT_DIR/kismet-build/cache/ubuntu-24.04-desktop-amd64.iso"
-TARGET_FS="$($ROOT_DIR/kismet-build/detect-livefs-path.sh "$EXTRACT_DIR")"
+TARGET_FS="$("$ROOT_DIR/kismet-build/detect-livefs-path.sh" "$EXTRACT_DIR")"
 SNAP_WORK="$WORK_DIR/test-gnome-snap"
+
+command -v xorriso >/dev/null 2>&1 || fail "xorriso is required for host-side smoke tests. Run through test-preview-in-container.sh or install xorriso on the host."
+command -v unsquashfs >/dev/null 2>&1 || fail "unsquashfs is required for host-side smoke tests. Run through test-preview-in-container.sh or install squashfs-tools on the host."
 
 fail() {
   echo "[FAIL] $*" >&2

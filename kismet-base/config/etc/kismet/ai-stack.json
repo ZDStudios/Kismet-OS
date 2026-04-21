@@ -1,4 +1,5 @@
 {
+  "identity": "Kismet AI Suite",
   "kernelAware": true,
   "desktopMode": "zorin-inspired-plasma",
   "modelStrategy": "auto-recommend",
@@ -9,30 +10,34 @@
       "enabled": true,
       "command": "hermes",
       "label": "Hermes AI Agent",
-      "role": "primary-agent"
+      "role": "primary-agent",
+      "installHint": "Connect the preferred Hermes package source, then install it from Kismet AI Center or first boot."
     },
     "opencode": {
       "enabled": true,
       "command": "opencode",
       "label": "OpenCode",
-      "role": "coding-agent"
+      "role": "coding-agent",
+      "installHint": "Connect the preferred OpenCode package source, then install it from Kismet AI Center or first boot."
     },
     "openclaw": {
       "enabled": true,
       "command": "openclaw",
       "label": "OpenClaw",
-      "role": "system-agent"
+      "role": "system-agent",
+      "installHint": "Install OpenClaw through the Kismet first boot wizard."
     },
     "ollama": {
       "enabled": true,
       "command": "ollama",
       "label": "Ollama",
-      "role": "local-model-runtime"
+      "role": "local-model-runtime",
+      "installHint": "Install Ollama through the Kismet first boot wizard."
     }
   },
   "windowsCompatibility": {
     "enabled": true,
-    "preferredRuntimes": ["lutris", "wine", "winetricks"],
+    "preferredRuntimes": ["lutris", "wine64", "wine", "winetricks"],
     "notes": [
       "Kismet OS uses user-space compatibility layers for .exe files.",
       "This is practical Windows app support, not magical native execution."

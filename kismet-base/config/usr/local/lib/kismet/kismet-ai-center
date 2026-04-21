@@ -4,10 +4,12 @@ from __future__ import annotations
 import json
 import shutil
 import subprocess
+import urllib.request
 from pathlib import Path
 
 CONFIG_PATH = Path('/etc/kismet/ai-stack.json')
 USER_STATE = Path.home() / '.kismet' / 'ai-stack-state.json'
+RECOMMEND_URL = 'http://127.0.0.1:7731/recommendations/models'
 
 
 def load_config() -> dict:
@@ -17,42 +19,177 @@ def load_config() -> dict:
         user = json.loads(USER_STATE.read_text(encoding='utf-8'))
         for name, values in user.get('providers', {}).items():
             data.setdefault('providers', {}).setdefault(name, {}).update(values)
+        for key in ('preferredProvider', 'desktopMode', 'modelStrategy'):
+            if key in user:
+                data[key] = user[key]
     return data
+
+
+def save_user_state(data: dict) -> None:
+    payload = {
+        'preferredProvider': data.get('preferredProvider', 'hermes'),
+        'desktopMode': data.get('desktopMode', 'zorin-inspired-plasma'),
+        'modelStrategy': data.get('modelStrategy', 'auto-recommend'),
+        'providers': {
+            name: {'enabled': provider.get('enabled', False)}
+            for name, provider in data.get('providers', {}).items()
+        },
+    }
+    USER_STATE.write_text(json.dumps(payload, indent=2) + '\n', encoding='utf-8')
 
 
 def detected(command: str) -> str:
     return shutil.which(command) or ''
 
 
+def fetch_recommendations() -> dict:
+    with urllib.request.urlopen(RECOMMEND_URL, timeout=5) as resp:
+        return json.loads(resp.read().decode('utf-8'))
+
+
+def provider_line(name: str, provider: dict) -> str:
+    cmd = provider.get('command', name)
+    path = detected(cmd)
+    state = 'enabled' if provider.get('enabled', False) else 'disabled'
+    presence = f'present at {path}' if path else 'not installed yet'
+    return f"- {provider.get('label', name)}: {state}, {presence}"
+
+
 def status_lines(data: dict) -> list[str]:
     lines = [
-        'Kismet AI Stack',
+        data.get('identity', 'Kismet AI Suite'),
         '',
-        f"Kernel-aware mode: {'on' if data.get('kernelAware', True) else 'off'}",
+        f"Desktop mode: {data.get('desktopMode', 'zorin-inspired-plasma')}",
         f"Preferred provider: {data.get('preferredProvider', 'hermes')}",
         f"Model strategy: {data.get('modelStrategy', 'auto-recommend')}",
         '',
         'Providers:'
     ]
     for name in data.get('providerPriority', []):
-        provider = data.get('providers', {}).get(name, {})
-        cmd = provider.get('command', name)
-        path = detected(cmd)
-        state = 'enabled' if provider.get('enabled', False) else 'disabled'
-        presence = f'present at {path}' if path else 'not installed yet'
-        lines.append(f"- {provider.get('label', name)}: {state}, {presence}")
+        lines.append(provider_line(name, data.get('providers', {}).get(name, {})))
     wc = data.get('windowsCompatibility', {})
-    lines.extend(['', f"Windows app support: {'on' if wc.get('enabled', False) else 'off'}", f"Runtimes: {', '.join(wc.get('preferredRuntimes', []))}"])
+    lines.extend([
+        '',
+        f"Windows app support: {'on' if wc.get('enabled', False) else 'off'}",
+        f"Runtimes: {', '.join(wc.get('preferredRuntimes', []))}",
+    ])
     return lines
+
+
+def recommendation_lines() -> list[str]:
+    try:
+        rec = fetch_recommendations()
+    except Exception as exc:
+        return ['Model recommendations are unavailable right now.', str(exc)]
+    lines = ['Recommended local models', '']
+    profile = rec.get('profile', {})
+    lines.append(f"Detected tier: {profile.get('tier', 'unknown')}")
+    lines.append(f"CPU: {profile.get('cpu', 'unknown')}")
+    lines.append(f"RAM: {profile.get('memory_gib', '?')} GiB")
+    if profile.get('gpus'):
+        lines.append(f"GPU drivers: {', '.join(profile['gpus'])}")
+    lines.append('')
+    for item in rec.get('recommended', []):
+        lines.append(f"- {item['name']}: {item['reason']}")
+    return lines
+
+
+def launch_provider(data: dict, name: str) -> str:
+    provider = data.get('providers', {}).get(name, {})
+    command = provider.get('command', name)
+    path = detected(command)
+    if not provider.get('enabled', False):
+        return f"{provider.get('label', name)} is disabled. Enable it in Kismet AI Center first."
+    if not path:
+        hint = provider.get('installHint', 'No packaged install source is configured yet.')
+        return f"{provider.get('label', name)} is not installed yet. {hint}"
+    subprocess.Popen([path])
+    return f"Launching {provider.get('label', name)}."
+
+
+def toggle_provider(data: dict, name: str) -> str:
+    provider = data.setdefault('providers', {}).setdefault(name, {'enabled': False})
+    provider['enabled'] = not provider.get('enabled', False)
+    save_user_state(data)
+    return f"{provider.get('label', name.title())} is now {'enabled' if provider['enabled'] else 'disabled'}."
+
+
+def set_preferred(data: dict, name: str) -> str:
+    data['preferredProvider'] = name
+    save_user_state(data)
+    return f"Preferred provider set to {name}."
+
+
+def gui_available() -> bool:
+    return bool(shutil.which('kdialog')) and subprocess.run(['bash', '-lc', 'test -n "$DISPLAY"'], check=False).returncode == 0
+
+
+def gui_menu(title: str, text: str, options: list[tuple[str, str]], default_tag: str) -> str:
+    cmd = ['kdialog', '--title', title, '--menu', text]
+    for tag, label in options:
+        cmd.extend([tag, label])
+    proc = subprocess.run(cmd, capture_output=True, text=True, check=False)
+    if proc.returncode == 0 and proc.stdout.strip():
+        return proc.stdout.strip()
+    return default_tag
+
+
+def show_text(title: str, lines: list[str]) -> None:
+    text = '\n'.join(lines)
+    if gui_available():
+        subprocess.run(['kdialog', '--title', title, '--msgbox', text], check=False)
+    else:
+        print(text)
+
+
+def gui_main(data: dict) -> int:
+    while True:
+        choice = gui_menu(
+            'Kismet AI Center',
+            'Choose an action',
+            [
+                ('status', 'Show Kismet AI suite status'),
+                ('recommend', 'Show model recommendations for this machine'),
+                ('launch-preferred', 'Launch the preferred provider'),
+                ('launch-hermes', 'Launch Hermes'),
+                ('launch-opencode', 'Launch OpenCode'),
+                ('toggle-hermes', 'Toggle Hermes on or off'),
+                ('toggle-opencode', 'Toggle OpenCode on or off'),
+                ('set-hermes', 'Make Hermes the preferred provider'),
+                ('set-opencode', 'Make OpenCode the preferred provider'),
+                ('quit', 'Close'),
+            ],
+            'quit',
+        )
+        if choice == 'quit':
+            return 0
+        if choice == 'status':
+            show_text('Kismet AI Center', status_lines(data))
+        elif choice == 'recommend':
+            show_text('Kismet Model Recommendations', recommendation_lines())
+        elif choice == 'launch-preferred':
+            show_text('Kismet AI Center', [launch_provider(data, data.get('preferredProvider', 'hermes'))])
+        elif choice == 'launch-hermes':
+            show_text('Kismet AI Center', [launch_provider(data, 'hermes')])
+        elif choice == 'launch-opencode':
+            show_text('Kismet AI Center', [launch_provider(data, 'opencode')])
+        elif choice == 'toggle-hermes':
+            show_text('Kismet AI Center', [toggle_provider(data, 'hermes')])
+        elif choice == 'toggle-opencode':
+            show_text('Kismet AI Center', [toggle_provider(data, 'opencode')])
+        elif choice == 'set-hermes':
+            show_text('Kismet AI Center', [set_preferred(data, 'hermes')])
+        elif choice == 'set-opencode':
+            show_text('Kismet AI Center', [set_preferred(data, 'opencode')])
 
 
 def main() -> int:
     data = load_config()
-    text = '\n'.join(status_lines(data))
-    if shutil.which('kdialog') and subprocess.run(['bash', '-lc', 'test -n "$DISPLAY"'], check=False).returncode == 0:
-        subprocess.run(['kdialog', '--title', 'Kismet AI Center', '--msgbox', text], check=False)
-    else:
-        print(text)
+    if gui_available():
+        return gui_main(data)
+    print('\n'.join(status_lines(data)))
+    print()
+    print('\n'.join(recommendation_lines()))
     return 0
 
 

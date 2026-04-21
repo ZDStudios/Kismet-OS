@@ -2,9 +2,10 @@
 Type=Application
 Version=1.0
 Name=Run Windows App
-Comment=Launch a .exe with the configured Kismet compatibility layer
-Exec=konsole -e /usr/local/bin/kismet-run-exe
+Comment=Launch a .exe or .msi with the Kismet compatibility layer
+Exec=/usr/local/bin/kismet-run-exe %f
 Icon=wine
 Terminal=false
 Categories=System;Utility;
 StartupNotify=true
+MimeType=application/x-ms-dos-executable;application/x-msi;application/x-ms-shortcut;

@@ -1,18 +1,104 @@
 #!/usr/bin/env bash
 set -euo pipefail
 
-if [ $# -lt 1 ]; then
-  echo "Usage: kismet-run-exe /path/to/app.exe [args...]" >&2
+show_message() {
+  local level="$1"
+  local text="$2"
+  if command -v kdialog >/dev/null 2>&1 && [ -n "${DISPLAY:-}" ]; then
+    case "$level" in
+      error) kdialog --title "Kismet OS" --error "$text" ;;
+      info) kdialog --title "Kismet OS" --msgbox "$text" ;;
+      *) kdialog --title "Kismet OS" --sorry "$text" ;;
+    esac
+  else
+    printf '%s\n' "$text" >&2
+  fi
+}
+
+pick_target() {
+  if command -v kdialog >/dev/null 2>&1 && [ -n "${DISPLAY:-}" ]; then
+    kdialog --title "Kismet OS" --getopenfilename "$HOME" '*.exe *.msi *.bat *.cmd|Windows apps'
+  fi
+}
+
+ensure_prefix() {
+  export WINEPREFIX="${WINEPREFIX:-$HOME/.local/share/kismet/wineprefix}"
+  export WINEDEBUG="${WINEDEBUG:--all}"
+  mkdir -p "$WINEPREFIX" "$HOME/.cache/kismet"
+
+  local stamp="$WINEPREFIX/.kismet-prefix-ready"
+  if command -v wineboot >/dev/null 2>&1 && [ ! -f "$stamp" ]; then
+    if wineboot -u >/dev/null 2>&1; then
+      touch "$stamp"
+    fi
+  fi
+
+  if command -v winetricks >/dev/null 2>&1; then
+    local corefonts_stamp="$HOME/.cache/kismet/winetricks-corefonts.done"
+    if [ ! -f "$corefonts_stamp" ]; then
+      winetricks -q corefonts >/dev/null 2>&1 || true
+      touch "$corefonts_stamp"
+    fi
+  fi
+}
+
+launch_with_runtime() {
+  local runtime="$1"
+  local target="$2"
+  shift 2
+  case "$EXT" in
+    msi)
+      exec "$runtime" msiexec /i "$target" "$@"
+      ;;
+    bat|cmd)
+      exec "$runtime" cmd /c "$target" "$@"
+      ;;
+    *)
+      exec "$runtime" start /unix "$target" "$@"
+      ;;
+  esac
+}
+
+TARGET="${1:-}"
+if [ -z "$TARGET" ]; then
+  TARGET="$(pick_target || true)"
+fi
+
+if [ -z "$TARGET" ]; then
+  show_message info "Choose a Windows installer or application to launch."
   exit 1
 fi
 
-if command -v lutris >/dev/null 2>&1; then
-  exec lutris "$@"
+if [ ! -f "$TARGET" ]; then
+  show_message error "Windows app not found:\n$TARGET"
+  exit 1
+fi
+
+EXT="${TARGET##*.}"
+EXT="$(printf '%s' "$EXT" | tr '[:upper:]' '[:lower:]')"
+case "$EXT" in
+  exe|msi|bat|cmd) ;;
+  *)
+    show_message error "Unsupported Windows file type: .$EXT"
+    exit 1
+    ;;
+esac
+
+shift $(( $# > 0 ? 1 : 0 )) || true
+
+if command -v lutris >/dev/null 2>&1 && [ "$EXT" = "yml" ]; then
+  exec lutris -i "$TARGET"
+fi
+
+ensure_prefix
+
+if command -v wine64 >/dev/null 2>&1; then
+  launch_with_runtime wine64 "$TARGET" "$@"
 fi
 
 if command -v wine >/dev/null 2>&1; then
-  exec wine "$@"
+  launch_with_runtime wine "$TARGET" "$@"
 fi
 
-echo "No Windows compatibility runtime found. Install Wine or Lutris first." >&2
+show_message error "No Windows compatibility runtime found. Install Wine first."
 exit 1

@@ -60,6 +60,34 @@ EOF
 printf 'Kismet OS 2 Preview \\n \\l\n' > "$EDIT_DIR/etc/issue"
 printf 'Kismet OS 2 Preview\n' > "$EDIT_DIR/etc/issue.net"
 
+mkdir -p "$EDIT_DIR/usr/share/gnome-background-properties"
+cat > "$EDIT_DIR/usr/share/gnome-background-properties/kismet-wallpapers.xml" <<'EOF'
+<?xml version="1.0"?>
+<wallpapers>
+  <wallpaper deleted="false">
+    <name>Kismet OS</name>
+    <filename>/usr/share/backgrounds/kismet/kismet-wallpaper.svg</filename>
+    <options>zoom</options>
+    <pcolor>#101828</pcolor>
+    <scolor>#1cb4ff</scolor>
+  </wallpaper>
+  <wallpaper deleted="false">
+    <name>Kismet AI Circuit</name>
+    <filename>/usr/share/backgrounds/kismet/kismet-ai-circuit.svg</filename>
+    <options>zoom</options>
+    <pcolor>#09111d</pcolor>
+    <scolor>#7df9ff</scolor>
+  </wallpaper>
+  <wallpaper deleted="false">
+    <name>Kismet Neural Terminal</name>
+    <filename>/usr/share/backgrounds/kismet/kismet-neural-terminal.svg</filename>
+    <options>zoom</options>
+    <pcolor>#05070d</pcolor>
+    <scolor>#8a6cff</scolor>
+  </wallpaper>
+</wallpapers>
+EOF
+
 if [ -f "$EDIT_DIR/usr/share/gnome-background-properties/noble-wallpapers.xml" ]; then
   sed -i 's/Ubuntu 24\.04 Community Wallpapers/Kismet OS Wallpapers/g' "$EDIT_DIR/usr/share/gnome-background-properties/noble-wallpapers.xml"
 fi
