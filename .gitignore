@@ -18,6 +18,7 @@ kismet-build/output/
 kismet-build/work/
 kismet-build/dev-preview-layout/
 kismet-build/stage-rootfs/
+kismet-test/work/
 
 # Local workspace scratch
 OS/build/
