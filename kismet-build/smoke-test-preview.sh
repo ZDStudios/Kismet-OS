@@ -51,6 +51,12 @@ pass "TTY branding looks correct"
 [ -f "$EDIT_DIR/usr/share/wayland-sessions/gnome.desktop" ] || fail "GNOME Wayland session desktop entry missing"
 pass "GNOME session desktop entries are in place"
 
+# Verify core GNOME session packages exist in the live rootfs
+for pkg in ubuntu-desktop-minimal gnome-shell gnome-session-bin gdm3 gnome-shell-common xwayland gnome-shell-extension-ubuntu-dock; do
+  chroot "$EDIT_DIR" dpkg-query -W -f='${Status}\n' "$pkg" 2>/dev/null | grep -q 'install ok installed' || fail "Required GNOME package missing from live rootfs: $pkg"
+done
+pass "Core GNOME session packages are installed"
+
 # Verify Ubuntu sessions are removed
 [ ! -f "$EDIT_DIR/usr/share/xsessions/ubuntu.desktop" ] || fail "Ubuntu X session desktop entry still present"
 [ ! -f "$EDIT_DIR/usr/share/wayland-sessions/ubuntu-wayland.desktop" ] || fail "Ubuntu Wayland session still present"
@@ -63,6 +69,7 @@ pass "GDM is the default display manager"
 # Verify GDM auto-login for admin user
 if [ -f "$EDIT_DIR/etc/gdm3/custom.conf" ]; then
   grep -q 'AutomaticLogin=admin' "$EDIT_DIR/etc/gdm3/custom.conf" || fail "GDM auto-login for admin user not configured"
+  grep -q 'DefaultSession=gnome.desktop' "$EDIT_DIR/etc/gdm3/custom.conf" || fail "GDM default GNOME session is not configured"
   pass "GDM auto-login for admin user configured"
 fi
 

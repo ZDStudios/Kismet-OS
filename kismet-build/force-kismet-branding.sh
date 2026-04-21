@@ -98,7 +98,7 @@ if [ -f "$EDIT_DIR/usr/share/initramfs-tools/hook-functions" ]; then
   sed -i 's/Ubuntu 24\.04/Kismet OS 2 Preview/g' "$EDIT_DIR/usr/share/initramfs-tools/hook-functions"
 fi
 
-find "$EDIT_DIR/usr/share/applications" "$EDIT_DIR/var/lib/snapd/desktop/applications" -maxdepth 1 -type f 2>/dev/null | while read -r desktop_file; do
+find "$EDIT_DIR/usr/share/applications" "$EDIT_DIR/usr/share/ubuntu/applications" "$EDIT_DIR/var/lib/snapd/desktop/applications" -maxdepth 1 -type f 2>/dev/null | while read -r desktop_file; do
   sed -i 's/Install Ubuntu[^\r\n]*/Install Kismet OS 2 Preview/g' "$desktop_file" 2>/dev/null || true
   sed -i 's/Welcome to Ubuntu/Welcome to Kismet OS/g' "$desktop_file" 2>/dev/null || true
   sed -i 's/Preparing Ubuntu/Preparing Kismet OS/g' "$desktop_file" 2>/dev/null || true

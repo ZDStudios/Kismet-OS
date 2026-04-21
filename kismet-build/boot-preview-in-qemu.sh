@@ -14,6 +14,7 @@ SMP_CPUS="${QEMU_SMP_CPUS:-4}"
 BOOT_WAIT_SECONDS="${QEMU_BOOT_WAIT_SECONDS:-45}"
 SCREENSHOT_WAIT_SECONDS="${QEMU_SCREENSHOT_WAIT_SECONDS:-10}"
 QEMU_BIN="${QEMU_BIN:-qemu-system-x86_64}"
+QEMU_SENDKEYS="${QEMU_SENDKEYS:-ret,ret}"
 
 fail() {
   echo "[FAIL] $*" >&2
@@ -61,7 +62,7 @@ if [ ! -S "$MONITOR_SOCKET" ]; then
   fail "QEMU monitor socket was not created"
 fi
 
-MONITOR_SOCKET="$MONITOR_SOCKET" SCREENSHOT_PATH="$SCREENSHOT_PATH" MONITOR_LOG="$MONITOR_LOG" SCREENSHOT_WAIT_SECONDS="$SCREENSHOT_WAIT_SECONDS" python3 - <<'PY' || true
+MONITOR_SOCKET="$MONITOR_SOCKET" SCREENSHOT_PATH="$SCREENSHOT_PATH" MONITOR_LOG="$MONITOR_LOG" SCREENSHOT_WAIT_SECONDS="$SCREENSHOT_WAIT_SECONDS" QEMU_SENDKEYS="$QEMU_SENDKEYS" python3 - <<'PY' || true
 import os
 import socket
 import time
@@ -70,12 +71,13 @@ from pathlib import Path
 sock = socket.socket(socket.AF_UNIX, socket.SOCK_STREAM)
 sock.settimeout(5)
 sock.connect(os.environ['MONITOR_SOCKET'])
-commands = [
-    'info version',
-    'sendkey ret',
+sendkeys = [key.strip() for key in os.environ.get('QEMU_SENDKEYS', 'ret').split(',') if key.strip()]
+commands = ['info version']
+commands.extend(f'sendkey {key}' for key in sendkeys)
+commands.extend([
     f"screendump {os.environ['SCREENSHOT_PATH']}",
     'quit',
-]
+])
 Path(os.environ['MONITOR_LOG']).write_text('', encoding='utf-8')
 with Path(os.environ['MONITOR_LOG']).open('a', encoding='utf-8') as log:
     for command in commands:
@@ -101,6 +103,7 @@ PY
 
 if [ -f "$SCREENSHOT_PATH" ] && head -c 2 "$SCREENSHOT_PATH" 2>/dev/null | grep -q '^P6'; then
   echo "Screenshot: $SCREENSHOT_PATH"
+  strings "$SCREENSHOT_PATH" 2>/dev/null | grep -E -i 'oh no|administrator|kismet|gnome|plasma|try or install' | head -n 20 || true
 else
   echo "Screenshot: unavailable"
   [ -f "$MONITOR_LOG" ] && echo "Monitor log: $MONITOR_LOG"

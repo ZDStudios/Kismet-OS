@@ -13,6 +13,8 @@
 #   KISMET_ISO_PATH   - Path to ISO (default: /workspace/kismet-build/output/kismet-os-dev-preview.iso)
 #   KISMET_MEMORY_MB  - QEMU RAM in MB (default: 4096)
 #   KISMET_SMP        - QEMU CPU count (default: 4)
+#   QEMU_BOOT_WAIT_SECONDS - Wait before screenshotting booted VM (default from boot script)
+#   QEMU_SENDKEYS     - Comma-separated QEMU monitor sendkey sequence (default: ret,ret)
 
 set -euo pipefail
 
@@ -33,6 +35,8 @@ run_inner() {
     -e KISMET_MEMORY_MB="${KISMET_MEMORY_MB:-4096}" \
     -e KISMET_SMP="${KISMET_SMP:-4}" \
     -e QEMU_BIN=/usr/bin/qemu-system-x86_64 \
+    -e QEMU_BOOT_WAIT_SECONDS="${QEMU_BOOT_WAIT_SECONDS:-}" \
+    -e QEMU_SENDKEYS="${QEMU_SENDKEYS:-}" \
     kismet-ubuntu-build \
     bash -lc "$1"
 }
@@ -43,6 +47,7 @@ case "$MODE" in
     run_inner 'bash ./kismet-build/make-dev-preview-layout.sh
                bash ./kismet-build/overlay-kismet-files.sh
                bash ./kismet-build/apply-kismet-overlay.sh
+               bash ./kismet-build/install-kismet-packages-into-rootfs.sh
                bash ./kismet-build/force-kismet-branding.sh
                bash ./kismet-build/setup-live-user.sh
                bash ./kismet-build/repack-live-rootfs.sh
@@ -69,6 +74,7 @@ case "$MODE" in
     run_inner 'bash ./kismet-build/make-dev-preview-layout.sh
                bash ./kismet-build/overlay-kismet-files.sh
                bash ./kismet-build/apply-kismet-overlay.sh
+               bash ./kismet-build/install-kismet-packages-into-rootfs.sh
                bash ./kismet-build/force-kismet-branding.sh
                bash ./kismet-build/setup-live-user.sh
                bash ./kismet-build/repack-live-rootfs.sh
@@ -83,6 +89,12 @@ case "$MODE" in
     echo "==> QEMU boot smoke only (requires existing ISO)"
     run_inner 'bash ./kismet-build/boot-preview-in-qemu.sh'
     echo "==> QEMU boot smoke completed"
+    ;;
+
+  qemu-gnome)
+    echo "==> QEMU GNOME-focused boot smoke"
+    run_inner 'QEMU_BOOT_WAIT_SECONDS="${QEMU_BOOT_WAIT_SECONDS:-75}" QEMU_SENDKEYS="${QEMU_SENDKEYS:-ret,ret,ret}" bash ./kismet-build/boot-preview-in-qemu.sh'
+    echo "==> QEMU GNOME boot smoke completed"
     ;;
 
   interactive|shell)
@@ -102,7 +114,7 @@ case "$MODE" in
     ;;
 
   *)
-    echo "Usage: $0 [build|smoke|branding|qemu-boot|qemu-smoke|interactive|prepare]" >&2
+    echo "Usage: $0 [build|smoke|branding|qemu-boot|qemu-smoke|qemu-gnome|interactive|prepare]" >&2
     exit 1
     ;;
 esac
