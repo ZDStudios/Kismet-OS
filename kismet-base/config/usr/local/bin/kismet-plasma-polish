@@ -1,0 +1,32 @@
+#!/usr/bin/env bash
+set -euo pipefail
+
+marker="$HOME/.config/kismet/.plasma-polish-done"
+mkdir -p "$(dirname "$marker")"
+if [ -f "$marker" ]; then
+  exit 0
+fi
+
+kwriteconfig_bin=""
+for candidate in kwriteconfig5 kwriteconfig6; do
+  if command -v "$candidate" >/dev/null 2>&1; then
+    kwriteconfig_bin="$candidate"
+    break
+  fi
+done
+
+if [ -n "$kwriteconfig_bin" ]; then
+  "$kwriteconfig_bin" --file kdeglobals --group Icons --key Theme Papirus-Dark || true
+  "$kwriteconfig_bin" --file kdeglobals --group KDE --key LookAndFeelPackage org.kde.breezedark.desktop || true
+  "$kwriteconfig_bin" --file kdeglobals --group General --key font "Inter,10,-1,5,50,0,0,0,0,0" || true
+  "$kwriteconfig_bin" --file kdeglobals --group General --key ColorScheme BreezeDark || true
+  "$kwriteconfig_bin" --file kcminputrc --group Mouse --key cursorTheme breeze_cursors || true
+  "$kwriteconfig_bin" --file kwinrc --group Windows --key BorderlessMaximizedWindows true || true
+  "$kwriteconfig_bin" --file kwinrc --group Effect-overview --key BorderActivate all || true
+fi
+
+if command -v plasma-apply-wallpaperimage >/dev/null 2>&1; then
+  plasma-apply-wallpaperimage /usr/share/backgrounds/kismet/kismet-ai-circuit.svg >/dev/null 2>&1 || true
+fi
+
+touch "$marker"

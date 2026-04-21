@@ -2,6 +2,7 @@
 from __future__ import annotations
 
 import json
+import shlex
 import shutil
 import subprocess
 import urllib.request
@@ -42,17 +43,36 @@ def detected(command: str) -> str:
     return shutil.which(command) or ''
 
 
+def gui_available() -> bool:
+    return bool(shutil.which('kdialog')) and subprocess.run(['bash', '-lc', 'test -n "$DISPLAY"'], check=False).returncode == 0
+
+
 def fetch_recommendations() -> dict:
     with urllib.request.urlopen(RECOMMEND_URL, timeout=5) as resp:
         return json.loads(resp.read().decode('utf-8'))
 
 
+def provider_command(provider: dict, name: str) -> tuple[str, str] | tuple[None, None]:
+    candidates = provider.get('binaryCandidates') or [provider.get('command', name)]
+    for candidate in candidates:
+        path = detected(candidate)
+        if path:
+            return path, candidate
+    command = provider.get('command', name)
+    path = detected(command)
+    if path:
+        return path, command
+    return None, None
+
+
 def provider_line(name: str, provider: dict) -> str:
-    cmd = provider.get('command', name)
-    path = detected(cmd)
+    path, chosen = provider_command(provider, name)
     state = 'enabled' if provider.get('enabled', False) else 'disabled'
     presence = f'present at {path}' if path else 'not installed yet'
-    return f"- {provider.get('label', name)}: {state}, {presence}"
+    mode = provider.get('launchMode', 'gui')
+    label = provider.get('label', name)
+    command_desc = chosen or provider.get('command', name)
+    return f"- {label}: {state}, {presence}, launch: {mode}, target: {command_desc}"
 
 
 def status_lines(data: dict) -> list[str]:
@@ -94,17 +114,56 @@ def recommendation_lines() -> list[str]:
     return lines
 
 
+def show_text(title: str, lines: list[str]) -> None:
+    text = '\n'.join(lines)
+    if gui_available():
+        subprocess.run(['kdialog', '--title', title, '--msgbox', text], check=False)
+    else:
+        print(text)
+
+
+def run_in_terminal(args: list[str]) -> bool:
+    quoted = ' '.join(shlex.quote(part) for part in args)
+    terminal_options = [
+        ['konsole', '--hold', '-e', *args],
+        ['kitty', 'sh', '-lc', quoted],
+        ['xterm', '-hold', '-e', *args],
+    ]
+    for option in terminal_options:
+        if shutil.which(option[0]):
+            subprocess.Popen(option)
+            return True
+    return False
+
+
 def launch_provider(data: dict, name: str) -> str:
     provider = data.get('providers', {}).get(name, {})
-    command = provider.get('command', name)
-    path = detected(command)
     if not provider.get('enabled', False):
         return f"{provider.get('label', name)} is disabled. Enable it in Kismet AI Center first."
+    path, _chosen = provider_command(provider, name)
     if not path:
         hint = provider.get('installHint', 'No packaged install source is configured yet.')
         return f"{provider.get('label', name)} is not installed yet. {hint}"
-    subprocess.Popen([path])
+    args = [path, *provider.get('commandArgs', [])]
+    mode = provider.get('launchMode', 'gui')
+    if mode == 'terminal':
+        if run_in_terminal(args):
+            return f"Launching {provider.get('label', name)} in a terminal."
+        return f"Could not find a terminal emulator for {provider.get('label', name)}."
+    subprocess.Popen(args)
     return f"Launching {provider.get('label', name)}."
+
+
+def bootstrap_provider(data: dict, name: str) -> str:
+    provider = data.get('providers', {}).get(name, {})
+    command = provider.get('bootstrapCommand')
+    if not command:
+        return f"No bootstrap command is configured for {provider.get('label', name)} yet."
+    proc = subprocess.run(['bash', '-lc', command], capture_output=True, text=True, check=False)
+    details = proc.stdout.strip() or proc.stderr.strip() or 'No output.'
+    if proc.returncode == 0:
+        return f"{provider.get('label', name)} bootstrap finished.\n\n{details}"
+    return f"{provider.get('label', name)} bootstrap failed.\n\n{details}"
 
 
 def toggle_provider(data: dict, name: str) -> str:
@@ -120,10 +179,6 @@ def set_preferred(data: dict, name: str) -> str:
     return f"Preferred provider set to {name}."
 
 
-def gui_available() -> bool:
-    return bool(shutil.which('kdialog')) and subprocess.run(['bash', '-lc', 'test -n "$DISPLAY"'], check=False).returncode == 0
-
-
 def gui_menu(title: str, text: str, options: list[tuple[str, str]], default_tag: str) -> str:
     cmd = ['kdialog', '--title', title, '--menu', text]
     for tag, label in options:
@@ -132,14 +187,6 @@ def gui_menu(title: str, text: str, options: list[tuple[str, str]], default_tag:
     if proc.returncode == 0 and proc.stdout.strip():
         return proc.stdout.strip()
     return default_tag
-
-
-def show_text(title: str, lines: list[str]) -> None:
-    text = '\n'.join(lines)
-    if gui_available():
-        subprocess.run(['kdialog', '--title', title, '--msgbox', text], check=False)
-    else:
-        print(text)
 
 
 def gui_main(data: dict) -> int:
@@ -153,6 +200,8 @@ def gui_main(data: dict) -> int:
                 ('launch-preferred', 'Launch the preferred provider'),
                 ('launch-hermes', 'Launch Hermes'),
                 ('launch-opencode', 'Launch OpenCode'),
+                ('bootstrap-hermes', 'Bootstrap Hermes for Kismet'),
+                ('bootstrap-opencode', 'Bootstrap OpenCode for Kismet'),
                 ('toggle-hermes', 'Toggle Hermes on or off'),
                 ('toggle-opencode', 'Toggle OpenCode on or off'),
                 ('set-hermes', 'Make Hermes the preferred provider'),
@@ -173,6 +222,10 @@ def gui_main(data: dict) -> int:
             show_text('Kismet AI Center', [launch_provider(data, 'hermes')])
         elif choice == 'launch-opencode':
             show_text('Kismet AI Center', [launch_provider(data, 'opencode')])
+        elif choice == 'bootstrap-hermes':
+            show_text('Kismet AI Center', [bootstrap_provider(data, 'hermes')])
+        elif choice == 'bootstrap-opencode':
+            show_text('Kismet AI Center', [bootstrap_provider(data, 'opencode')])
         elif choice == 'toggle-hermes':
             show_text('Kismet AI Center', [toggle_provider(data, 'hermes')])
         elif choice == 'toggle-opencode':

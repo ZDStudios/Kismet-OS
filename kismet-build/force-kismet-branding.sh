@@ -3,37 +3,35 @@ set -euo pipefail
 
 ROOT_DIR="$(cd "$(dirname "$0")/.." && pwd)"
 EDIT_DIR="$ROOT_DIR/kismet-build/work/live-rootfs-edit"
-WALLPAPER_SRC_SVG="$ROOT_DIR/kismet-theme/wallpapers/kismet-wallpaper.svg"
 WALLPAPER_DST_DIR="$EDIT_DIR/usr/share/backgrounds/kismet"
 PLYMOUTH_DIR="$EDIT_DIR/usr/share/plymouth/themes/kismet"
-SDDM_THEME_DIR="$EDIT_DIR/usr/share/sddm/themes/kismet"
-SDDM_BREEZE_THEME_DIR="$EDIT_DIR/usr/share/sddm/themes/breeze"
+GDM_DIR="$EDIT_DIR/etc/gdm3"
+ICON_SRC="$ROOT_DIR/kismet-theme/icons/kismet-logo.svg"
+ICON_DST_DIR="$EDIT_DIR/usr/share/icons/hicolor/scalable/apps"
+PIXMAP_DST_DIR="$EDIT_DIR/usr/share/pixmaps"
 
 if [ ! -d "$EDIT_DIR" ]; then
   echo "Editable live rootfs not found. Run prepare-live-rootfs.sh first." >&2
   exit 1
 fi
 
-mkdir -p "$EDIT_DIR/etc/sddm.conf.d" "$EDIT_DIR/etc/plymouth" "$WALLPAPER_DST_DIR" "$PLYMOUTH_DIR"
+mkdir -p \
+  "$EDIT_DIR/etc/plymouth" \
+  "$WALLPAPER_DST_DIR" \
+  "$PLYMOUTH_DIR" \
+  "$GDM_DIR" \
+  "$ICON_DST_DIR" \
+  "$PIXMAP_DST_DIR"
+
 cp -f "$ROOT_DIR/kismet-theme/plymouth/kismet.plymouth" "$PLYMOUTH_DIR/"
 cp -f "$ROOT_DIR/kismet-theme/plymouth/kismet.script" "$PLYMOUTH_DIR/"
-cp -f "$WALLPAPER_SRC_SVG" "$WALLPAPER_DST_DIR/kismet-wallpaper.svg"
-
-if [ -d "$SDDM_BREEZE_THEME_DIR" ]; then
-  rm -rf "$SDDM_THEME_DIR"
-  cp -a "$SDDM_BREEZE_THEME_DIR" "$SDDM_THEME_DIR"
-else
-  mkdir -p "$SDDM_THEME_DIR"
-fi
-
-cat > "$SDDM_THEME_DIR/theme.conf.user" <<'EOF'
-[General]
-Background=/usr/share/backgrounds/kismet/kismet-wallpaper.svg
-ScreenWidth=1920
-ScreenHeight=1080
-CursorTheme=breeze_cursors
-Font=Inter,10,-1,5,50,0,0,0,0,0
-EOF
+for wallpaper in "$ROOT_DIR"/kismet-theme/wallpapers/*; do
+  [ -f "$wallpaper" ] || continue
+  cp -f "$wallpaper" "$WALLPAPER_DST_DIR/"
+done
+cp -f "$ICON_SRC" "$ICON_DST_DIR/kismet-logo.svg"
+cp -f "$ICON_SRC" "$PIXMAP_DST_DIR/kismet-logo.svg"
+cp -f "$ICON_SRC" "$PIXMAP_DST_DIR/distributor-logo.svg"
 
 cat > "$EDIT_DIR/etc/os-release" <<'EOF'
 NAME="Kismet OS"
@@ -47,7 +45,7 @@ SUPPORT_URL="https://kismetos.dev/docs"
 BUG_REPORT_URL="https://github.com/kismetos/kismet-os/issues"
 PRIVACY_POLICY_URL="https://kismetos.dev/privacy"
 UBUNTU_CODENAME=noble
-LOGO=kismet
+LOGO=kismet-logo
 EOF
 
 cat > "$EDIT_DIR/etc/lsb-release" <<'EOF'
@@ -96,11 +94,17 @@ if [ -f "$EDIT_DIR/usr/share/plymouth/themes/ubuntu-text/ubuntu-text.plymouth" ]
   sed -i 's/title=Ubuntu 24\.04/title=Kismet OS 2 Preview/g' "$EDIT_DIR/usr/share/plymouth/themes/ubuntu-text/ubuntu-text.plymouth"
 fi
 
+if [ -f "$EDIT_DIR/usr/share/initramfs-tools/hook-functions" ]; then
+  sed -i 's/Ubuntu 24\.04/Kismet OS 2 Preview/g' "$EDIT_DIR/usr/share/initramfs-tools/hook-functions"
+fi
+
 find "$EDIT_DIR/usr/share/applications" "$EDIT_DIR/var/lib/snapd/desktop/applications" -maxdepth 1 -type f 2>/dev/null | while read -r desktop_file; do
   sed -i 's/Install Ubuntu[^\r\n]*/Install Kismet OS 2 Preview/g' "$desktop_file" 2>/dev/null || true
   sed -i 's/Welcome to Ubuntu/Welcome to Kismet OS/g' "$desktop_file" 2>/dev/null || true
   sed -i 's/Preparing Ubuntu/Preparing Kismet OS/g' "$desktop_file" 2>/dev/null || true
   sed -i 's/Ubuntu 24\.04\.3 LTS/Kismet OS 2 Preview/g' "$desktop_file" 2>/dev/null || true
+  sed -i 's/Icon=ubuntu-logo/Icon=kismet-logo/g' "$desktop_file" 2>/dev/null || true
+  sed -i 's/Icon=distributor-logo/Icon=kismet-logo/g' "$desktop_file" 2>/dev/null || true
   sed -i 's/Ubuntu/Kismet OS/g' "$desktop_file" 2>/dev/null || true
  done
 
@@ -123,6 +127,7 @@ if command -v unsquashfs >/dev/null 2>&1 && command -v mksquashfs >/dev/null 2>&
       sed -i 's/Install Ubuntu[^\r\n]*/Install Kismet OS 2 Preview/g' "$desktop_file" 2>/dev/null || true
       sed -i 's/Preparing Ubuntu/Preparing Kismet OS/g' "$desktop_file" 2>/dev/null || true
       sed -i 's/Ubuntu 24\.04\.3 LTS/Kismet OS 2 Preview/g' "$desktop_file" 2>/dev/null || true
+      sed -i 's/Icon=ubuntu-logo/Icon=kismet-logo/g' "$desktop_file" 2>/dev/null || true
       sed -i 's/Ubuntu/Kismet OS/g' "$desktop_file" 2>/dev/null || true
     done
     rm -f "$snap_path"
@@ -137,17 +142,10 @@ from pathlib import Path
 path = Path(os.environ['CATALOG_PATH'])
 data = path.read_bytes()
 data = data.replace(b'Install Ubuntu', b'Install Kismet')
+data = data.replace(b'ubuntu-logo', b'kismet-logo')
 path.write_bytes(data)
 PY
 fi
-
-cat > "$EDIT_DIR/etc/sddm.conf.d/10-kismet.conf" <<'EOF'
-[Theme]
-Current=kismet
-
-[Users]
-DefaultSession=plasma.desktop
-EOF
 
 cat > "$EDIT_DIR/etc/plymouth/plymouthd.conf" <<'EOF'
 [Daemon]
@@ -179,17 +177,40 @@ rm -f \
   "$EDIT_DIR/usr/share/wayland-sessions/ubuntu-wayland.desktop" \
   "$EDIT_DIR/usr/share/ubuntu-wayland/applications/gnome-initial-setup.desktop"
 
+cat > "$GDM_DIR/custom.conf" <<'EOF'
+[daemon]
+WaylandEnable=true
+DefaultSession=plasma.desktop
+
+[security]
+DisallowTCP=true
+
+[xdmcp]
+
+[chooser]
+
+[debug]
+EOF
+
 mkdir -p "$EDIT_DIR/etc/X11" "$EDIT_DIR/etc/systemd/system/graphical.target.wants"
 rm -f "$EDIT_DIR/etc/X11/default-display-manager"
-printf '/usr/bin/sddm\n' > "$EDIT_DIR/etc/X11/default-display-manager"
+printf '/usr/sbin/gdm3\n' > "$EDIT_DIR/etc/X11/default-display-manager"
 rm -f "$EDIT_DIR/etc/systemd/system/display-manager.service"
-ln -s /lib/systemd/system/sddm.service "$EDIT_DIR/etc/systemd/system/display-manager.service"
+if [ -f "$EDIT_DIR/lib/systemd/system/gdm.service" ]; then
+  ln -s /lib/systemd/system/gdm.service "$EDIT_DIR/etc/systemd/system/display-manager.service"
+elif [ -f "$EDIT_DIR/usr/lib/systemd/system/gdm.service" ]; then
+  ln -s /usr/lib/systemd/system/gdm.service "$EDIT_DIR/etc/systemd/system/display-manager.service"
+fi
 rm -f "$EDIT_DIR/etc/systemd/system/graphical.target.wants/display-manager.service"
-ln -s /lib/systemd/system/sddm.service "$EDIT_DIR/etc/systemd/system/graphical.target.wants/display-manager.service"
+if [ -f "$EDIT_DIR/lib/systemd/system/gdm.service" ]; then
+  ln -s /lib/systemd/system/gdm.service "$EDIT_DIR/etc/systemd/system/graphical.target.wants/display-manager.service"
+elif [ -f "$EDIT_DIR/usr/lib/systemd/system/gdm.service" ]; then
+  ln -s /usr/lib/systemd/system/gdm.service "$EDIT_DIR/etc/systemd/system/graphical.target.wants/display-manager.service"
+fi
 rm -rf "$EDIT_DIR/etc/systemd/system/display-manager.service.wants" || true
 mkdir -p "$EDIT_DIR/etc/systemd/system/display-manager.service.wants"
 
-for service in gdm3.service gnome-initial-setup.service; do
+for service in sddm.service gnome-initial-setup.service; do
   rm -f "$EDIT_DIR/etc/systemd/system/graphical.target.wants/$service" || true
   rm -f "$EDIT_DIR/lib/systemd/system/$service" || true
   rm -f "$EDIT_DIR/usr/lib/systemd/system/$service" || true
@@ -203,4 +224,4 @@ export XDG_SESSION_DESKTOP=KDE
 EOF
 chmod +x "$EDIT_DIR/etc/skel/.config/plasma-workspace/env/kismet-branding.sh"
 
-echo "==> Forced Kismet branding, Plasma sessions, and SDDM defaults into editable rootfs"
+echo "==> Forced Kismet branding, Kismet icon replacements, Plasma sessions, and GDM defaults into editable rootfs"

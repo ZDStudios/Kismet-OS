@@ -44,6 +44,8 @@ pass "TTY branding looks correct"
 [ -f "$EDIT_DIR/usr/share/xsessions/plasma.desktop" ] || fail "Plasma X session desktop entry missing"
 [ -f "$EDIT_DIR/usr/share/wayland-sessions/plasma.desktop" ] || fail "Plasma Wayland session desktop entry missing"
 [ ! -f "$EDIT_DIR/usr/share/xsessions/ubuntu.desktop" ] || fail "Ubuntu X session desktop entry still present"
+grep -q '/usr/sbin/gdm3' "$EDIT_DIR/etc/X11/default-display-manager" || fail "GDM is not set as the default display manager"
+[ -f "$EDIT_DIR/usr/share/pixmaps/kismet-logo.svg" ] || fail "Kismet logo asset missing from pixmaps"
 pass "Session branding/layout files are in place"
 
 rm -rf "$SNAP_WORK"

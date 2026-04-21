@@ -1,0 +1,9 @@
+[Desktop Entry]
+Type=Application
+Version=1.0
+Name=Kismet Plasma Polish
+Comment=Apply Kismet desktop defaults on first login
+Exec=/usr/local/bin/kismet-plasma-polish
+OnlyShowIn=KDE;
+X-KDE-autostart-phase=2
+NoDisplay=true

@@ -3,8 +3,8 @@ set -euo pipefail
 
 ROOT_DIR="$(cd "$(dirname "$0")/.." && pwd)"
 EDIT_DIR="$ROOT_DIR/kismet-build/work/live-rootfs-edit"
-KISMET_PACKAGES="plasma-desktop plasma-workspace-wayland plasma-widgets-addons sddm sddm-theme-breeze konsole dolphin kate plasma-discover kde-config-sddm kde-config-gtk-style kde-style-breeze papirus-icon-theme python3-flask python3-psutil python3-requests python3-pip python3-venv python3-watchdog python3-pydantic python3-inotify curl wget git tmux zsh jq wine64 winetricks lutris"
-KISMET_PURGE_PACKAGES="gdm3 gnome-shell ubuntu-session ubuntu-desktop ubuntu-desktop-minimal gnome-initial-setup"
+KISMET_PACKAGES="plasma-desktop plasma-workspace-wayland plasma-widgets-addons gdm3 gnome-shell konsole dolphin kate plasma-discover kde-config-gtk-style kde-style-breeze papirus-icon-theme python3-flask python3-psutil python3-requests python3-pip python3-venv python3-watchdog python3-pydantic python3-inotify curl wget git tmux zsh jq wine64 winetricks lutris winbind fonts-wine"
+KISMET_PURGE_PACKAGES="sddm ubuntu-session ubuntu-desktop ubuntu-desktop-minimal gnome-initial-setup"
 
 if [ ! -d "$EDIT_DIR" ]; then
   echo "Editable live rootfs not found. Run prepare-live-rootfs.sh first." >&2

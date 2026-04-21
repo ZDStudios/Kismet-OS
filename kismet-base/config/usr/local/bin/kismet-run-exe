@@ -24,7 +24,8 @@ pick_target() {
 ensure_prefix() {
   export WINEPREFIX="${WINEPREFIX:-$HOME/.local/share/kismet/wineprefix}"
   export WINEDEBUG="${WINEDEBUG:--all}"
-  mkdir -p "$WINEPREFIX" "$HOME/.cache/kismet"
+  export WINEDLLOVERRIDES="mscoree,mshtml="
+  mkdir -p "$WINEPREFIX" "$HOME/.cache/kismet" "$HOME/.local/state/kismet"
 
   local stamp="$WINEPREFIX/.kismet-prefix-ready"
   if command -v wineboot >/dev/null 2>&1 && [ ! -f "$stamp" ]; then
@@ -42,19 +43,21 @@ ensure_prefix() {
   fi
 }
 
-launch_with_runtime() {
+run_runtime() {
   local runtime="$1"
   local target="$2"
   shift 2
+  local log_file="$HOME/.local/state/kismet/windows-launch.log"
+  printf '\n[%s] launching %s with %s\n' "$(date -Is)" "$target" "$runtime" >>"$log_file"
   case "$EXT" in
     msi)
-      exec "$runtime" msiexec /i "$target" "$@"
+      "$runtime" msiexec /i "$target" "$@" >>"$log_file" 2>&1
       ;;
     bat|cmd)
-      exec "$runtime" cmd /c "$target" "$@"
+      "$runtime" cmd /c "$target" "$@" >>"$log_file" 2>&1
       ;;
     *)
-      exec "$runtime" start /unix "$target" "$@"
+      "$runtime" "$target" "$@" >>"$log_file" 2>&1
       ;;
   esac
 }
@@ -85,19 +88,24 @@ case "$EXT" in
 esac
 
 shift $(( $# > 0 ? 1 : 0 )) || true
-
-if command -v lutris >/dev/null 2>&1 && [ "$EXT" = "yml" ]; then
-  exec lutris -i "$TARGET"
-fi
-
 ensure_prefix
 
 if command -v wine64 >/dev/null 2>&1; then
-  launch_with_runtime wine64 "$TARGET" "$@"
+  if run_runtime wine64 "$TARGET" "$@"; then
+    exit 0
+  fi
+  status=$?
+  show_message error "The Windows app closed unexpectedly.\n\nCheck ~/.local/state/kismet/windows-launch.log for details.\nExit code: $status"
+  exit "$status"
 fi
 
 if command -v wine >/dev/null 2>&1; then
-  launch_with_runtime wine "$TARGET" "$@"
+  if run_runtime wine "$TARGET" "$@"; then
+    exit 0
+  fi
+  status=$?
+  show_message error "The Windows app closed unexpectedly.\n\nCheck ~/.local/state/kismet/windows-launch.log for details.\nExit code: $status"
+  exit "$status"
 fi
 
 show_message error "No Windows compatibility runtime found. Install Wine first."

@@ -230,17 +230,41 @@ def render_ai_stack(answers: dict) -> str:
     providers = {
         name: {
             "enabled": name in answers["providers"],
-            "command": name,
+            "command": {
+                "hermes": "kismet-ai-launch",
+                "opencode": "kismet-ai-launch",
+                "openclaw": "openclaw",
+                "ollama": "ollama",
+            }.get(name, name),
+            "commandArgs": {
+                "hermes": ["hermes"],
+                "opencode": ["opencode"],
+                "openclaw": [],
+                "ollama": [],
+            }.get(name, []),
+            "binaryCandidates": {
+                "hermes": ["hermes", "openclaw", "claude"],
+                "opencode": ["opencode", "claude", "openclaw"],
+                "openclaw": ["openclaw"],
+                "ollama": ["ollama"],
+            }.get(name, [name]),
             "label": {
                 "hermes": "Hermes AI Agent",
                 "opencode": "OpenCode",
                 "openclaw": "OpenClaw",
                 "ollama": "Ollama",
             }.get(name, name.title()),
+            "launchMode": "terminal",
+            "bootstrapCommand": {
+                "hermes": "kismet-ai-bootstrap hermes",
+                "opencode": "kismet-ai-bootstrap opencode",
+                "openclaw": "kismet-ai-bootstrap openclaw",
+                "ollama": "kismet-ai-bootstrap ollama",
+            }.get(name, f"kismet-ai-bootstrap {name}"),
             "installHint": {
-                "hermes": "Connect the preferred Hermes package source, then install it from Kismet AI Center or first boot.",
-                "opencode": "Connect the preferred OpenCode package source, then install it from Kismet AI Center or first boot.",
-                "openclaw": "Install OpenClaw through the Kismet first boot wizard.",
+                "hermes": "Use Kismet AI Center to bootstrap Hermes or wire a vendor package into the release image.",
+                "opencode": "Use Kismet AI Center to bootstrap OpenCode or wire a vendor package into the release image.",
+                "openclaw": "Install OpenClaw through the Kismet first boot wizard or AI Center.",
                 "ollama": "Install Ollama through the Kismet first boot wizard.",
             }.get(name, "Install from the Kismet AI Center."),
         }

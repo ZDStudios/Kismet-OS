@@ -21,8 +21,11 @@ case "$MODE" in
   build-smoke-scan)
     INNER='./kismet-build/build-ubuntu-preview.sh && ./kismet-build/smoke-test-preview.sh && ./kismet-build/scan-preview-branding.py'
     ;;
+  refresh-branding-scan)
+    INNER='./kismet-build/force-kismet-branding.sh && ./kismet-build/repack-live-rootfs.sh && ./kismet-build/rebuild-iso.sh && ./kismet-build/smoke-test-preview.sh && ./kismet-build/scan-preview-branding.py'
+    ;;
   *)
-    echo "Usage: $0 [smoke|branding-scan|build-and-smoke|build-smoke-scan]" >&2
+    echo "Usage: $0 [smoke|branding-scan|build-and-smoke|build-smoke-scan|refresh-branding-scan]" >&2
     exit 1
     ;;
 esac

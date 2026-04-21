@@ -2,11 +2,13 @@
 ColorScheme=BreezeDark
 Name=Kismet Night Glass
 shadeSortColumn=true
+font=Inter,10,-1,5,50,0,0,0,0,0
 
 [KDE]
 SingleClick=false
 LookAndFeelPackage=org.kde.breezedark.desktop
 widgetStyle=Breeze
+AnimationDurationFactor=0.85
 
 [Colors:Window]
 BackgroundNormal=17,22,30
@@ -25,6 +27,9 @@ ForegroundNormal=237,242,248
 [Colors:Selection]
 BackgroundNormal=28,156,224
 ForegroundNormal=255,255,255
+
+[Icons]
+Theme=Papirus-Dark
 
 [WM]
 activeBackground=18,24,33

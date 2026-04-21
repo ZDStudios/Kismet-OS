@@ -1,0 +1,82 @@
+#!/usr/bin/env bash
+set -euo pipefail
+
+provider="${1:-}"
+if [ -z "$provider" ]; then
+  echo "Usage: kismet-ai-bootstrap <hermes|opencode|openclaw|ollama>" >&2
+  exit 1
+fi
+
+show_message() {
+  local level="$1"
+  local text="$2"
+  if command -v kdialog >/dev/null 2>&1 && [ -n "${DISPLAY:-}" ]; then
+    case "$level" in
+      info) kdialog --title "Kismet AI Suite" --msgbox "$text" ;;
+      error) kdialog --title "Kismet AI Suite" --error "$text" ;;
+      *) kdialog --title "Kismet AI Suite" --sorry "$text" ;;
+    esac
+  else
+    printf '%s\n' "$text"
+  fi
+}
+
+run_cmd() {
+  local command="$1"
+  local log_dir="$HOME/.local/state/kismet"
+  local log_file="$log_dir/${provider}-bootstrap.log"
+  mkdir -p "$log_dir"
+  if bash -lc "$command" >>"$log_file" 2>&1; then
+    show_message info "$provider bootstrap completed. Log: $log_file"
+    return 0
+  fi
+  show_message error "$provider bootstrap failed. Log: $log_file"
+  return 1
+}
+
+case "$provider" in
+  hermes)
+    if command -v hermes >/dev/null 2>&1 || command -v openclaw >/dev/null 2>&1; then
+      show_message info "Hermes is already available through the current Kismet stack."
+      exit 0
+    fi
+    if [ -n "${KISMET_HERMES_INSTALL:-}" ]; then
+      run_cmd "$KISMET_HERMES_INSTALL"
+      exit $?
+    fi
+    show_message error "Hermes install source is not configured yet. Set KISMET_HERMES_INSTALL or wire a vendor package into the release image."
+    ;;
+  opencode)
+    if command -v opencode >/dev/null 2>&1 || command -v claude >/dev/null 2>&1 || command -v openclaw >/dev/null 2>&1; then
+      show_message info "OpenCode-style coding agent access is already available through the current Kismet stack."
+      exit 0
+    fi
+    if [ -n "${KISMET_OPENCODE_INSTALL:-}" ]; then
+      run_cmd "$KISMET_OPENCODE_INSTALL"
+      exit $?
+    fi
+    show_message error "OpenCode install source is not configured yet. Set KISMET_OPENCODE_INSTALL or wire a vendor package into the release image."
+    ;;
+  openclaw)
+    if command -v openclaw >/dev/null 2>&1; then
+      show_message info "OpenClaw is already installed."
+      exit 0
+    fi
+    run_cmd "curl -fsSL https://openclaw.ai/install.sh | sh"
+    ;;
+  ollama)
+    if command -v ollama >/dev/null 2>&1; then
+      show_message info "Ollama is already installed."
+      exit 0
+    fi
+    if [ -n "${KISMET_OLLAMA_INSTALL:-}" ]; then
+      run_cmd "$KISMET_OLLAMA_INSTALL"
+      exit $?
+    fi
+    show_message error "Ollama install source is not configured for this environment."
+    ;;
+  *)
+    show_message error "Unknown provider: $provider"
+    exit 1
+    ;;
+esac

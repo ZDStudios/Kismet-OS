@@ -1,0 +1,10 @@
+[Desktop Entry]
+Type=Application
+Version=1.0
+Name=Hermes AI Agent
+Comment=Launch the Kismet Hermes provider in a terminal
+Exec=/usr/local/bin/kismet-ai-launch hermes
+Icon=kismet-logo
+Terminal=true
+Categories=Development;Utility;
+StartupNotify=true

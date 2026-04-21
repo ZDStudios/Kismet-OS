@@ -8,30 +8,44 @@
   "providers": {
     "hermes": {
       "enabled": true,
-      "command": "hermes",
+      "command": "kismet-ai-launch",
+      "commandArgs": ["hermes"],
+      "binaryCandidates": ["hermes", "openclaw", "claude"],
       "label": "Hermes AI Agent",
       "role": "primary-agent",
-      "installHint": "Connect the preferred Hermes package source, then install it from Kismet AI Center or first boot."
+      "launchMode": "terminal",
+      "bootstrapCommand": "kismet-ai-bootstrap hermes",
+      "installHint": "Use Kismet AI Center to bootstrap Hermes or wire a vendor package into the release image."
     },
     "opencode": {
       "enabled": true,
-      "command": "opencode",
+      "command": "kismet-ai-launch",
+      "commandArgs": ["opencode"],
+      "binaryCandidates": ["opencode", "claude", "openclaw"],
       "label": "OpenCode",
       "role": "coding-agent",
-      "installHint": "Connect the preferred OpenCode package source, then install it from Kismet AI Center or first boot."
+      "launchMode": "terminal",
+      "bootstrapCommand": "kismet-ai-bootstrap opencode",
+      "installHint": "Use Kismet AI Center to bootstrap OpenCode or wire a vendor package into the release image."
     },
     "openclaw": {
       "enabled": true,
       "command": "openclaw",
+      "binaryCandidates": ["openclaw"],
       "label": "OpenClaw",
       "role": "system-agent",
-      "installHint": "Install OpenClaw through the Kismet first boot wizard."
+      "launchMode": "terminal",
+      "bootstrapCommand": "kismet-ai-bootstrap openclaw",
+      "installHint": "Install OpenClaw through the Kismet first boot wizard or AI Center."
     },
     "ollama": {
       "enabled": true,
       "command": "ollama",
+      "binaryCandidates": ["ollama"],
       "label": "Ollama",
       "role": "local-model-runtime",
+      "launchMode": "terminal",
+      "bootstrapCommand": "kismet-ai-bootstrap ollama",
       "installHint": "Install Ollama through the Kismet first boot wizard."
     }
   },

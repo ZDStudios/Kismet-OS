@@ -1,0 +1,51 @@
+#!/usr/bin/env bash
+set -euo pipefail
+
+provider="${1:-}"
+shift || true
+
+show_message() {
+  local text="$1"
+  if command -v kdialog >/dev/null 2>&1 && [ -n "${DISPLAY:-}" ]; then
+    kdialog --title "Kismet AI Suite" --error "$text"
+  else
+    printf '%s\n' "$text" >&2
+  fi
+}
+
+find_command() {
+  local name
+  for name in "$@"; do
+    if command -v "$name" >/dev/null 2>&1; then
+      command -v "$name"
+      return 0
+    fi
+  done
+  return 1
+}
+
+case "$provider" in
+  hermes)
+    cmd="$(find_command hermes openclaw claude || true)"
+    ;;
+  opencode)
+    cmd="$(find_command opencode claude openclaw || true)"
+    ;;
+  openclaw)
+    cmd="$(find_command openclaw || true)"
+    ;;
+  ollama)
+    cmd="$(find_command ollama || true)"
+    ;;
+  *)
+    show_message "Unknown Kismet AI provider: $provider"
+    exit 1
+    ;;
+esac
+
+if [ -z "$cmd" ]; then
+  show_message "$provider is not installed yet. Open Kismet AI Center and run the bootstrap action first."
+  exit 1
+fi
+
+exec "$cmd" "$@"

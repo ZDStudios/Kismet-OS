@@ -1,0 +1,10 @@
+[Desktop Entry]
+Type=Application
+Version=1.0
+Name=OpenCode
+Comment=Launch the Kismet coding provider in a terminal
+Exec=/usr/local/bin/kismet-ai-launch opencode
+Icon=kismet-logo
+Terminal=true
+Categories=Development;Utility;
+StartupNotify=true
