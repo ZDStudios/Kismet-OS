@@ -154,6 +154,36 @@ ShowDelay=0
 EOF
 
 mkdir -p "$EDIT_DIR/usr/share/xsessions" "$EDIT_DIR/usr/share/wayland-sessions"
+
+# GNOME sessions (Zorin OS style)
+cat > "$EDIT_DIR/usr/share/xsessions/gnome.desktop" <<'EOF'
+[Desktop Entry]
+Type=XSession
+Exec=/usr/bin/gnome-session
+DesktopNames=GNOME
+Name=Kismet GNOME
+Comment=Kismet OS GNOME Session
+EOF
+
+cat > "$EDIT_DIR/usr/share/xsessions/gnome-xorg.desktop" <<'EOF'
+[Desktop Entry]
+Type=XSession
+Exec=/usr/bin/gnome-session --session=gnome-xorg
+DesktopNames=GNOME
+Name=Kismet GNOME (Xorg)
+Comment=Kismet OS GNOME Session (X11)
+EOF
+
+cat > "$EDIT_DIR/usr/share/wayland-sessions/gnome.desktop" <<'EOF'
+[Desktop Entry]
+Type=WaylandSession
+Exec=/usr/bin/gnome-session
+DesktopNames=GNOME
+Name=Kismet GNOME (Wayland)
+Comment=Kismet OS GNOME Session (Wayland)
+EOF
+
+# Keep Plasma sessions too for users who want both
 cat > "$EDIT_DIR/usr/share/xsessions/plasma.desktop" <<'EOF'
 [Desktop Entry]
 Type=XSession
@@ -170,6 +200,7 @@ DesktopNames=KDE
 Name=Kismet Plasma (Wayland)
 Comment=Kismet OS Plasma Session
 EOF
+
 rm -f \
   "$EDIT_DIR/usr/share/xsessions/ubuntu.desktop" \
   "$EDIT_DIR/usr/share/xsessions/ubuntu-xorg.desktop" \
@@ -180,7 +211,7 @@ rm -f \
 cat > "$GDM_DIR/custom.conf" <<'EOF'
 [daemon]
 WaylandEnable=true
-DefaultSession=plasma.desktop
+DefaultSession=gnome.desktop
 
 [security]
 DisallowTCP=true

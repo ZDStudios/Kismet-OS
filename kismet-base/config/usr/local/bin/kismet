@@ -1,0 +1,355 @@
+#!/usr/bin/env python3
+"""
+Kismet AI Suite CLI - Central command for Kismet AI agents and tools
+Usage: kismet [command] [args...]
+       kismet          # Interactive menu
+       kismet chat    # Start Hermes agent conversation
+       kismet code    # Start OpenCode coding session
+       kismet ollama  # Start Ollama LLM locally
+       kismet status  # Show AI provider status
+       kismet config  # Configure AI preferences
+       kismet help    # Show this help
+"""
+
+import os
+import sys
+import json
+import subprocess
+import shutil
+
+CONFIG_DIR = os.path.expanduser("~/.config/kismet")
+CONFIG_FILE = os.path.join(CONFIG_DIR, "ai-suite.json")
+STATE_FILE = os.path.join(CONFIG_DIR, "ai-state.json")
+
+PROVIDERS = {
+    "hermes": {
+        "name": "Hermes Agent",
+        "description": "General-purpose AI assistant with reasoning and tools",
+        "command": "kismet-hermes",
+        "requires": "hermes",
+    },
+    "opencode": {
+        "name": "OpenCode",
+        "description": "AI-powered coding assistant (Claude Code)",
+        "command": "opencode",
+        "requires": "opencode",
+    },
+    "ollama": {
+        "name": "Ollama",
+        "description": "Local LLM with many models",
+        "command": "ollama serve",
+        "requires": "ollama",
+    },
+    "openclaw": {
+        "name": "OpenClaw",
+        "description": "Your personal AI agent (OpenClaw)",
+        "command": "openclaw",
+        "requires": "openclaw",
+    },
+}
+
+
+def load_config():
+    """Load or create user configuration."""
+    os.makedirs(CONFIG_DIR, exist_ok=True)
+    if os.path.exists(CONFIG_FILE):
+        with open(CONFIG_FILE) as f:
+            return json.load(f)
+    return {"preferred": "hermes", "model_strategy": "auto", "windows_compat": True}
+
+
+def save_config(config):
+    """Save user configuration."""
+    with open(CONFIG_FILE, "w") as f:
+        json.dump(config, f, indent=2)
+
+
+def load_state():
+    """Load AI provider runtime state."""
+    if os.path.exists(STATE_FILE):
+        with open(STATE_FILE) as f:
+            return json.load(f)
+    return {"running": {}, "history": []}
+
+
+def save_state(state):
+    """Save AI provider runtime state."""
+    with open(STATE_FILE, "w") as f:
+        json.dump(state, f, indent=2)
+
+
+def check_provider_available(provider_key):
+    """Check if a provider's command is available."""
+    info = PROVIDERS.get(provider_key)
+    if not info:
+        return False
+    cmd = info["command"].split()[0]
+    return shutil.which(cmd) is not None or os.path.exists(f"/usr/local/bin/{cmd}")
+
+
+def status_command():
+    """Show status of all AI providers."""
+    config = load_config()
+    state = load_state()
+    
+    print("\n=== Kismet AI Suite Status ===\n")
+    print(f"Preferred Provider: {config.get('preferred', 'hermes')}")
+    print(f"Model Strategy: {config.get('model_strategy', 'auto')}")
+    print(f"Windows Compatibility: {config.get('windows_compat', True)}\n")
+    
+    print("Providers:")
+    for key, info in PROVIDERS.items():
+        available = check_provider_available(key)
+        running = state.get("running", {}).get(key, False)
+        status = "✓ Running" if running else ("✓ Available" if available else "✗ Not found")
+        print(f"  {key:12} {info['name']:20} [{status}]")
+    
+    print()
+    return 0
+
+
+def chat_command(args):
+    """Start Hermes agent conversation."""
+    if not check_provider_available("hermes"):
+        print("Error: Hermes not found. Install Hermes agent first.", file=sys.stderr)
+        return 1
+    
+    cmd = ["kismet-hermes"]
+    if args:
+        cmd.extend(args)
+    
+    print("Starting Hermes agent...")
+    return subprocess.call(cmd)
+
+
+def code_command(args):
+    """Start OpenCode coding session."""
+    if not check_provider_available("opencode"):
+        print("Error: OpenCode not found. Install Claude Code first.", file=sys.stderr)
+        return 1
+    
+    cmd = ["opencode"]
+    if args:
+        cmd.extend(args)
+    
+    print("Starting OpenCode...")
+    return subprocess.call(cmd)
+
+
+def ollama_command(args):
+    """Start Ollama LLM."""
+    if not check_provider_available("ollama"):
+        print("Error: Ollama not found. Install Ollama first.", file=sys.stderr)
+        return 1
+    
+    # Check if already running
+    state = load_state()
+    if state.get("running", {}).get("ollama"):
+        print("Ollama is already running.")
+        if args and args[0] == "run":
+            print(f"Running model: {' '.join(args[1:])}")
+            return subprocess.call(["ollama"] + args)
+        print("Use 'kismet ollama run <model>' to run a model")
+        return 0
+    
+    # Start ollama serve in background
+    print("Starting Ollama server...")
+    subprocess.Popen(["ollama", "serve"], 
+                     stdout=subprocess.DEVNULL, 
+                     stderr=subprocess.DEVNULL)
+    
+    state.setdefault("running", {})["ollama"] = True
+    save_state(state)
+    print("Ollama server started. Use 'kismet ollama run <model>' to chat.")
+    return 0
+
+
+def config_command(args):
+    """Configure AI preferences."""
+    config = load_config()
+    
+    if not args:
+        print("\n=== Kismet AI Configuration ===\n")
+        print(f"Preferred Provider: {config.get('preferred', 'hermes')}")
+        print(f"Model Strategy: {config.get('model_strategy', 'auto')}")
+        print(f"Windows Compatibility: {config.get('windows_compat', True)}\n")
+        print("To change settings:")
+        print("  kismet config preferred <hermes|opencode|ollama|openclaw>")
+        print("  kismet config strategy <auto|prefer-local|prefer-remote>")
+        print("  kismet config windows <on|off>")
+        return 0
+    
+    action = args[0]
+    
+    if action == "preferred" and len(args) > 1:
+        provider = args[1]
+        if provider in PROVIDERS:
+            config["preferred"] = provider
+            save_config(config)
+            print(f"Preferred provider set to: {provider}")
+            return 0
+        else:
+            print(f"Unknown provider: {provider}", file=sys.stderr)
+            return 1
+    
+    if action == "strategy" and len(args) > 1:
+        strategy = args[1]
+        if strategy in ("auto", "prefer-local", "prefer-remote"):
+            config["model_strategy"] = strategy
+            save_config(config)
+            print(f"Model strategy set to: {strategy}")
+            return 0
+        else:
+            print(f"Unknown strategy: {strategy}", file=sys.stderr)
+            return 1
+    
+    if action == "windows" and len(args) > 1:
+        if args[1] in ("on", "true", "1"):
+            config["windows_compat"] = True
+        elif args[1] in ("off", "false", "0"):
+            config["windows_compat"] = False
+        else:
+            print(f"Invalid value: {args[1]}", file=sys.stderr)
+            return 1
+        save_config(config)
+        print(f"Windows compatibility: {config['windows_compat']}")
+        return 0
+    
+    print(f"Unknown config option: {action}", file=sys.stderr)
+    return 1
+
+
+def interactive_menu():
+    """Show interactive menu for selecting AI provider."""
+    config = load_config()
+    
+    print("\n" + "=" * 50)
+    print("       KISMET AI SUITE")
+    print("=" * 50)
+    print()
+    print("Select an AI provider:")
+    print()
+    
+    # Check availability for each provider
+    options = []
+    for i, (key, info) in enumerate(PROVIDERS.items(), 1):
+        available = check_provider_available(key)
+        marker = "→" if key == config.get("preferred") else " "
+        status = "✓" if available else "✗"
+        options.append((key, f"{marker} {i}) {info['name']} {status}"))
+        print(f"{marker} {i}) {info['name']:20} {status}")
+        print(f"    {info['description']}")
+        print()
+    
+    print(f"  r) Configure preferred provider")
+    print(f"  s) Status")
+    print(f"  q) Quit")
+    print()
+    
+    choice = input("Select: ").strip().lower()
+    
+    if choice == "q":
+        return 0
+    
+    if choice == "s":
+        return status_command()
+    
+    if choice == "r":
+        print("\nAvailable providers:")
+        for key in PROVIDERS:
+            print(f"  {key}")
+        preferred = input("Enter preferred provider: ").strip()
+        if preferred in PROVIDERS:
+            config["preferred"] = preferred
+            save_config(config)
+            print(f"Preferred provider set to: {preferred}")
+        return 0
+    
+    # Try numeric choice
+    try:
+        idx = int(choice) - 1
+        if 0 <= idx < len(options):
+            key = options[idx][0]
+            if check_provider_available(key):
+                config["preferred"] = key
+                save_config(config)
+                if key == "hermes":
+                    return chat_command([])
+                elif key == "opencode":
+                    return code_command([])
+                elif key == "ollama":
+                    return ollama_command(["run", "llama2"])
+                elif key == "openclaw":
+                    return subprocess.call(["openclaw"])
+            else:
+                print(f"Provider not available: {key}")
+                return 1
+    except ValueError:
+        pass
+    
+    # Try direct provider name
+    if choice in PROVIDERS and check_provider_available(choice):
+        config["preferred"] = choice
+        save_config(config)
+        if choice == "hermes":
+            return chat_command([])
+        elif choice == "opencode":
+            return code_command([])
+        elif choice == "ollama":
+            return ollama_command(["run", "llama2"])
+    
+    print("Invalid selection")
+    return 1
+
+
+def help_command():
+    """Show help message."""
+    print(__doc__)
+    return 0
+
+
+def main():
+    if len(sys.argv) < 2:
+        return interactive_menu()
+    
+    command = sys.argv[1]
+    args = sys.argv[2:]
+    
+    if command in ("help", "-h", "--help"):
+        return help_command()
+    
+    if command == "chat":
+        return chat_command(args)
+    
+    if command == "code":
+        return code_command(args)
+    
+    if command == "ollama":
+        return ollama_command(args)
+    
+    if command == "status":
+        return status_command()
+    
+    if command == "config":
+        return config_command(args)
+    
+    # Try as provider name
+    if command in PROVIDERS:
+        config = load_config()
+        config["preferred"] = command
+        save_config(config)
+        
+        if command == "hermes":
+            return chat_command(args)
+        elif command == "opencode":
+            return code_command(args)
+        elif command == "ollama":
+            return ollama_command(args if args else ["run", "llama2"])
+    
+    print(f"Unknown command: {command}", file=sys.stderr)
+    print("Run 'kismet help' for usage information", file=sys.stderr)
+    return 1
+
+
+if __name__ == "__main__":
+    sys.exit(main())

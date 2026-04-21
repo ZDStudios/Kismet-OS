@@ -1,0 +1,9 @@
+[Desktop Entry]
+Type=Application
+Name=Kismet GNOME Polish
+Comment=Apply Zorin-style GNOME theming
+Exec=kismet-gnome-polish
+Terminal=false
+Hidden=false
+NoDisplay=false
+X-GNOME-Autostart-enabled=true

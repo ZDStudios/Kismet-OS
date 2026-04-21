@@ -49,6 +49,35 @@ run_runtime() {
   shift 2
   local log_file="$HOME/.local/state/kismet/windows-launch.log"
   printf '\n[%s] launching %s with %s\n' "$(date -Is)" "$target" "$runtime" >>"$log_file"
+  
+  # Use a persistent terminal so the app doesn't close immediately
+  local term_cmd=""
+  if command -v konsole >/dev/null 2>&1; then
+    term_cmd="konsole -e"
+  elif command -v gnome-terminal >/dev/null 2>&1; then
+    term_cmd="gnome-terminal --"
+  elif command -v xterm >/dev/null 2>&1; then
+    term_cmd="xterm -e"
+  fi
+  
+  if [ -n "$term_cmd" ]; then
+    case "$EXT" in
+      msi)
+        $term_cmd env WINEPREFIX="$WINEPREFIX" WINEDEBUG="$WINEDEBUG" wine64 msiexec /i "$target" "$@" >>"$log_file" 2>&1 &
+        ;;
+      bat|cmd)
+        $term_cmd env WINEPREFIX="$WINEPREFIX" WINEDEBUG="$WINEDEBUG" wine64 cmd /c "$target" "$@" >>"$log_file" 2>&1 &
+        ;;
+      *)
+        $term_cmd env WINEPREFIX="$WINEPREFIX" WINEDEBUG="$WINEDEBUG" wine64 "$target" "$@" >>"$log_file" 2>&1 &
+        ;;
+    esac
+    # Give it a moment to start
+    sleep 1
+    return 0
+  fi
+  
+  # Fallback: direct launch (will likely close immediately)
   case "$EXT" in
     msi)
       "$runtime" msiexec /i "$target" "$@" >>"$log_file" 2>&1

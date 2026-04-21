@@ -1,0 +1,12 @@
+[Desktop Entry]
+Type=Application
+Name=Kismet AI Suite
+GenericName=AI Assistant
+Comment=Launch Kismet AI providers (Hermes, OpenCode, Ollama)
+Icon=kismet-logo
+Exec=kismet
+Terminal=true
+Categories=Utility;AI;Development;
+Keywords=ai;hermes;opencode;ollama;assistant;chat;coding;
+StartupNotify=true
+StartupWMClass=kismet
