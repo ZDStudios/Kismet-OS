@@ -11,9 +11,9 @@ Kismet OS can now:
 - rebuild a boot-structured preview ISO at `kismet-build/output/kismet-os-dev-preview.iso`
 
 ## Remaining blockers
-- automate chroot package installation into the extracted live filesystem
-- refresh metadata/manifests from a fuller package-aware chroot path
-- boot-test the resulting image in a VM or test environment
+- boot-test the latest preview ISO in a VM and capture the first boot/runtime failures cleanly
+- tighten SDDM, Plymouth, and desktop-session validation so branding mistakes get caught before ISO emission
+- reduce preview ISO size and polish first-boot UX once the login path is stable
 
 ## Overall status
 The project is now well past pure scaffolding. It is in real preview-image pipeline territory.

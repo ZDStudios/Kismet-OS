@@ -6,6 +6,8 @@ EDIT_DIR="$ROOT_DIR/kismet-build/work/live-rootfs-edit"
 WALLPAPER_SRC_SVG="$ROOT_DIR/kismet-theme/wallpapers/kismet-wallpaper.svg"
 WALLPAPER_DST_DIR="$EDIT_DIR/usr/share/backgrounds/kismet"
 PLYMOUTH_DIR="$EDIT_DIR/usr/share/plymouth/themes/kismet"
+SDDM_THEME_DIR="$EDIT_DIR/usr/share/sddm/themes/kismet"
+SDDM_BREEZE_THEME_DIR="$EDIT_DIR/usr/share/sddm/themes/breeze"
 
 if [ ! -d "$EDIT_DIR" ]; then
   echo "Editable live rootfs not found. Run prepare-live-rootfs.sh first." >&2
@@ -16,6 +18,22 @@ mkdir -p "$EDIT_DIR/etc/sddm.conf.d" "$EDIT_DIR/etc/plymouth" "$WALLPAPER_DST_DI
 cp -f "$ROOT_DIR/kismet-theme/plymouth/kismet.plymouth" "$PLYMOUTH_DIR/"
 cp -f "$ROOT_DIR/kismet-theme/plymouth/kismet.script" "$PLYMOUTH_DIR/"
 cp -f "$WALLPAPER_SRC_SVG" "$WALLPAPER_DST_DIR/kismet-wallpaper.svg"
+
+if [ -d "$SDDM_BREEZE_THEME_DIR" ]; then
+  rm -rf "$SDDM_THEME_DIR"
+  cp -a "$SDDM_BREEZE_THEME_DIR" "$SDDM_THEME_DIR"
+else
+  mkdir -p "$SDDM_THEME_DIR"
+fi
+
+cat > "$SDDM_THEME_DIR/theme.conf.user" <<'EOF'
+[General]
+Background=/usr/share/backgrounds/kismet/kismet-wallpaper.svg
+ScreenWidth=1920
+ScreenHeight=1080
+CursorTheme=breeze_cursors
+Font=Inter,10,-1,5,50,0,0,0,0,0
+EOF
 
 cat > "$EDIT_DIR/etc/os-release" <<'EOF'
 NAME="Kismet OS"
@@ -77,10 +95,13 @@ rm -f \
   "$EDIT_DIR/usr/share/wayland-sessions/ubuntu-wayland.desktop" \
   "$EDIT_DIR/usr/share/ubuntu-wayland/applications/gnome-initial-setup.desktop"
 
+mkdir -p "$EDIT_DIR/etc/X11" "$EDIT_DIR/etc/systemd/system/graphical.target.wants"
 rm -f "$EDIT_DIR/etc/X11/default-display-manager"
-printf '/usr/sbin/sddm\n' > "$EDIT_DIR/etc/X11/default-display-manager"
+printf '/usr/bin/sddm\n' > "$EDIT_DIR/etc/X11/default-display-manager"
 rm -f "$EDIT_DIR/etc/systemd/system/display-manager.service"
 ln -s /lib/systemd/system/sddm.service "$EDIT_DIR/etc/systemd/system/display-manager.service"
+rm -f "$EDIT_DIR/etc/systemd/system/graphical.target.wants/display-manager.service"
+ln -s /lib/systemd/system/sddm.service "$EDIT_DIR/etc/systemd/system/graphical.target.wants/display-manager.service"
 rm -rf "$EDIT_DIR/etc/systemd/system/display-manager.service.wants" || true
 mkdir -p "$EDIT_DIR/etc/systemd/system/display-manager.service.wants"
 

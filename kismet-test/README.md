@@ -47,6 +47,15 @@ cd kismet-test
 
 This validates the Ubuntu ISO build image, confirms the required remastering tools are present, and exercises the lightweight preview staging scripts without running the full ISO rebuild.
 
+Live rootfs branding check:
+
+```bash
+cd kismet-test
+./validate-live-rootfs-branding.sh
+```
+
+This catches the sort of silly-but-deadly display-manager mistakes that make a VM stare back at you with red boot text.
+
 ## Access targets
 - Web VNC: http://localhost:6080
 - Raw VNC: localhost:5901
