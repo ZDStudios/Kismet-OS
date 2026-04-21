@@ -212,7 +212,7 @@ cat > "$GDM_DIR/custom.conf" <<'EOF'
 [daemon]
 WaylandEnable=true
 DefaultSession=gnome.desktop
-AutomaticLogin=live
+AutomaticLogin=admin
 AutomaticLoginDelay=0
 
 [security]

@@ -4,12 +4,13 @@
 
 set -euo pipefail
 
-LIVE_USER="${LIVE_USER:-live}"
-LIVE_UID="${LIVE_UID:-999}"
-LIVE_GID="${LIVE_GID:-999}"
-LIVE_GECOS="${LIVE_GECOS:-Live Session User}"
+LIVE_USER="${LIVE_USER:-admin}"
+LIVE_UID="${LIVE_UID:-1000}"
+LIVE_GID="${LIVE_GID:-1000}"
+LIVE_GECOS="${LIVE_GECOS:-Administrator}"
 LIVE_SHELL="${LIVE_SHELL:-/bin/bash}"
 LIVE_HOME="${LIVE_HOME:-/home/$LIVE_USER}"
+LIVE_PASSWORD="${LIVE_PASSWORD:-admin}"
 
 # Create groups if needed (some may not exist in base image)
 create_group_if_missing() {
@@ -40,8 +41,8 @@ if ! id "$LIVE_USER" >/dev/null 2>&1; then
       --shell "$LIVE_SHELL" --comment "$LIVE_GECOS" "$LIVE_USER"
   }
   
-  # Set empty password (no password login)
-  passwd -d "$LIVE_USER" 2>/dev/null || true
+  # Set password for the admin user
+  echo "$LIVE_USER:$LIVE_PASSWORD" | chpasswd 2>/dev/null || true
 fi
 
 # Ensure home directory has skel content
