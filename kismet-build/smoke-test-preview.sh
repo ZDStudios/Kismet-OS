@@ -60,11 +60,16 @@ pass "Ubuntu session entries removed"
 grep -q '/usr/sbin/gdm3' "$EDIT_DIR/etc/X11/default-display-manager" || fail "GDM is not set as the default display manager"
 pass "GDM is the default display manager"
 
-# Verify GDM auto-login for live user
+# Verify GDM auto-login for admin user
 if [ -f "$EDIT_DIR/etc/gdm3/custom.conf" ]; then
-  grep -q 'AutomaticLogin=live' "$EDIT_DIR/etc/gdm3/custom.conf" || fail "GDM auto-login for live user not configured"
-  pass "GDM auto-login for live user configured"
+  grep -q 'AutomaticLogin=admin' "$EDIT_DIR/etc/gdm3/custom.conf" || fail "GDM auto-login for admin user not configured"
+  pass "GDM auto-login for admin user configured"
 fi
+
+# Verify admin account exists in the editable rootfs
+chroot "$EDIT_DIR" getent passwd admin >/dev/null 2>&1 || fail "admin user is missing from live rootfs"
+chroot "$EDIT_DIR" getent shadow admin >/dev/null 2>&1 || fail "admin shadow entry is missing from live rootfs"
+pass "admin account exists in live rootfs"
 
 # Verify GDM user list hiding (via dconf database)
 if [ -f "$EDIT_DIR/etc/dconf/db/gdm.d/00-kismet-greeter" ]; then
@@ -74,8 +79,8 @@ fi
 
 # Verify kismet assets
 [ -f "$EDIT_DIR/usr/share/pixmaps/kismet-logo.svg" ] || fail "Kismet logo asset missing from pixmaps"
-[ -f "$EDIT_DIR/usr/bin/kismet" ] || fail "kismet CLI missing"
-chmod +x "$EDIT_DIR/usr/bin/kismet" 2>/dev/null || true
+[ -f "$EDIT_DIR/usr/local/bin/kismet" ] || fail "kismet CLI missing"
+chmod +x "$EDIT_DIR/usr/local/bin/kismet" 2>/dev/null || true
 pass "Kismet logo and CLI are present"
 
 # Verify GNOME snap branding patch

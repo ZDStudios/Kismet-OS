@@ -1,9 +1,10 @@
 #!/usr/bin/env bash
-# Creates the live user and configures GDM for auto-login
-# Run this INSIDE the chroot of the live rootfs
+# Creates the live user in the editable live rootfs and configures a default account.
 
 set -euo pipefail
 
+ROOT_DIR="$(cd "$(dirname "$0")/.." && pwd)"
+EDIT_DIR="${EDIT_DIR:-$ROOT_DIR/kismet-build/work/live-rootfs-edit}"
 LIVE_USER="${LIVE_USER:-admin}"
 LIVE_UID="${LIVE_UID:-1000}"
 LIVE_GID="${LIVE_GID:-1000}"
@@ -12,43 +13,76 @@ LIVE_SHELL="${LIVE_SHELL:-/bin/bash}"
 LIVE_HOME="${LIVE_HOME:-/home/$LIVE_USER}"
 LIVE_PASSWORD="${LIVE_PASSWORD:-admin}"
 
-# Create groups if needed (some may not exist in base image)
+[ -d "$EDIT_DIR" ] || {
+  echo "Editable live rootfs not found at $EDIT_DIR. Run prepare-live-rootfs.sh first." >&2
+  exit 1
+}
+
+mkdir -p "$EDIT_DIR/proc" "$EDIT_DIR/sys" "$EDIT_DIR/dev" "$EDIT_DIR/run"
+
+cleanup() {
+  umount "$EDIT_DIR/proc" 2>/dev/null || true
+  umount "$EDIT_DIR/sys" 2>/dev/null || true
+  umount "$EDIT_DIR/dev" 2>/dev/null || true
+  umount "$EDIT_DIR/run" 2>/dev/null || true
+}
+trap cleanup EXIT
+
+mountpoint -q "$EDIT_DIR/proc" || mount --bind /proc "$EDIT_DIR/proc"
+mountpoint -q "$EDIT_DIR/sys" || mount --bind /sys "$EDIT_DIR/sys"
+mountpoint -q "$EDIT_DIR/dev" || mount --bind /dev "$EDIT_DIR/dev"
+mountpoint -q "$EDIT_DIR/run" || mount --bind /run "$EDIT_DIR/run"
+
+chroot "$EDIT_DIR" /usr/bin/env \
+  LIVE_USER="$LIVE_USER" \
+  LIVE_UID="$LIVE_UID" \
+  LIVE_GID="$LIVE_GID" \
+  LIVE_GECOS="$LIVE_GECOS" \
+  LIVE_SHELL="$LIVE_SHELL" \
+  LIVE_HOME="$LIVE_HOME" \
+  LIVE_PASSWORD="$LIVE_PASSWORD" \
+  bash <<'EOF'
+set -euo pipefail
+
 create_group_if_missing() {
-  local grp="$1"
+  grp="$1"
   if ! getent group "$grp" >/dev/null 2>&1; then
     groupadd --system "$grp" 2>/dev/null || true
   fi
 }
 
-# Create live user if it doesn't exist
-if ! id "$LIVE_USER" >/dev/null 2>&1; then
-  echo "==> Creating live user: $LIVE_USER"
-  
-  # Ensure core groups exist
-  for grp in sudo adm cdrom dip plugdev lpadmin; do
-    create_group_if_missing "$grp"
-  done
-  
-  # Create user with just the groups that exist
-  local groups=$(getent group sudo adm cdrom dip plugdev lpadmin 2>/dev/null | cut -d: -f1 | tr '\n' ',' | sed 's/,$//')
-  
-  useradd --uid "$LIVE_UID" --gid "$LIVE_GID" --groups "$groups" \
-    --create-home --home-dir "$LIVE_HOME" \
-    --shell "$LIVE_SHELL" --comment "$LIVE_GECOS" "$LIVE_USER" || {
-    # Fallback: create without specific groups
-    useradd --uid "$LIVE_UID" --gid "$LIVE_GID" \
-      --create-home --home-dir "$LIVE_HOME" \
-      --shell "$LIVE_SHELL" --comment "$LIVE_GECOS" "$LIVE_USER"
-  }
-  
-  # Set password for the admin user
-  echo "$LIVE_USER:$LIVE_PASSWORD" | chpasswd 2>/dev/null || true
+if ! getent group "$LIVE_USER" >/dev/null 2>&1; then
+  groupadd --gid "$LIVE_GID" "$LIVE_USER"
 fi
 
-# Ensure home directory has skel content
+for grp in sudo adm cdrom dip plugdev lpadmin; do
+  create_group_if_missing "$grp"
+done
+
+groups="$(getent group sudo adm cdrom dip plugdev lpadmin 2>/dev/null | cut -d: -f1 | paste -sd, -)"
+
+if ! id "$LIVE_USER" >/dev/null 2>&1; then
+  echo "==> Creating live user: $LIVE_USER"
+  if [ -n "$groups" ]; then
+    useradd --uid "$LIVE_UID" --gid "$LIVE_USER" --groups "$groups" \
+      --create-home --home-dir "$LIVE_HOME" \
+      --shell "$LIVE_SHELL" --comment "$LIVE_GECOS" "$LIVE_USER"
+  else
+    useradd --uid "$LIVE_UID" --gid "$LIVE_USER" \
+      --create-home --home-dir "$LIVE_HOME" \
+      --shell "$LIVE_SHELL" --comment "$LIVE_GECOS" "$LIVE_USER"
+  fi
+fi
+
+echo "$LIVE_USER:$LIVE_PASSWORD" | chpasswd
+passwd -u "$LIVE_USER" >/dev/null 2>&1 || true
+
 if [ -d /etc/skel ] && [ -d "$LIVE_HOME" ]; then
-  cp -rf /etc/skel/.[!.]* "$LIVE_HOME/" 2>/dev/null || true
+  find /etc/skel -mindepth 1 -maxdepth 1 -exec cp -a {} "$LIVE_HOME/" \; 2>/dev/null || true
   chown -R "$LIVE_UID:$LIVE_GID" "$LIVE_HOME" 2>/dev/null || true
 fi
 
-echo "==> Live user '$LIVE_USER' created"
+echo "==> Live user '$LIVE_USER' ready with configured password"
+EOF
+
+echo "==> Live user '$LIVE_USER' injected into $EDIT_DIR"

@@ -41,6 +41,8 @@ case "$MODE" in
   build)
     echo "==> Full build: layout + branding + live-user + repack + smoke + branding-scan"
     run_inner 'bash ./kismet-build/make-dev-preview-layout.sh
+               bash ./kismet-build/overlay-kismet-files.sh
+               bash ./kismet-build/apply-kismet-overlay.sh
                bash ./kismet-build/force-kismet-branding.sh
                bash ./kismet-build/setup-live-user.sh
                bash ./kismet-build/repack-live-rootfs.sh
@@ -65,6 +67,8 @@ case "$MODE" in
   qemu-boot|boot)
     echo "==> Full build + QEMU boot test"
     run_inner 'bash ./kismet-build/make-dev-preview-layout.sh
+               bash ./kismet-build/overlay-kismet-files.sh
+               bash ./kismet-build/apply-kismet-overlay.sh
                bash ./kismet-build/force-kismet-branding.sh
                bash ./kismet-build/setup-live-user.sh
                bash ./kismet-build/repack-live-rootfs.sh
