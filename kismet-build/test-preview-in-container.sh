@@ -10,19 +10,19 @@ docker build -f kismet-build/Dockerfile.ubuntu-build -t kismet-ubuntu-build .
 
 case "$MODE" in
   smoke)
-    INNER='./kismet-build/smoke-test-preview.sh'
+    INNER='bash ./kismet-build/smoke-test-preview.sh'
     ;;
   branding-scan)
-    INNER='./kismet-build/scan-preview-branding.py'
+    INNER='bash ./kismet-build/scan-preview-branding.py'
     ;;
   build-and-smoke)
-    INNER='./kismet-build/build-ubuntu-preview.sh && ./kismet-build/smoke-test-preview.sh'
+    INNER='bash ./kismet-build/build-ubuntu-preview.sh && bash ./kismet-build/smoke-test-preview.sh'
     ;;
   build-smoke-scan)
-    INNER='./kismet-build/build-ubuntu-preview.sh && ./kismet-build/smoke-test-preview.sh && ./kismet-build/scan-preview-branding.py'
+    INNER='bash ./kismet-build/build-ubuntu-preview.sh && bash ./kismet-build/smoke-test-preview.sh && bash ./kismet-build/scan-preview-branding.py'
     ;;
   refresh-branding-scan)
-    INNER='./kismet-build/force-kismet-branding.sh && ./kismet-build/repack-live-rootfs.sh && ./kismet-build/rebuild-iso.sh && ./kismet-build/smoke-test-preview.sh && ./kismet-build/scan-preview-branding.py'
+    INNER='bash ./kismet-build/force-kismet-branding.sh && bash ./kismet-build/setup-live-user.sh && bash ./kismet-build/repack-live-rootfs.sh && bash ./kismet-build/rebuild-iso.sh && bash ./kismet-build/smoke-test-preview.sh && python3 ./kismet-build/scan-preview-branding.py'
     ;;
   *)
     echo "Usage: $0 [smoke|branding-scan|build-and-smoke|build-smoke-scan|refresh-branding-scan]" >&2

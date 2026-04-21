@@ -212,6 +212,8 @@ cat > "$GDM_DIR/custom.conf" <<'EOF'
 [daemon]
 WaylandEnable=true
 DefaultSession=gnome.desktop
+AutomaticLogin=live
+AutomaticLoginDelay=0
 
 [security]
 DisallowTCP=true
@@ -222,6 +224,13 @@ DisallowTCP=true
 
 [debug]
 EOF
+
+mkdir -p "$EDIT_DIR/etc/dconf/db/gdm.d"
+cat > "$EDIT_DIR/etc/dconf/db/gdm.d/00-kismet-greeter" <<'DBCEOF'
+[org/gnome/login-screen]
+logo='/usr/share/pixmaps/kismet-logo.svg'
+disable-user-list=true
+DBCEOF
 
 mkdir -p "$EDIT_DIR/etc/X11" "$EDIT_DIR/etc/systemd/system/graphical.target.wants"
 rm -f "$EDIT_DIR/etc/X11/default-display-manager"
@@ -247,12 +256,4 @@ for service in sddm.service gnome-initial-setup.service; do
   rm -f "$EDIT_DIR/usr/lib/systemd/system/$service" || true
 done
 
-mkdir -p "$EDIT_DIR/etc/skel/.config/plasma-workspace/env"
-cat > "$EDIT_DIR/etc/skel/.config/plasma-workspace/env/kismet-branding.sh" <<'EOF'
-export XDG_CURRENT_DESKTOP=KDE
-export DESKTOP_SESSION=plasma
-export XDG_SESSION_DESKTOP=KDE
-EOF
-chmod +x "$EDIT_DIR/etc/skel/.config/plasma-workspace/env/kismet-branding.sh"
-
-echo "==> Forced Kismet branding, Kismet icon replacements, Plasma sessions, and GDM defaults into editable rootfs"
+echo "==> Forced Kismet branding, Kismet icon replacements, GNOME sessions, and GDM defaults into editable rootfs"
