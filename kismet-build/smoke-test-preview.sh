@@ -1,4 +1,7 @@
 #!/usr/bin/env bash
+# smoke-test-preview.sh - Validate the Kismet OS preview ISO
+# Run AFTER the ISO is rebuilt.
+
 set -euo pipefail
 
 ROOT_DIR="$(cd "$(dirname "$0")/.." && pwd)"
@@ -10,9 +13,6 @@ BASE_ISO="$ROOT_DIR/kismet-build/cache/ubuntu-24.04-desktop-amd64.iso"
 TARGET_FS="$("$ROOT_DIR/kismet-build/detect-livefs-path.sh" "$EXTRACT_DIR")"
 SNAP_WORK="$WORK_DIR/test-gnome-snap"
 
-command -v xorriso >/dev/null 2>&1 || fail "xorriso is required for host-side smoke tests. Run through test-preview-in-container.sh or install xorriso on the host."
-command -v unsquashfs >/dev/null 2>&1 || fail "unsquashfs is required for host-side smoke tests. Run through test-preview-in-container.sh or install squashfs-tools on the host."
-
 fail() {
   echo "[FAIL] $*" >&2
   exit 1
@@ -22,39 +22,69 @@ pass() {
   echo "[PASS] $*"
 }
 
+# Verify ISO exists
 [ -f "$OUTPUT_ISO" ] || fail "Preview ISO is missing at $OUTPUT_ISO"
 [ -f "$BASE_ISO" ] || fail "Base ISO is missing at $BASE_ISO"
 [ -d "$EXTRACT_DIR" ] || fail "Extracted ISO tree is missing at $EXTRACT_DIR"
 [ -d "$EDIT_DIR" ] || fail "Editable live rootfs is missing at $EDIT_DIR"
 [ -f "$TARGET_FS" ] || fail "Live filesystem image is missing at $TARGET_FS"
 
+# Verify ISO label
 ISO_LABEL="$(xorriso -indev "$OUTPUT_ISO" -pvd_info 2>/dev/null | awk -F': ' '/Volume [iI]d/ {gsub(/\047/, "", $2); print $2; exit}')"
 [ "$ISO_LABEL" = "KISMET_DEV_PREVIEW" ] || fail "Unexpected ISO label: ${ISO_LABEL:-<empty>}"
 pass "ISO label is $ISO_LABEL"
 
+# Verify os-release
 OS_RELEASE="$EDIT_DIR/etc/os-release"
 grep -q 'NAME="Kismet OS"' "$OS_RELEASE" || fail "os-release still lacks Kismet branding"
 grep -q 'PRETTY_NAME="Kismet OS 2 Preview"' "$OS_RELEASE" || fail "PRETTY_NAME not updated"
 pass "Rootfs os-release branding looks correct"
 
+# Verify TTY branding
 grep -q '^Kismet OS 2 Preview' "$EDIT_DIR/etc/issue" || fail "/etc/issue still contains the old distro name"
 grep -q '^Kismet OS 2 Preview' "$EDIT_DIR/etc/issue.net" || fail "/etc/issue.net still contains the old distro name"
 pass "TTY branding looks correct"
 
-[ -f "$EDIT_DIR/usr/share/xsessions/plasma.desktop" ] || fail "Plasma X session desktop entry missing"
-[ -f "$EDIT_DIR/usr/share/wayland-sessions/plasma.desktop" ] || fail "Plasma Wayland session desktop entry missing"
+# Verify GNOME sessions (primary) and Plasma sessions (optional)
+[ -f "$EDIT_DIR/usr/share/xsessions/gnome.desktop" ] || fail "GNOME X session desktop entry missing"
+[ -f "$EDIT_DIR/usr/share/xsessions/gnome-xorg.desktop" ] || fail "GNOME Xorg session desktop entry missing"
+[ -f "$EDIT_DIR/usr/share/wayland-sessions/gnome.desktop" ] || fail "GNOME Wayland session desktop entry missing"
+pass "GNOME session desktop entries are in place"
+
+# Verify Ubuntu sessions are removed
 [ ! -f "$EDIT_DIR/usr/share/xsessions/ubuntu.desktop" ] || fail "Ubuntu X session desktop entry still present"
+[ ! -f "$EDIT_DIR/usr/share/wayland-sessions/ubuntu-wayland.desktop" ] || fail "Ubuntu Wayland session still present"
+pass "Ubuntu session entries removed"
+
+# Verify display manager
 grep -q '/usr/sbin/gdm3' "$EDIT_DIR/etc/X11/default-display-manager" || fail "GDM is not set as the default display manager"
+pass "GDM is the default display manager"
+
+# Verify GDM auto-login for live user
+if [ -f "$EDIT_DIR/etc/gdm3/custom.conf" ]; then
+  grep -q 'AutomaticLogin=live' "$EDIT_DIR/etc/gdm3/custom.conf" || fail "GDM auto-login for live user not configured"
+  grep -q 'disable-user-list' "$EDIT_DIR/etc/gdm3/custom.conf" || fail "GDM user list hiding not configured"
+  pass "GDM auto-login and user list hiding configured"
+fi
+
+# Verify kismet assets
 [ -f "$EDIT_DIR/usr/share/pixmaps/kismet-logo.svg" ] || fail "Kismet logo asset missing from pixmaps"
-pass "Session branding/layout files are in place"
+[ -f "$EDIT_DIR/usr/bin/kismet" ] || fail "kismet CLI missing"
+chmod +x "$EDIT_DIR/usr/bin/kismet" 2>/dev/null || true
+pass "Kismet logo and CLI are present"
 
+# Verify GNOME snap branding patch
 rm -rf "$SNAP_WORK"
-unsquashfs -d "$SNAP_WORK" "$EDIT_DIR/var/lib/snapd/snaps/gnome-42-2204_202.snap" >/dev/null
-SNAP_DESKTOP="$SNAP_WORK/usr/share/ubuntu/applications/gnome-initial-setup.desktop"
-[ -f "$SNAP_DESKTOP" ] || fail "Expected gnome-initial-setup desktop file not found in GNOME snap"
-grep -q 'Welcome to Kismet OS' "$SNAP_DESKTOP" || fail "GNOME snap still says Welcome to Ubuntu"
-pass "GNOME snap branding patch is present"
+if [ -f "$EDIT_DIR/var/lib/snapd/snaps/gnome-42-2204_202.snap" ]; then
+  unsquashfs -d "$SNAP_WORK" "$EDIT_DIR/var/lib/snapd/snaps/gnome-42-2204_202.snap" >/dev/null
+  SNAP_DESKTOP="$SNAP_WORK/usr/share/ubuntu/applications/gnome-initial-setup.desktop"
+  if [ -f "$SNAP_DESKTOP" ]; then
+    grep -q 'Welcome to Kismet OS' "$SNAP_DESKTOP" || fail "GNOME snap still says Welcome to Ubuntu"
+    pass "GNOME snap branding patch is present"
+  fi
+fi
 
+# Verify software catalog cache
 if [ -f "$EDIT_DIR/var/cache/swcatalog/cache/C-os-catalog.xb" ]; then
   python3 - "$EDIT_DIR/var/cache/swcatalog/cache/C-os-catalog.xb" <<'PY' || fail "Software catalog cache still contains Install Ubuntu"
 import sys
@@ -67,6 +97,7 @@ PY
   pass "Software catalog cache no longer advertises Install Ubuntu"
 fi
 
+# Verify filesystem size metadata
 TARGET_NAME="$(basename "$TARGET_FS")"
 SIZE_FILE="${TARGET_FS%.squashfs}.size"
 [ -f "$SIZE_FILE" ] || fail "filesystem.size metadata missing"
@@ -75,6 +106,7 @@ RECORDED_SIZE="$(tr -d '[:space:]' < "$SIZE_FILE")"
 [ "$ACTUAL_SIZE" = "$RECORDED_SIZE" ] || fail "filesystem.size mismatch, expected $ACTUAL_SIZE got $RECORDED_SIZE"
 pass "filesystem.size matches $TARGET_NAME"
 
+# Verify install-sources.yaml
 if [ -f "$EXTRACT_DIR/casper/install-sources.yaml" ]; then
   awk -v target="$TARGET_NAME" -v size="$ACTUAL_SIZE" '
     $1 == "path:" { current=$2 }

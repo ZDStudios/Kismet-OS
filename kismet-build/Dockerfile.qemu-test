@@ -1,0 +1,34 @@
+FROM ubuntu:24.04
+
+ENV DEBIAN_FRONTEND=noninteractive
+
+RUN apt-get update && apt-get install -y \
+    xorriso \
+    libarchive-tools \
+    squashfs-tools \
+    python3 \
+    curl \
+    wget \
+    ca-certificates \
+    rsync \
+    xz-utils \
+    sudo \
+    git \
+    live-build \
+    debootstrap \
+    dosfstools \
+    mtools \
+    grub-pc-bin \
+    grub-efi-amd64-bin \
+    isolinux \
+    syslinux-common \
+    memtest86+ \
+    apt-utils \
+    qemu-system-x86 \
+    ovmf \
+    && rm -rf /var/lib/apt/lists/*
+
+# For boot testing, mount /dev/kvm if available on host
+# Docker run --device=/dev/kvm:/dev/kvm
+
+WORKDIR /workspace
