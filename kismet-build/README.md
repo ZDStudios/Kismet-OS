@@ -13,4 +13,3 @@ This directory is the beginnings of the Kismet OS build pipeline.
 The preview pipeline can now emit a rebuilt ISO artifact at `kismet-build/output/kismet-os-dev-preview.iso`.
 It is still an early preview path, but it now repacks the real Ubuntu live filesystem, refreshes key size metadata, and preserves the source ISO boot structure during rebuild.
 
-The repo also now has a host-side QEMU smoke boot script at `kismet-test/boot-preview-iso-smoke.sh` so each rebuilt ISO can be boot-checked and screenshot-captured before calling it progress.

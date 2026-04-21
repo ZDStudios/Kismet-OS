@@ -56,15 +56,6 @@ cd kismet-test
 
 This catches the sort of silly-but-deadly display-manager mistakes that make a VM stare back at you with red boot text.
 
-QEMU ISO smoke boot:
-
-```bash
-cd kismet-test
-./boot-preview-iso-smoke.sh
-```
-
-This boots the generated ISO for a short window, captures a framebuffer screenshot, and writes serial and QEMU logs into `kismet-test/work/qemu-smoke/` so boot regressions can be inspected without a full manual VM session.
-
 ## Access targets
 - Web VNC: http://localhost:6080
 - Raw VNC: localhost:5901

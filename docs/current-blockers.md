@@ -11,7 +11,7 @@ Kismet OS can now:
 - rebuild a boot-structured preview ISO at `kismet-build/output/kismet-os-dev-preview.iso`
 
 ## Remaining blockers
-- QEMU smoke boot now captures cleanly, but the latest preview ISO is still sitting on the Ubuntu splash screen after 90 seconds instead of reaching a greeter or desktop
+- wait for manual ISO boot feedback and use that to drive the next login-path or initramfs fixes
 - tighten SDDM, Plymouth, and desktop-session validation so branding mistakes get caught before ISO emission
 - remaster or rebuild the boot/initramfs path if Kismet branding and login fixes need to affect early boot rather than only the live rootfs
 - reduce preview ISO size and polish first-boot UX once the login path is stable
