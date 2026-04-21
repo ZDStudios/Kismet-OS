@@ -5,7 +5,7 @@ ROOT_DIR="$(cd "$(dirname "$0")/.." && pwd)"
 WORK_DIR="$ROOT_DIR/kismet-build/work"
 EXTRACT_DIR="$WORK_DIR/ubuntu-iso"
 BASE_ISO="$ROOT_DIR/kismet-build/cache/ubuntu-24.04-desktop-amd64.iso"
-TARGET_FS="$($ROOT_DIR/kismet-build/detect-livefs-path.sh "$EXTRACT_DIR")"
+TARGET_FS="$("$ROOT_DIR/kismet-build/detect-livefs-path.sh" "$EXTRACT_DIR")"
 TARGET_NAME="$(basename "$TARGET_FS")"
 NEW_FS="$WORK_DIR/$TARGET_NAME"
 OUTPUT_DIR="$ROOT_DIR/kismet-build/output"
@@ -32,7 +32,7 @@ cp -f "$NEW_FS" "$TARGET_FS"
 
 if [ -f "$EXTRACT_DIR/md5sum.txt" ]; then
   echo "==> Refreshing md5sum.txt"
-  (cd "$EXTRACT_DIR" && find . -type f ! -name md5sum.txt -print0 | xargs -0 md5sum > md5sum.txt)
+  (cd "$EXTRACT_DIR" && find . -type f ! -name md5sum.txt -exec md5sum {} + > md5sum.txt)
 fi
 
 echo "==> Building ISO with xorriso"

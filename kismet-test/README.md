@@ -27,7 +27,9 @@ The preview container now:
 - exposes a simple health check for the web desktop
 - has a smoke-test entrypoint script at `smoke-preview-container.sh`
 
-## Smoke test
+## Smoke tests
+
+Preview desktop:
 
 ```bash
 cd kismet-test
@@ -35,6 +37,15 @@ cd kismet-test
 ```
 
 This boots the preview desktop, waits for the container to become healthy, checks the web desktop on port 6080, and verifies that `kismet-firstboot-wizard` is installed.
+
+Ubuntu build container:
+
+```bash
+cd kismet-test
+./smoke-build-container.sh
+```
+
+This validates the Ubuntu ISO build image, confirms the required remastering tools are present, and exercises the lightweight preview staging scripts without running the full ISO rebuild.
 
 ## Access targets
 - Web VNC: http://localhost:6080

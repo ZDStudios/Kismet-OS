@@ -4,7 +4,7 @@ set -euo pipefail
 ROOT_DIR="$(cd "$(dirname "$0")/.." && pwd)"
 WORK_DIR="$ROOT_DIR/kismet-build/work"
 EXTRACT_DIR="$WORK_DIR/ubuntu-iso"
-LIVE_FS="$($ROOT_DIR/kismet-build/detect-livefs-path.sh "$EXTRACT_DIR")"
+LIVE_FS="$("$ROOT_DIR/kismet-build/detect-livefs-path.sh" "$EXTRACT_DIR")"
 EDIT_DIR="$WORK_DIR/live-rootfs-edit"
 
 if [ ! -f "$LIVE_FS" ]; then
