@@ -18,7 +18,7 @@ if command -v gsettings >/dev/null 2>&1; then
   gsettings set org.gnome.desktop.background secondary-color '#1cb4ff'
   
   # Shell theme
-  gsettings set org.gnome.shell.extensions.user-theme name 'Yaru-dark'
+  gsettings set org.gnome.desktop.interface color-scheme 'prefer-dark'
   
   # Font settings
   gsettings set org.gnome.desktop.interface font-name 'Ubuntu 11'
@@ -32,10 +32,13 @@ if command -v gsettings >/dev/null 2>&1; then
   gsettings set org.gnome.desktop.interface titlebar-layout 'minimize,maximize,close'
   
   # Dock/Desktop
-  gsettings set org.gnome.shell.extensions.dash-to-dock dock-position 'BOTTOM'
-  gsettings set org.gnome.shell.extensions.dash-to-dock dock-alignment 0.5
-  gsettings set org.gnome.shell.extensions.dash-to-dock show-mounts false
-  gsettings set org.gnome.shell.extensions.dash-to-dock show-icons-only-on-primary true
+  gsettings set org.gnome.shell.extensions.dash-to-dock dock-position 'BOTTOM' 2>/dev/null || true
+  gsettings set org.gnome.shell.extensions.dash-to-dock show-mounts false 2>/dev/null || true
+  gsettings set org.gnome.shell.extensions.dash-to-dock show-trash false 2>/dev/null || true
+  gsettings set org.gnome.shell.extensions.dash-to-dock show-home false 2>/dev/null || true
+  gsettings set org.gnome.shell.extensions.dash-to-dock extend-height false 2>/dev/null || true
+  gsettings set org.gnome.shell.extensions.dash-to-dock panel-mode false 2>/dev/null || true
+  gsettings set org.gnome.shell.extensions.dash-to-dock show-icons-only-on-primary true 2>/dev/null || true
   
   # Privacy
   gsettings set org.gnome.desktop.privacy remove-old-temp-files true
