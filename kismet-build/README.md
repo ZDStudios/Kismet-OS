@@ -8,8 +8,11 @@ This directory is the beginnings of the Kismet OS build pipeline.
 - `make-dev-preview-layout.sh` — stages Kismet overlay files into a dev-preview filesystem layout
 - `assemble-rootfs.sh` — stages core Kismet rootfs scaffold
 - `build-ubuntu-preview.sh` — runs the current preview build pipeline scaffold
+- `run-pipeline-in-container.sh` — runs the preview pipeline in the Ubuntu Docker build image
+- `smoke-test-preview.sh` — validates the rebuilt ISO, squashfs metadata, Kismet branding, and patched installer surfaces
+- `test-preview-in-container.sh` — runs smoke tests, or a full build plus smoke tests, inside the Ubuntu Docker build image
 
 ## Current result
 The preview pipeline can now emit a rebuilt ISO artifact at `kismet-build/output/kismet-os-dev-preview.iso`.
-It is still an early preview path, but it now repacks the real Ubuntu live filesystem, refreshes key size metadata, and preserves the source ISO boot structure during rebuild.
+It is still an early preview path, but it now repacks the real Ubuntu live filesystem, refreshes key size metadata, patches deeper branding surfaces, and preserves the source ISO boot structure during rebuild.
 

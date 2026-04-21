@@ -15,7 +15,10 @@ fi
 
 rm -f "$NEW_FS"
 
-echo "==> Repacking $(basename "$NEW_FS")"
-mksquashfs "$EDIT_DIR" "$NEW_FS" -noappend
+MKSQUASHFS_COMP="${MKSQUASHFS_COMP:-xz}"
+MKSQUASHFS_PROCS="${MKSQUASHFS_PROCS:-$(getconf _NPROCESSORS_ONLN 2>/dev/null || echo 1)}"
+
+echo "==> Repacking $(basename "$NEW_FS") with $MKSQUASHFS_COMP compression"
+mksquashfs "$EDIT_DIR" "$NEW_FS" -noappend -comp "$MKSQUASHFS_COMP" -processors "$MKSQUASHFS_PROCS"
 
 echo "==> Repacked rootfs at $NEW_FS"

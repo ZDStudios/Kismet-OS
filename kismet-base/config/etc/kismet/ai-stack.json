@@ -1,0 +1,41 @@
+{
+  "kernelAware": true,
+  "desktopMode": "zorin-inspired-plasma",
+  "modelStrategy": "auto-recommend",
+  "preferredProvider": "hermes",
+  "providerPriority": ["hermes", "opencode", "openclaw", "ollama"],
+  "providers": {
+    "hermes": {
+      "enabled": true,
+      "command": "hermes",
+      "label": "Hermes AI Agent",
+      "role": "primary-agent"
+    },
+    "opencode": {
+      "enabled": true,
+      "command": "opencode",
+      "label": "OpenCode",
+      "role": "coding-agent"
+    },
+    "openclaw": {
+      "enabled": true,
+      "command": "openclaw",
+      "label": "OpenClaw",
+      "role": "system-agent"
+    },
+    "ollama": {
+      "enabled": true,
+      "command": "ollama",
+      "label": "Ollama",
+      "role": "local-model-runtime"
+    }
+  },
+  "windowsCompatibility": {
+    "enabled": true,
+    "preferredRuntimes": ["lutris", "wine", "winetricks"],
+    "notes": [
+      "Kismet OS uses user-space compatibility layers for .exe files.",
+      "This is practical Windows app support, not magical native execution."
+    ]
+  }
+}

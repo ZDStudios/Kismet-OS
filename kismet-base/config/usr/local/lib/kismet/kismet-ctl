@@ -60,6 +60,14 @@ def cmd_scheduler(args):
         print(json.dumps(api_call("/scheduler/run", method="POST", payload={"task": args.task}), indent=2))
 
 
+def cmd_recommend(_args):
+    print(json.dumps(api_call("/recommendations/models"), indent=2))
+
+
+def cmd_integrations(_args):
+    print(json.dumps(api_call("/integration/stack"), indent=2))
+
+
 def main() -> int:
     parser = argparse.ArgumentParser(description="Kismet preview CLI")
     sub = parser.add_subparsers(dest="command", required=True)
@@ -77,6 +85,8 @@ def main() -> int:
     scheduler.add_argument("scheduler_cmd", choices=["list", "run"])
     scheduler.add_argument("task", nargs="?")
     scheduler.set_defaults(func=cmd_scheduler)
+    sub.add_parser("recommend").set_defaults(func=cmd_recommend)
+    sub.add_parser("integrations").set_defaults(func=cmd_integrations)
     args = parser.parse_args()
     try:
         args.func(args)

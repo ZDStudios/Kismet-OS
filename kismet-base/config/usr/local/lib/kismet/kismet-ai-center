@@ -1,0 +1,60 @@
+#!/usr/bin/env python3
+from __future__ import annotations
+
+import json
+import shutil
+import subprocess
+from pathlib import Path
+
+CONFIG_PATH = Path('/etc/kismet/ai-stack.json')
+USER_STATE = Path.home() / '.kismet' / 'ai-stack-state.json'
+
+
+def load_config() -> dict:
+    data = json.loads(CONFIG_PATH.read_text(encoding='utf-8')) if CONFIG_PATH.exists() else {}
+    USER_STATE.parent.mkdir(parents=True, exist_ok=True)
+    if USER_STATE.exists():
+        user = json.loads(USER_STATE.read_text(encoding='utf-8'))
+        for name, values in user.get('providers', {}).items():
+            data.setdefault('providers', {}).setdefault(name, {}).update(values)
+    return data
+
+
+def detected(command: str) -> str:
+    return shutil.which(command) or ''
+
+
+def status_lines(data: dict) -> list[str]:
+    lines = [
+        'Kismet AI Stack',
+        '',
+        f"Kernel-aware mode: {'on' if data.get('kernelAware', True) else 'off'}",
+        f"Preferred provider: {data.get('preferredProvider', 'hermes')}",
+        f"Model strategy: {data.get('modelStrategy', 'auto-recommend')}",
+        '',
+        'Providers:'
+    ]
+    for name in data.get('providerPriority', []):
+        provider = data.get('providers', {}).get(name, {})
+        cmd = provider.get('command', name)
+        path = detected(cmd)
+        state = 'enabled' if provider.get('enabled', False) else 'disabled'
+        presence = f'present at {path}' if path else 'not installed yet'
+        lines.append(f"- {provider.get('label', name)}: {state}, {presence}")
+    wc = data.get('windowsCompatibility', {})
+    lines.extend(['', f"Windows app support: {'on' if wc.get('enabled', False) else 'off'}", f"Runtimes: {', '.join(wc.get('preferredRuntimes', []))}"])
+    return lines
+
+
+def main() -> int:
+    data = load_config()
+    text = '\n'.join(status_lines(data))
+    if shutil.which('kdialog') and subprocess.run(['bash', '-lc', 'test -n "$DISPLAY"'], check=False).returncode == 0:
+        subprocess.run(['kdialog', '--title', 'Kismet AI Center', '--msgbox', text], check=False)
+    else:
+        print(text)
+    return 0
+
+
+if __name__ == '__main__':
+    raise SystemExit(main())

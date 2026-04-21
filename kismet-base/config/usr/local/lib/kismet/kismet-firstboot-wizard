@@ -6,13 +6,14 @@ import os
 import shutil
 import subprocess
 from pathlib import Path
-from typing import Callable
 
 AGENT_URL = "http://127.0.0.1:7731/recommendations/models"
 CONFIG_DIR = Path.home() / ".kismet"
 CONFIG_DIR.mkdir(parents=True, exist_ok=True)
 USER_CONFIG = CONFIG_DIR / "firstboot.json"
+USER_AI_STATE = CONFIG_DIR / "ai-stack-state.json"
 SYSTEM_MODEL_ENV = Path("/etc/kismet/models.env")
+SYSTEM_AI_STACK = Path("/etc/kismet/ai-stack.json")
 OPENCLAW_OLLAMA_CONFIG = Path("/etc/openclaw/ollama.env")
 INSTALL_LOG = CONFIG_DIR / "firstboot-install.log"
 OPENCLAW_TEMPLATE = Path("/etc/openclaw/config.d/20-kismet-local-ollama.json")
@@ -65,24 +66,7 @@ def gui_available() -> bool:
     return bool(os.environ.get("DISPLAY")) and shutil.which("kdialog") is not None
 
 
-def kdialog_yesno(prompt: str, default: bool = True) -> bool:
-    args = ["kdialog", "--title", "Kismet OS", "--yes-label", "Yes", "--no-label", "No", "--yesno", prompt]
-    proc = subprocess.run(args, check=False)
-    if proc.returncode == 0:
-        return True
-    if proc.returncode == 1:
-        return False
-    return default
-
-
-def kdialog_input(prompt: str, default: str = "") -> str:
-    proc = subprocess.run(["kdialog", "--title", "Kismet OS", "--inputbox", prompt, default], capture_output=True, text=True, check=False)
-    if proc.returncode == 0:
-        return proc.stdout.strip()
-    return default
-
-
-def gui_menu(title: str, text: str, options: list[tuple[str, str]], default_tag: str) -> str:
+def gui_menu(_title: str, text: str, options: list[tuple[str, str]], default_tag: str) -> str:
     cmd = ["kdialog", "--title", "Kismet OS", "--menu", text]
     for tag, label in options:
         cmd.extend([tag, label])
@@ -110,7 +94,7 @@ def collect_answers(profile: dict, recommended: list[dict]) -> dict:
             "\n".join([
                 "Welcome to Kismet OS",
                 "",
-                "This setup wizard will configure your local AI stack and developer tooling.",
+                "This wizard configures the Zorin-inspired desktop, the local AI stack, and Windows app compatibility.",
                 f"Detected profile: {profile.get('tier', 'unknown')}",
                 f"CPU: {profile.get('cpu', 'unknown')}",
                 f"RAM: {profile.get('memory_gib', '?')} GiB",
@@ -129,6 +113,16 @@ def collect_answers(profile: dict, recommended: list[dict]) -> dict:
             "balanced",
         )
 
+        desktop_mode = gui_menu(
+            "Kismet OS",
+            "Choose your desktop layout",
+            [
+                ("zorin-inspired-plasma", "Zorin-inspired Plasma, recommended"),
+                ("classic-plasma", "Classic Plasma"),
+            ],
+            "zorin-inspired-plasma",
+        )
+
         defaults_by_profile = {
             "minimal": ["llama3.2:1b", "qwen2.5-coder:1.5b"],
             "balanced": suggested_models or ["llama3.2:3b", "qwen2.5-coder:3b", "nomic-embed-text"],
@@ -142,10 +136,18 @@ def collect_answers(profile: dict, recommended: list[dict]) -> dict:
             [(name, name, name in model_defaults) for name in [
                 "llama3.2:1b", "llama3.2:3b", "llama3.1:8b", "qwen2.5-coder:1.5b", "qwen2.5-coder:3b", "qwen2.5-coder:7b", "qwen2.5-coder:14b", "phi4-mini", "deepseek-r1:14b", "nomic-embed-text"
             ]],
-        )
-        if not choices:
-            choices = model_defaults
+        ) or model_defaults
 
+        providers = set(gui_checklist(
+            "Kismet OS",
+            "Enable AI providers",
+            [
+                ("hermes", "Hermes AI Agent, primary agent layer", True),
+                ("opencode", "OpenCode, coding-oriented agent layer", True),
+                ("openclaw", "OpenClaw local assistant integration", True),
+                ("ollama", "Ollama local model runtime", True),
+            ],
+        ))
         tasks = set(gui_checklist(
             "Kismet OS",
             "Select setup actions",
@@ -153,16 +155,26 @@ def collect_answers(profile: dict, recommended: list[dict]) -> dict:
                 ("ollama", "Install and enable Ollama", True),
                 ("openclaw", "Install OpenClaw", True),
                 ("claude", "Install Claude Code", True),
-                ("connect", "Connect OpenClaw and Claude Code to local Ollama defaults", True),
+                ("windows", "Enable Windows app compatibility helpers", True),
             ],
         ))
+        preferred_provider = gui_menu(
+            "Kismet OS",
+            "Choose the preferred AI provider",
+            [(name, name.title()) for name in ["hermes", "opencode", "openclaw", "ollama"] if name in providers] or [("hermes", "Hermes")],
+            "hermes",
+        )
         return {
             "profile_mode": profile_choice,
+            "desktop_mode": desktop_mode,
             "models": choices,
+            "providers": sorted(providers),
+            "preferred_provider": preferred_provider,
             "install_ollama": "ollama" in tasks,
             "install_openclaw": "openclaw" in tasks,
             "install_claude_code": "claude" in tasks,
-            "connect_openclaw_ollama": "connect" in tasks,
+            "enable_windows_compat": "windows" in tasks,
+            "connect_openclaw_ollama": True,
         }
 
     print("==> Welcome to Kismet OS")
@@ -171,13 +183,20 @@ def collect_answers(profile: dict, recommended: list[dict]) -> dict:
     for item in recommended:
         print(f"  - {item['name']}: {item['reason']}")
     raw_models = input("Models to preload (space-separated, blank for suggested): ").strip()
+    providers_raw = input("Providers to enable [hermes opencode openclaw ollama]: ").strip()
+    providers = providers_raw.split() if providers_raw else ["hermes", "opencode", "openclaw", "ollama"]
+    preferred_provider = input("Preferred provider [hermes]: ").strip() or "hermes"
     return {
         "profile_mode": "balanced",
+        "desktop_mode": "zorin-inspired-plasma",
         "models": raw_models.split() if raw_models else suggested_models,
+        "providers": providers,
+        "preferred_provider": preferred_provider,
         "install_ollama": ask_bool_cli("Install and enable Ollama?", True),
         "install_openclaw": ask_bool_cli("Install OpenClaw?", True),
         "install_claude_code": ask_bool_cli("Install Claude Code?", True),
-        "connect_openclaw_ollama": ask_bool_cli("Configure OpenClaw and Claude Code to use local Ollama by default where possible?", True),
+        "enable_windows_compat": ask_bool_cli("Enable Windows app compatibility helpers?", True),
+        "connect_openclaw_ollama": True,
     }
 
 
@@ -203,6 +222,35 @@ def render_openclaw_template(models: list[str]) -> str:
     ) + "\n"
 
 
+def render_ai_stack(answers: dict) -> str:
+    providers = {
+        name: {
+            "enabled": name in answers["providers"],
+            "command": name,
+            "label": {
+                "hermes": "Hermes AI Agent",
+                "opencode": "OpenCode",
+                "openclaw": "OpenClaw",
+                "ollama": "Ollama",
+            }.get(name, name.title()),
+        }
+        for name in ["hermes", "opencode", "openclaw", "ollama"]
+    }
+    payload = {
+        "kernelAware": True,
+        "desktopMode": answers.get("desktop_mode", "zorin-inspired-plasma"),
+        "modelStrategy": "auto-recommend",
+        "preferredProvider": answers.get("preferred_provider", "hermes"),
+        "providerPriority": ["hermes", "opencode", "openclaw", "ollama"],
+        "providers": providers,
+        "windowsCompatibility": {
+            "enabled": answers.get("enable_windows_compat", True),
+            "preferredRuntimes": ["lutris", "wine", "winetricks"],
+        },
+    }
+    return json.dumps(payload, indent=2) + "\n"
+
+
 def main() -> int:
     INSTALL_LOG.parent.mkdir(parents=True, exist_ok=True)
     INSTALL_LOG.write_text("# Kismet first boot install log\n", encoding="utf-8")
@@ -223,6 +271,7 @@ def main() -> int:
         **answers,
     }
     write_file(USER_CONFIG, json.dumps(state, indent=2))
+    write_file(USER_AI_STATE, render_ai_stack(answers))
 
     results: dict[str, dict] = {}
 
@@ -231,6 +280,8 @@ def main() -> int:
         write_file(SYSTEM_MODEL_ENV, f"KISMET_OLLAMA_MODELS='{' '.join(models)}'\nKISMET_OLLAMA_KEEP_ALIVE='30m'\n", sudo=True)
         results["ollama_loader_enable"] = run_logged("enable ollama loader", ["sudo", "systemctl", "enable", "kismet-ollama-loader.service"])
         results["ollama_loader_start"] = run_logged("start ollama loader", ["sudo", "systemctl", "start", "kismet-ollama-loader.service"])
+
+    write_file(SYSTEM_AI_STACK, render_ai_stack(answers), sudo=True)
 
     if answers["install_openclaw"]:
         installer = shutil.which("openclaw")
@@ -246,9 +297,14 @@ def main() -> int:
         else:
             results["claude_code_install"] = run_logged("install claude code", ["sudo", "npm", "install", "-g", pkg])
 
-    if answers["connect_openclaw_ollama"]:
-        write_file(OPENCLAW_OLLAMA_CONFIG, "OLLAMA_HOST=http://127.0.0.1:11434\nOPENCLAW_OLLAMA_ENABLED=true\n", sudo=True)
-        write_file(OPENCLAW_TEMPLATE, render_openclaw_template(models), sudo=True)
+    if answers["enable_windows_compat"]:
+        if shutil.which("wine"):
+            results["wine_present"] = {"ok": True, "code": 0, "stdout": "wine already present", "stderr": ""}
+        else:
+            results["wine_hint"] = {"ok": False, "code": 1, "stdout": "", "stderr": "wine not installed in current environment"}
+
+    write_file(OPENCLAW_OLLAMA_CONFIG, "OLLAMA_HOST=http://127.0.0.1:11434\nOPENCLAW_OLLAMA_ENABLED=true\n", sudo=True)
+    write_file(OPENCLAW_TEMPLATE, render_openclaw_template(models), sudo=True)
 
     failed = [name for name, result in results.items() if not result.get("ok", False)]
     message = "Kismet first boot setup complete." if not failed else f"Kismet first boot completed with some failed steps: {', '.join(failed)}"

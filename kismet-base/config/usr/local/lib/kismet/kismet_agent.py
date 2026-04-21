@@ -35,6 +35,7 @@ AGENT_VERSION = "1.1.0-preview2"
 API_HOST = "127.0.0.1"
 API_PORT = 7731
 CONFIG_PATH = Path("/etc/kismet/agent.conf")
+AI_STACK_PATH = Path("/etc/kismet/ai-stack.json")
 USER_DATA_DIR = Path.home() / ".kismet"
 LOG_FILE = "/var/log/kismet-agent.log"
 PID_FILE = "/run/kismet-agent.pid"
@@ -79,6 +80,117 @@ def load_config() -> None:
 
 def cfg(section: str, key: str, fallback: str = "") -> str:
     return CONFIG.get(section, key, fallback=fallback) if CONFIG.has_section(section) else fallback
+
+
+def load_ai_stack() -> dict:
+    try:
+        import json
+        return json.loads(AI_STACK_PATH.read_text(encoding="utf-8"))
+    except Exception:
+        return {
+            "kernelAware": True,
+            "preferredProvider": "hermes",
+            "providerPriority": ["hermes", "opencode", "openclaw", "ollama"],
+            "providers": {},
+            "windowsCompatibility": {"enabled": True, "preferredRuntimes": ["lutris", "wine", "winetricks"]},
+        }
+
+
+def detect_profile() -> dict:
+    cpu_model = "Unknown CPU"
+    try:
+        with open("/proc/cpuinfo", "r", encoding="utf-8") as handle:
+            for line in handle:
+                if line.lower().startswith("model name"):
+                    cpu_model = line.split(":", 1)[1].strip()
+                    break
+    except OSError:
+        pass
+    mem_gib = round(psutil.virtual_memory().total / (1024 ** 3), 2)
+    gpu_names: list[str] = []
+    for candidate in Path("/sys/class/drm").glob("card*/device/uevent"):
+        try:
+            text = candidate.read_text(encoding="utf-8")
+        except OSError:
+            continue
+        for line in text.splitlines():
+            if line.startswith("DRIVER="):
+                gpu_names.append(line.split("=", 1)[1])
+    gpu_names = sorted(set(gpu_names))
+    has_nvidia = any("nvidia" in gpu.lower() for gpu in gpu_names)
+    if has_nvidia and mem_gib >= 32:
+        tier = "workstation"
+    elif has_nvidia or mem_gib >= 16:
+        tier = "creator"
+    elif mem_gib >= 8:
+        tier = "balanced"
+    else:
+        tier = "light"
+    return {
+        "cpu": cpu_model,
+        "memory_gib": mem_gib,
+        "gpus": gpu_names,
+        "tier": tier,
+        "cpu_count": psutil.cpu_count() or 1,
+    }
+
+
+def recommend_models() -> dict:
+    profile = detect_profile()
+    tier = profile["tier"]
+    base = [{"name": "nomic-embed-text", "reason": "Embeddings for local retrieval"}]
+    if tier == "workstation":
+        extra = [
+            {"name": "qwen2.5-coder:14b", "reason": "Best local coding fit for a high-end workstation"},
+            {"name": "llama3.1:8b", "reason": "Strong default assistant"},
+            {"name": "deepseek-r1:14b", "reason": "Heavier reasoning option"},
+        ]
+    elif tier == "creator":
+        extra = [
+            {"name": "qwen2.5-coder:7b", "reason": "Primary coding model for capable desktops"},
+            {"name": "llama3.1:8b", "reason": "General desktop assistant"},
+            {"name": "phi4-mini", "reason": "Fast fallback"},
+        ]
+    elif tier == "balanced":
+        extra = [
+            {"name": "qwen2.5-coder:3b", "reason": "Balanced coding model"},
+            {"name": "llama3.2:3b", "reason": "Balanced assistant"},
+            {"name": "phi4-mini", "reason": "Fast fallback"},
+        ]
+    else:
+        extra = [
+            {"name": "llama3.2:1b", "reason": "Very light assistant"},
+            {"name": "qwen2.5-coder:1.5b", "reason": "Low-end coding helper"},
+        ]
+    return {"profile": profile, "recommended": base + extra}
+
+
+def integration_status() -> dict:
+    import shutil
+    stack = load_ai_stack()
+    providers = {}
+    for name in stack.get("providerPriority", []):
+        provider = stack.get("providers", {}).get(name, {})
+        command = provider.get("command", name)
+        providers[name] = {
+            **provider,
+            "detected": bool(shutil.which(command)),
+            "path": shutil.which(command),
+        }
+    windows_cfg = stack.get("windowsCompatibility", {})
+    runtimes = []
+    for name in windows_cfg.get("preferredRuntimes", []):
+        runtimes.append({"name": name, "detected": bool(shutil.which(name)), "path": shutil.which(name)})
+    return {
+        "kernelAware": stack.get("kernelAware", True),
+        "preferredProvider": stack.get("preferredProvider", "hermes"),
+        "modelRecommendation": recommend_models(),
+        "providers": providers,
+        "windowsCompatibility": {
+            **windows_cfg,
+            "runtimes": runtimes,
+        },
+    }
 
 
 @app.route("/status")
@@ -172,6 +284,16 @@ def api_ollama_pull():
 def api_events():
     limit = int(request.args.get("limit", 50))
     return jsonify(_state["recent_events"][-limit:])
+
+
+@app.route("/recommendations/models")
+def api_recommendations():
+    return jsonify(recommend_models())
+
+
+@app.route("/integration/stack")
+def api_integration_stack():
+    return jsonify(integration_status())
 
 
 @app.route("/config")

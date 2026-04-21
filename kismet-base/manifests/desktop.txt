@@ -5,6 +5,11 @@ dolphin
 kate
 plasma-discover
 plasma-workspace-wayland
+plasma-widgets-addons
+papirus-icon-theme
 kitty
 plymouth
 plymouth-themes
+wine64
+winetricks
+lutris

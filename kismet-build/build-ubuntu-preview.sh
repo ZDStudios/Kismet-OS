@@ -27,7 +27,7 @@ else
   "$ROOT_DIR/kismet-build/overlay-kismet-files.sh"
 fi
 
-echo "==> Kismet Ubuntu preview build scaffold"
+echo "==> Kismet OS preview build pipeline"
 echo "Build dir:  $BUILD_DIR"
 echo "Output dir: $OUTPUT_DIR"
 echo ""
@@ -44,7 +44,7 @@ echo "- forced Plasma/session branding overrides"
 echo "- live rootfs repack"
 echo "- ISO metadata refresh and rebuild"
 echo ""
-echo "Current remaining blockers to a fuller preview ISO:"
+echo "Current remaining blockers to a fuller Kismet OS preview ISO:"
 echo "- ISO metadata and bootability still need broader validation"
 echo "- full boot validation in a VM has not happened yet"
 echo "- desktop polish and first-boot UX still need preview-pass tuning"

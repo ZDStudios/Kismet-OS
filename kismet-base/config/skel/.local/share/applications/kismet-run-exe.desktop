@@ -1,0 +1,10 @@
+[Desktop Entry]
+Type=Application
+Version=1.0
+Name=Run Windows App
+Comment=Launch a .exe with the configured Kismet compatibility layer
+Exec=konsole -e /usr/local/bin/kismet-run-exe
+Icon=wine
+Terminal=false
+Categories=System;Utility;
+StartupNotify=true

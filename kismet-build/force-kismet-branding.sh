@@ -57,6 +57,62 @@ DISTRIB_CODENAME=noble
 DISTRIB_DESCRIPTION="Kismet OS 2 Preview"
 EOF
 
+printf 'Kismet OS 2 Preview \\n \\l\n' > "$EDIT_DIR/etc/issue"
+printf 'Kismet OS 2 Preview\n' > "$EDIT_DIR/etc/issue.net"
+
+if [ -f "$EDIT_DIR/usr/share/gnome-background-properties/noble-wallpapers.xml" ]; then
+  sed -i 's/Ubuntu 24\.04 Community Wallpapers/Kismet OS Wallpapers/g' "$EDIT_DIR/usr/share/gnome-background-properties/noble-wallpapers.xml"
+fi
+
+if [ -f "$EDIT_DIR/usr/share/plymouth/themes/ubuntu-text/ubuntu-text.plymouth" ]; then
+  sed -i 's/title=Ubuntu 24\.04/title=Kismet OS 2 Preview/g' "$EDIT_DIR/usr/share/plymouth/themes/ubuntu-text/ubuntu-text.plymouth"
+fi
+
+find "$EDIT_DIR/usr/share/applications" "$EDIT_DIR/var/lib/snapd/desktop/applications" -maxdepth 1 -type f 2>/dev/null | while read -r desktop_file; do
+  sed -i 's/Install Ubuntu[^\r\n]*/Install Kismet OS 2 Preview/g' "$desktop_file" 2>/dev/null || true
+  sed -i 's/Welcome to Ubuntu/Welcome to Kismet OS/g' "$desktop_file" 2>/dev/null || true
+  sed -i 's/Preparing Ubuntu/Preparing Kismet OS/g' "$desktop_file" 2>/dev/null || true
+  sed -i 's/Ubuntu 24\.04\.3 LTS/Kismet OS 2 Preview/g' "$desktop_file" 2>/dev/null || true
+  sed -i 's/Ubuntu/Kismet OS/g' "$desktop_file" 2>/dev/null || true
+ done
+
+if command -v unsquashfs >/dev/null 2>&1 && command -v mksquashfs >/dev/null 2>&1; then
+  SNAP_WORK="$ROOT_DIR/kismet-build/work/snap-branding"
+  rm -rf "$SNAP_WORK"
+  mkdir -p "$SNAP_WORK"
+
+  for snap_path in \
+    "$EDIT_DIR/var/lib/snapd/snaps/gnome-42-2204_202.snap" \
+    "$EDIT_DIR/var/lib/snapd/seed/snaps/gnome-42-2204_202.snap"
+  do
+    [ -f "$snap_path" ] || continue
+    snap_name="$(basename "$snap_path")"
+    snap_dir="$SNAP_WORK/${snap_name%.snap}"
+    rm -rf "$snap_dir"
+    unsquashfs -d "$snap_dir" "$snap_path" >/dev/null 2>&1 || continue
+    find "$snap_dir" -type f -name 'gnome-initial-setup.desktop' | while read -r desktop_file; do
+      sed -i 's/Welcome to Ubuntu/Welcome to Kismet OS/g' "$desktop_file" 2>/dev/null || true
+      sed -i 's/Install Ubuntu[^\r\n]*/Install Kismet OS 2 Preview/g' "$desktop_file" 2>/dev/null || true
+      sed -i 's/Preparing Ubuntu/Preparing Kismet OS/g' "$desktop_file" 2>/dev/null || true
+      sed -i 's/Ubuntu 24\.04\.3 LTS/Kismet OS 2 Preview/g' "$desktop_file" 2>/dev/null || true
+      sed -i 's/Ubuntu/Kismet OS/g' "$desktop_file" 2>/dev/null || true
+    done
+    rm -f "$snap_path"
+    mksquashfs "$snap_dir" "$snap_path" -comp xz -noappend >/dev/null 2>&1 || true
+  done
+fi
+
+if [ -f "$EDIT_DIR/var/cache/swcatalog/cache/C-os-catalog.xb" ]; then
+  CATALOG_PATH="$EDIT_DIR/var/cache/swcatalog/cache/C-os-catalog.xb" python3 - <<'PY'
+import os
+from pathlib import Path
+path = Path(os.environ['CATALOG_PATH'])
+data = path.read_bytes()
+data = data.replace(b'Install Ubuntu', b'Install Kismet')
+path.write_bytes(data)
+PY
+fi
+
 cat > "$EDIT_DIR/etc/sddm.conf.d/10-kismet.conf" <<'EOF'
 [Theme]
 Current=kismet

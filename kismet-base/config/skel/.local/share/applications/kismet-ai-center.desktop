@@ -1,0 +1,10 @@
+[Desktop Entry]
+Type=Application
+Version=1.0
+Name=Kismet AI Center
+Comment=Review Hermes, OpenCode, model recommendations, and local AI stack status
+Exec=/usr/local/bin/kismet-ai-center
+Icon=preferences-system
+Terminal=false
+Categories=Settings;System;
+StartupNotify=true
