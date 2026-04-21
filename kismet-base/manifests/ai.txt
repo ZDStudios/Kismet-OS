@@ -1,12 +1,11 @@
-# Installed via package or vendor script depending on target image
+# Installed via package or vendor bundle in the preview image
 ollama
 python3-fastapi
 python3-uvicorn
 python3-watchdog
 python3-requests
 python3-pydantic
+nodejs
 npm
-# Hermes is the preferred agent slot, OpenCode is the coding slot.
-# Their upstream packaging is still fluid, so Kismet integrates them as toggleable runtime targets
-# and installs them at first boot when a stable package source is configured.
-# openclaw installation is layered via first-boot/bootstrap hooks
+# Hermes and OpenCode are expected to ship in the image once their bundled runtime is wired.
+# openclaw installation is likewise intended to be part of the release image, not deferred to first boot.

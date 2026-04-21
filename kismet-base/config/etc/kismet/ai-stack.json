@@ -1,7 +1,7 @@
 {
   "identity": "Kismet AI Suite",
   "kernelAware": true,
-  "desktopMode": "zorin-inspired-plasma",
+  "desktopMode": "zorin-inspired-gnome",
   "modelStrategy": "auto-recommend",
   "preferredProvider": "hermes",
   "providerPriority": ["hermes", "opencode", "openclaw", "ollama"],
@@ -10,12 +10,12 @@
       "enabled": true,
       "command": "kismet-ai-launch",
       "commandArgs": ["hermes"],
-      "binaryCandidates": ["hermes", "openclaw", "claude"],
+      "binaryCandidates": ["kismet-hermes", "openclaw", "claude"],
       "label": "Hermes AI Agent",
       "role": "primary-agent",
       "launchMode": "terminal",
       "bootstrapCommand": "kismet-ai-bootstrap hermes",
-      "installHint": "Use Kismet AI Center to bootstrap Hermes or wire a vendor package into the release image."
+      "installHint": "Hermes is expected to be preinstalled in the preview image. If it is missing, repair the local runtime bundle."
     },
     "opencode": {
       "enabled": true,
@@ -26,7 +26,7 @@
       "role": "coding-agent",
       "launchMode": "terminal",
       "bootstrapCommand": "kismet-ai-bootstrap opencode",
-      "installHint": "Use Kismet AI Center to bootstrap OpenCode or wire a vendor package into the release image."
+      "installHint": "OpenCode requires the bundled Node.js runtime and CLI package in the preview image."
     },
     "openclaw": {
       "enabled": true,
@@ -36,7 +36,7 @@
       "role": "system-agent",
       "launchMode": "terminal",
       "bootstrapCommand": "kismet-ai-bootstrap openclaw",
-      "installHint": "Install OpenClaw through the Kismet first boot wizard or AI Center."
+      "installHint": "OpenClaw should be bundled in the preview image."
     },
     "ollama": {
       "enabled": true,
@@ -46,7 +46,7 @@
       "role": "local-model-runtime",
       "launchMode": "terminal",
       "bootstrapCommand": "kismet-ai-bootstrap ollama",
-      "installHint": "Install Ollama through the Kismet first boot wizard."
+      "installHint": "Ollama should be bundled in the preview image."
     }
   },
   "windowsCompatibility": {

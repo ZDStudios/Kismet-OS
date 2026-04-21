@@ -6,8 +6,10 @@ shift || true
 
 show_message() {
   local text="$1"
-  if command -v kdialog >/dev/null 2>&1 && [ -n "${DISPLAY:-}" ]; then
-    kdialog --title "Kismet AI Suite" --error "$text"
+  if command -v zenity >/dev/null 2>&1 && [ -n "${DISPLAY:-}" ]; then
+    zenity --error --title="Kismet AI Suite" --text="$text" >/dev/null 2>&1 || true
+  elif command -v kdialog >/dev/null 2>&1 && [ -n "${DISPLAY:-}" ]; then
+    kdialog --title "Kismet AI Suite" --error "$text" >/dev/null 2>&1 || true
   else
     printf '%s\n' "$text" >&2
   fi
@@ -24,9 +26,22 @@ find_command() {
   return 1
 }
 
+launch_in_terminal() {
+  if command -v gnome-terminal >/dev/null 2>&1; then
+    exec gnome-terminal -- "$@"
+  elif command -v ptyxis >/dev/null 2>&1; then
+    exec ptyxis -- "$@"
+  elif command -v kgx >/dev/null 2>&1; then
+    exec kgx "$@"
+  elif command -v xterm >/dev/null 2>&1; then
+    exec xterm -e "$@"
+  fi
+  exec "$@"
+}
+
 case "$provider" in
   hermes)
-    cmd="$(find_command hermes openclaw claude || true)"
+    cmd="$(find_command kismet-hermes hermes openclaw claude || true)"
     ;;
   opencode)
     cmd="$(find_command opencode claude openclaw || true)"
@@ -44,8 +59,15 @@ case "$provider" in
 esac
 
 if [ -z "$cmd" ]; then
-  show_message "$provider is not installed yet. Open Kismet AI Center and run the bootstrap action first."
+  show_message "$provider is not installed in this preview image yet."
   exit 1
 fi
 
-exec "$cmd" "$@"
+case "$provider" in
+  ollama)
+    launch_in_terminal "$cmd" "$@"
+    ;;
+  *)
+    launch_in_terminal "$cmd" "$@"
+    ;;
+esac

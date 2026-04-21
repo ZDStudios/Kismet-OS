@@ -1,78 +1,76 @@
 #!/usr/bin/env bash
-# Kismet GNOME Polish - Apply Zorin-style GNOME theming on first login
+# Kismet GNOME Polish - Apply a Zorin-inspired GNOME layout on first login
 
 set -euo pipefail
 
-# Apply Yaru theme (Zorin uses a Ubuntu-based theme)
+wallpaper='file:///usr/share/backgrounds/kismet/kismet-wallpaper.svg'
+
 if command -v gsettings >/dev/null 2>&1; then
-  # GTK theme
-  gsettings set org.gnome.desktop.interface gtk-theme 'Yaru'
-  gsettings set org.gnome.desktop.interface icon-theme 'Papirus-Dark'
+  gsettings set org.gnome.desktop.interface gtk-theme 'Yaru-blue-dark'
+  gsettings set org.gnome.desktop.interface icon-theme 'Yaru-blue'
   gsettings set org.gnome.desktop.interface cursor-theme 'Yaru'
   gsettings set org.gnome.desktop.interface cursor-size 24
-  
-  # Desktop background
-  gsettings set org.gnome.desktop.background picture-uri 'file:///usr/share/backgrounds/kismet/kismet-wallpaper.svg'
-  gsettings set org.gnome.desktop.background picture-uri-dark 'file:///usr/share/backgrounds/kismet/kismet-wallpaper.svg'
-  gsettings set org.gnome.desktop.background primary-color '#101828'
-  gsettings set org.gnome.desktop.background secondary-color '#1cb4ff'
-  
-  # Shell theme
   gsettings set org.gnome.desktop.interface color-scheme 'prefer-dark'
-  
-  # Font settings
-  gsettings set org.gnome.desktop.interface font-name 'Ubuntu 11'
-  gsettings set org.gnome.desktop.interface document-font-name 'Ubuntu 11'
+
+  gsettings set org.gnome.desktop.interface font-name 'Inter 10'
+  gsettings set org.gnome.desktop.interface document-font-name 'Inter 10'
   gsettings set org.gnome.desktop.interface monospace-font-name 'Ubuntu Mono 11'
-  
-  # Interface tweaks
+
+  gsettings set org.gnome.desktop.background picture-uri "$wallpaper"
+  gsettings set org.gnome.desktop.background picture-uri-dark "$wallpaper"
+  gsettings set org.gnome.desktop.background primary-color '#1c2433'
+  gsettings set org.gnome.desktop.background secondary-color '#85a2ff'
+
   gsettings set org.gnome.desktop.interface show-icons-sysmenus true
-  gsettings set org.gnome.desktop.interface labels-first true
+  gsettings set org.gnome.desktop.interface buttons-have-icons true
+  gsettings set org.gnome.desktop.interface menus-have-icons true
   gsettings set org.gnome.desktop.interface button-layout ':minimize,maximize,close'
   gsettings set org.gnome.desktop.interface titlebar-layout 'minimize,maximize,close'
-  
-  # Dock/Desktop
-  gsettings set org.gnome.shell.extensions.dash-to-dock dock-position 'BOTTOM' 2>/dev/null || true
-  gsettings set org.gnome.shell.extensions.dash-to-dock show-mounts false 2>/dev/null || true
-  gsettings set org.gnome.shell.extensions.dash-to-dock show-trash false 2>/dev/null || true
-  gsettings set org.gnome.shell.extensions.dash-to-dock show-home false 2>/dev/null || true
-  gsettings set org.gnome.shell.extensions.dash-to-dock extend-height false 2>/dev/null || true
-  gsettings set org.gnome.shell.extensions.dash-to-dock panel-mode false 2>/dev/null || true
-  gsettings set org.gnome.shell.extensions.dash-to-dock show-icons-only-on-primary true 2>/dev/null || true
-  
-  # Privacy
+  gsettings set org.gnome.desktop.wm.preferences button-layout ':minimize,maximize,close'
+  gsettings set org.gnome.desktop.wm.preferences action-double-click-titlebar 'toggle-maximize'
+
   gsettings set org.gnome.desktop.privacy remove-old-temp-files true
   gsettings set org.gnome.desktop.privacy old-files-age 7
-  
-  # Power settings
-  gsettings set org.gnome.settings-daemon.plugins.power power-button-action 'suspend'
-  gsettings set org.gnome.settings-daemon.plugins.power sleep-inactive-ac-type 'suspend'
-  gsettings set org.gnome.settings-daemon.plugins.power sleep-inactive-battery-type 'suspend'
-  
-  # Sound
   gsettings set org.gnome.desktop.sound event-sounds true
   gsettings set org.gnome.desktop.sound input-feedback-sounds false
-fi
 
-# Enable GNOME extensions that make it look like Zorin
-if command -v gnome-extensions >/dev/null 2>&1; then
-  # Enable dash-to-dock if available
-  gnome-extensions enable dash-to-dock@micahg.github.com 2>/dev/null || true
-  # Enable desktop-icons if available
-  gnome-extensions enable desktop-icons@csoriano 2>/dev/null || true
-fi
-
-# Set up GNOME favorites (Zorin-style)
-if command -v gsettings >/dev/null 2>&1; then
+  gsettings set org.gnome.shell disable-user-extensions false
   gsettings set org.gnome.shell favorite-apps "[
     'org.gnome.Nautilus.desktop',
-    'org.gnome.Terminal.desktop',
-    'org.gnome.TextEditor.desktop',
-    'org.gnome.Calculator.desktop',
-    'org.gnome.Settings.desktop',
     'firefox.desktop',
-    'kismet.desktop'
+    'org.gnome.Software.desktop',
+    'kismet-ai-center.desktop',
+    'kismet-hermes.desktop',
+    'kismet-opencode.desktop',
+    'org.gnome.Terminal.desktop',
+    'org.gnome.Settings.desktop'
   ]"
+
+  gsettings set org.gnome.settings-daemon.plugins.power power-button-action 'interactive'
+  gsettings set org.gnome.settings-daemon.plugins.power sleep-inactive-ac-type 'nothing'
+  gsettings set org.gnome.settings-daemon.plugins.power sleep-inactive-battery-type 'suspend'
+
+  gsettings set org.gnome.shell.extensions.dash-to-dock dock-position 'BOTTOM' 2>/dev/null || true
+  gsettings set org.gnome.shell.extensions.dash-to-dock extend-height false 2>/dev/null || true
+  gsettings set org.gnome.shell.extensions.dash-to-dock panel-mode false 2>/dev/null || true
+  gsettings set org.gnome.shell.extensions.dash-to-dock dock-fixed true 2>/dev/null || true
+  gsettings set org.gnome.shell.extensions.dash-to-dock autohide false 2>/dev/null || true
+  gsettings set org.gnome.shell.extensions.dash-to-dock intellihide false 2>/dev/null || true
+  gsettings set org.gnome.shell.extensions.dash-to-dock transparency-mode 'FIXED' 2>/dev/null || true
+  gsettings set org.gnome.shell.extensions.dash-to-dock background-opacity 0.78 2>/dev/null || true
+  gsettings set org.gnome.shell.extensions.dash-to-dock dash-max-icon-size 40 2>/dev/null || true
+  gsettings set org.gnome.shell.extensions.dash-to-dock show-trash false 2>/dev/null || true
+  gsettings set org.gnome.shell.extensions.dash-to-dock show-mounts false 2>/dev/null || true
+  gsettings set org.gnome.shell.extensions.dash-to-dock show-show-apps-button true 2>/dev/null || true
+  gsettings set org.gnome.shell.extensions.dash-to-dock show-apps-at-top true 2>/dev/null || true
+  gsettings set org.gnome.shell.extensions.dash-to-dock isolate-workspaces false 2>/dev/null || true
 fi
 
-echo "==> Kismet GNOME polish applied (Zorin OS style)"
+if command -v gnome-extensions >/dev/null 2>&1; then
+  gnome-extensions enable ubuntu-dock@ubuntu.com 2>/dev/null || true
+  gnome-extensions enable ding@rastersoft.com 2>/dev/null || true
+  gnome-extensions disable dash-to-dock@micahg.github.com 2>/dev/null || true
+  gnome-extensions disable desktop-icons@csoriano 2>/dev/null || true
+fi
+
+echo "==> Kismet GNOME polish applied (Zorin-inspired GNOME style)"
