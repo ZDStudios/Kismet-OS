@@ -112,3 +112,5 @@ The repo is early, so useful contributions are the boring valuable kind:
 If you found the original landing page and thought, "this is ambitious," yes. That is the polite version.
 
 Kismet OS is being built in public, but the aim is to keep the repo grounded. The vision can be bold. The implementation should stay honest.
+
+Also Kismet is super sigma
