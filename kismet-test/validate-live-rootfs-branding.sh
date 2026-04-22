@@ -9,12 +9,15 @@ if [ ! -d "$EDIT_DIR" ]; then
   exit 1
 fi
 
-test -x "$EDIT_DIR/usr/bin/sddm"
-grep -qx '/usr/bin/sddm' "$EDIT_DIR/etc/X11/default-display-manager"
-test -f "$EDIT_DIR/usr/share/sddm/themes/kismet/Main.qml"
-grep -q '^Current=kismet$' "$EDIT_DIR/etc/sddm.conf.d/10-kismet.conf"
-grep -q 'kismet-wallpaper.svg' "$EDIT_DIR/usr/share/sddm/themes/kismet/theme.conf.user"
-test -L "$EDIT_DIR/etc/systemd/system/display-manager.service"
-test -L "$EDIT_DIR/etc/systemd/system/graphical.target.wants/display-manager.service"
+test -x "$EDIT_DIR/usr/sbin/gdm3"
+grep -qx '/usr/sbin/gdm3' "$EDIT_DIR/etc/X11/default-display-manager"
+test -f "$EDIT_DIR/usr/share/xsessions/gnome.desktop"
+test -f "$EDIT_DIR/usr/share/wayland-sessions/gnome.desktop"
+grep -q '^AutomaticLogin=live$' "$EDIT_DIR/etc/gdm3/custom.conf"
+grep -q '^DefaultSession=gnome.desktop$' "$EDIT_DIR/etc/gdm3/custom.conf"
+grep -q '^disable-user-list=true$' "$EDIT_DIR/etc/dconf/db/gdm.d/00-kismet-greeter"
+test -x "$EDIT_DIR/usr/local/bin/kismet-game-library"
+test -f "$EDIT_DIR/etc/skel/.local/share/applications/kismet-game-library.desktop"
+grep -q 'kismet-game-library.desktop' "$EDIT_DIR/etc/dconf/db/local.d/00-kismet-desktop"
 
-echo "==> Live rootfs branding validation passed"
+echo "==> Live rootfs GNOME and game-library validation passed"

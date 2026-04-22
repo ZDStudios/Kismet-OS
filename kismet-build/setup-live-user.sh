@@ -51,24 +51,47 @@ create_group_if_missing() {
   fi
 }
 
-if ! getent group "$LIVE_USER" >/dev/null 2>&1; then
+resolve_group_name() {
+  if getent group "$LIVE_USER" >/dev/null 2>&1; then
+    getent group "$LIVE_USER" | cut -d: -f1
+    return
+  fi
+
+  existing_gid_group="$(getent group "$LIVE_GID" | cut -d: -f1 || true)"
+  if [ -n "$existing_gid_group" ]; then
+    echo "$existing_gid_group"
+    return
+  fi
+
   groupadd --gid "$LIVE_GID" "$LIVE_USER"
-fi
+  echo "$LIVE_USER"
+}
+
+resolve_uid() {
+  existing_uid_user="$(getent passwd "$LIVE_UID" | cut -d: -f1 || true)"
+  if [ -n "$existing_uid_user" ] && [ "$existing_uid_user" != "$LIVE_USER" ]; then
+    echo "1000"
+  else
+    echo "$LIVE_UID"
+  fi
+}
 
 for grp in sudo adm cdrom dip plugdev lpadmin; do
   create_group_if_missing "$grp"
 done
 
 groups="$(getent group sudo adm cdrom dip plugdev lpadmin 2>/dev/null | cut -d: -f1 | paste -sd, -)"
+live_group="$(resolve_group_name)"
+live_uid="$(resolve_uid)"
 
 if ! id "$LIVE_USER" >/dev/null 2>&1; then
   echo "==> Creating live user: $LIVE_USER"
   if [ -n "$groups" ]; then
-    useradd --uid "$LIVE_UID" --gid "$LIVE_USER" --groups "$groups" \
+    useradd --uid "$live_uid" --gid "$live_group" --groups "$groups" \
       --create-home --home-dir "$LIVE_HOME" \
       --shell "$LIVE_SHELL" --comment "$LIVE_GECOS" "$LIVE_USER"
   else
-    useradd --uid "$LIVE_UID" --gid "$LIVE_USER" \
+    useradd --uid "$live_uid" --gid "$live_group" \
       --create-home --home-dir "$LIVE_HOME" \
       --shell "$LIVE_SHELL" --comment "$LIVE_GECOS" "$LIVE_USER"
   fi
@@ -77,12 +100,15 @@ fi
 echo "$LIVE_USER:$LIVE_PASSWORD" | chpasswd
 passwd -u "$LIVE_USER" >/dev/null 2>&1 || true
 
+actual_uid="$(id -u "$LIVE_USER")"
+actual_gid="$(id -g "$LIVE_USER")"
+
 if [ -d /etc/skel ] && [ -d "$LIVE_HOME" ]; then
   find /etc/skel -mindepth 1 -maxdepth 1 -exec cp -a {} "$LIVE_HOME/" \; 2>/dev/null || true
-  chown -R "$LIVE_UID:$LIVE_GID" "$LIVE_HOME" 2>/dev/null || true
+  chown -R "$actual_uid:$actual_gid" "$LIVE_HOME" 2>/dev/null || true
 fi
 
-echo "==> Live user '$LIVE_USER' ready with configured password"
+echo "==> Live user '$LIVE_USER' ready with configured password (uid=$actual_uid gid=$actual_gid)"
 EOF
 
 echo "==> Live user '$LIVE_USER' injected into $EDIT_DIR"

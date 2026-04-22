@@ -7,6 +7,7 @@ WALLPAPER_DST_DIR="$EDIT_DIR/usr/share/backgrounds/kismet"
 PLYMOUTH_DIR="$EDIT_DIR/usr/share/plymouth/themes/kismet"
 GDM_DIR="$EDIT_DIR/etc/gdm3"
 ICON_SRC="$ROOT_DIR/kismet-theme/icons/kismet-logo.svg"
+ICON_THEME_DIR="$ROOT_DIR/kismet-theme/icons"
 ICON_DST_DIR="$EDIT_DIR/usr/share/icons/hicolor/scalable/apps"
 PIXMAP_DST_DIR="$EDIT_DIR/usr/share/pixmaps"
 
@@ -29,7 +30,10 @@ for wallpaper in "$ROOT_DIR"/kismet-theme/wallpapers/*; do
   [ -f "$wallpaper" ] || continue
   cp -f "$wallpaper" "$WALLPAPER_DST_DIR/"
 done
-cp -f "$ICON_SRC" "$ICON_DST_DIR/kismet-logo.svg"
+for icon in "$ICON_THEME_DIR"/*.svg; do
+  [ -f "$icon" ] || continue
+  cp -f "$icon" "$ICON_DST_DIR/"
+done
 cp -f "$ICON_SRC" "$PIXMAP_DST_DIR/kismet-logo.svg"
 cp -f "$ICON_SRC" "$PIXMAP_DST_DIR/distributor-logo.svg"
 

@@ -66,17 +66,18 @@ pass "Ubuntu session entries removed"
 grep -q '/usr/sbin/gdm3' "$EDIT_DIR/etc/X11/default-display-manager" || fail "GDM is not set as the default display manager"
 pass "GDM is the default display manager"
 
-# Verify GDM auto-login for admin user
+# Verify GDM auto-login for live user
 if [ -f "$EDIT_DIR/etc/gdm3/custom.conf" ]; then
-  grep -q 'AutomaticLogin=admin' "$EDIT_DIR/etc/gdm3/custom.conf" || fail "GDM auto-login for admin user not configured"
+  grep -q 'AutomaticLogin=live' "$EDIT_DIR/etc/gdm3/custom.conf" || fail "GDM auto-login for live user not configured"
   grep -q 'DefaultSession=gnome.desktop' "$EDIT_DIR/etc/gdm3/custom.conf" || fail "GDM default GNOME session is not configured"
-  pass "GDM auto-login for admin user configured"
+  grep -q 'InitialSetupEnable=false' "$EDIT_DIR/etc/gdm3/custom.conf" || fail "GDM initial setup is not disabled"
+  pass "GDM auto-login for live user configured"
 fi
 
-# Verify admin account exists in the editable rootfs
-chroot "$EDIT_DIR" getent passwd admin >/dev/null 2>&1 || fail "admin user is missing from live rootfs"
-chroot "$EDIT_DIR" getent shadow admin >/dev/null 2>&1 || fail "admin shadow entry is missing from live rootfs"
-pass "admin account exists in live rootfs"
+# Verify live account exists in the editable rootfs
+chroot "$EDIT_DIR" getent passwd live >/dev/null 2>&1 || fail "live user is missing from live rootfs"
+chroot "$EDIT_DIR" getent shadow live >/dev/null 2>&1 || fail "live user shadow entry is missing from live rootfs"
+pass "live account exists in live rootfs"
 
 # Verify GDM user list hiding (via dconf database)
 if [ -f "$EDIT_DIR/etc/dconf/db/gdm.d/00-kismet-greeter" ]; then
@@ -87,8 +88,23 @@ fi
 # Verify kismet assets
 [ -f "$EDIT_DIR/usr/share/pixmaps/kismet-logo.svg" ] || fail "Kismet logo asset missing from pixmaps"
 [ -f "$EDIT_DIR/usr/local/bin/kismet" ] || fail "kismet CLI missing"
+[ -f "$EDIT_DIR/usr/local/bin/kismet-game-library" ] || fail "kismet-game-library launcher missing"
+[ -f "$EDIT_DIR/etc/skel/.local/share/applications/kismet-game-library.desktop" ] || fail "Kismet Game Library desktop entry missing"
 chmod +x "$EDIT_DIR/usr/local/bin/kismet" 2>/dev/null || true
-pass "Kismet logo and CLI are present"
+chmod +x "$EDIT_DIR/usr/local/bin/kismet-game-library" 2>/dev/null || true
+pass "Kismet CLI, game library launcher, and branding assets are present"
+
+# Verify bundled game packages are present
+for pkg in aisleriot gnome-2048 gnome-chess gnome-mahjongg gnome-mines gnome-sudoku frozen-bubble atomix; do
+  chroot "$EDIT_DIR" dpkg-query -W -f='${Status}\n' "$pkg" 2>/dev/null | grep -q 'install ok installed' || fail "Bundled game package missing from live rootfs: $pkg"
+done
+pass "Bundled game package set is present"
+
+# Verify GNOME favorite apps include the game library
+if [ -f "$EDIT_DIR/etc/dconf/db/local.d/00-kismet-desktop" ]; then
+  grep -q "kismet-game-library.desktop" "$EDIT_DIR/etc/dconf/db/local.d/00-kismet-desktop" || fail "Game library is not pinned in GNOME favorites"
+  pass "GNOME favorites include the game library"
+fi
 
 # Verify GNOME snap branding patch
 rm -rf "$SNAP_WORK"

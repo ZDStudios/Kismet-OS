@@ -64,7 +64,10 @@ cp -f "$ROOT_DIR/kismet-base/config/skel/.zshrc" "$LAYOUT_DIR/filesystem/etc/ske
 cp -f "$ROOT_DIR/kismet-theme/plymouth/kismet.plymouth" "$LAYOUT_DIR/filesystem/usr/share/plymouth/themes/kismet/"
 cp -f "$ROOT_DIR/kismet-theme/plymouth/kismet.script" "$LAYOUT_DIR/filesystem/usr/share/plymouth/themes/kismet/"
 cp -f "$ROOT_DIR/kismet-theme/sddm/theme.conf.user" "$LAYOUT_DIR/filesystem/usr/share/sddm/themes/kismet/"
-cp -f "$ROOT_DIR/kismet-theme/icons/kismet-logo.svg" "$LAYOUT_DIR/filesystem/usr/share/icons/hicolor/scalable/apps/"
+for icon in "$ROOT_DIR"/kismet-theme/icons/*.svg; do
+  [ -f "$icon" ] || continue
+  cp -f "$icon" "$LAYOUT_DIR/filesystem/usr/share/icons/hicolor/scalable/apps/"
+done
 for wallpaper in "$ROOT_DIR"/kismet-theme/wallpapers/*; do
   [ -f "$wallpaper" ] || continue
   cp -f "$wallpaper" "$LAYOUT_DIR/filesystem/usr/share/backgrounds/kismet/"
