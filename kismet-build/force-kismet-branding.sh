@@ -165,11 +165,19 @@ fi
 
 if [ -f "$EDIT_DIR/usr/share/plymouth/themes/ubuntu-text/ubuntu-text.plymouth" ]; then
   sed -i 's/title=Ubuntu 24\.04/title=Kismet OS 2 Preview/g' "$EDIT_DIR/usr/share/plymouth/themes/ubuntu-text/ubuntu-text.plymouth"
+  sed -i 's/title=Ubuntu/title=Kismet/g' "$EDIT_DIR/usr/share/plymouth/themes/ubuntu-text/ubuntu-text.plymouth"
 fi
 
 if [ -f "$EDIT_DIR/usr/share/initramfs-tools/hook-functions" ]; then
   sed -i 's/Ubuntu 24\.04/Kismet OS 2 Preview/g' "$EDIT_DIR/usr/share/initramfs-tools/hook-functions"
+  sed -i 's/Ubuntu/Kismet/g' "$EDIT_DIR/usr/share/initramfs-tools/hook-functions"
 fi
+
+find "$EDIT_DIR/usr/share/plymouth" -type f \( -name '*.plymouth' -o -name '*.script' -o -name '*.grub' -o -name '*.txt' \) 2>/dev/null | while read -r ply_file; do
+  sed -i 's/Ubuntu 24\.04\.3 LTS/Kismet OS 2 Preview/g' "$ply_file" 2>/dev/null || true
+  sed -i 's/Ubuntu 24\.04/Kismet OS 2 Preview/g' "$ply_file" 2>/dev/null || true
+  sed -i 's/Ubuntu/Kismet/g' "$ply_file" 2>/dev/null || true
+done
 
 find "$EDIT_DIR/usr/share/applications" "$EDIT_DIR/usr/share/ubuntu/applications" "$EDIT_DIR/var/lib/snapd/desktop/applications" -maxdepth 1 -type f 2>/dev/null | while read -r desktop_file; do
   sed -i 's/Install Ubuntu[^\r\n]*/Install Kismet OS 2 Preview/g' "$desktop_file" 2>/dev/null || true

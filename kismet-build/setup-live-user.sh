@@ -108,6 +108,13 @@ if [ -d /etc/skel ] && [ -d "$LIVE_HOME" ]; then
   chown -R "$actual_uid:$actual_gid" "$LIVE_HOME" 2>/dev/null || true
 fi
 
+if [ -d "$LIVE_HOME" ]; then
+  chmod 755 "$LIVE_HOME" 2>/dev/null || true
+  install -d -m 700 -o "$actual_uid" -g "$actual_gid" "$LIVE_HOME/.config"
+  install -d -m 700 -o "$actual_uid" -g "$actual_gid" "$LIVE_HOME/.cache"
+  install -d -m 700 -o "$actual_uid" -g "$actual_gid" "$LIVE_HOME/.local/state"
+fi
+
 echo "==> Live user '$LIVE_USER' ready with configured password (uid=$actual_uid gid=$actual_gid)"
 EOF
 
