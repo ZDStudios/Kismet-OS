@@ -21,6 +21,9 @@ SKIP_PARTS = {
     "/usr/lib/python3/dist-packages/HweSupportStatus/",
     "/var/log/",
 }
+SKIP_SUFFIX_PATHS = {
+    "/usr/libexec/gnome-initial-setup",
+}
 SKIP_SUFFIXES = {
     ".pyc", ".png", ".jpg", ".jpeg", ".gif", ".webp", ".svg", ".svgz", ".ttf", ".otf", ".woff", ".woff2", ".so", ".a", ".o",
 }
@@ -30,6 +33,8 @@ for path in ROOT.rglob("*"):
     if not path.is_file():
         continue
     sp = "/" + path.as_posix().lstrip("/")
+    if any(sp.endswith(suffix) for suffix in SKIP_SUFFIX_PATHS):
+        continue
     if any(part in sp for part in SKIP_PARTS):
         continue
     if path.suffix.lower() in SKIP_SUFFIXES:
