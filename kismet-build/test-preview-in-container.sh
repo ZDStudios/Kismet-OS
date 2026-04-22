@@ -5,6 +5,7 @@
 #   ./test-preview-in-container.sh build          # Full pipeline rebuild + smoke tests + branding scan
 #   ./test-preview-in-container.sh pipeline       # Full pipeline rebuild only
 #   ./test-preview-in-container.sh smoke          # Smoke test existing ISO
+#   ./run-smoke-test.sh                           # Prefer Docker smoke automatically, fallback to host
 #   ./test-preview-in-container.sh branding       # Branding scan only
 #   ./test-preview-in-container.sh qemu-boot      # Full rebuild + QEMU boot test
 #   ./test-preview-in-container.sh qemu-smoke     # QEMU boot smoke only

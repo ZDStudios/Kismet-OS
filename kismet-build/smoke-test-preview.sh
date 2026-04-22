@@ -22,6 +22,16 @@ pass() {
   echo "[PASS] $*"
 }
 
+require_host_tool() {
+  tool="$1"
+  guidance="$2"
+  command -v "$tool" >/dev/null 2>&1 || fail "Required host tool missing: $tool. $guidance"
+}
+
+require_host_tool xorriso "Run this smoke test inside the Ubuntu Docker build environment via ./kismet-build/test-preview-in-container.sh smoke, or install xorriso locally."
+require_host_tool unsquashfs "Run this smoke test inside the Ubuntu Docker build environment via ./kismet-build/test-preview-in-container.sh smoke, or install squashfs-tools locally."
+require_host_tool chroot "Run this smoke test inside the Ubuntu Docker build environment via ./kismet-build/test-preview-in-container.sh smoke, or use a Linux host with chroot available."
+
 # Verify ISO exists
 [ -f "$OUTPUT_ISO" ] || fail "Preview ISO is missing at $OUTPUT_ISO"
 [ -f "$BASE_ISO" ] || fail "Base ISO is missing at $BASE_ISO"
