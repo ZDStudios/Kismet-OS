@@ -7,8 +7,10 @@
 #   ./test-preview-in-container.sh smoke          # Smoke test existing ISO
 #   ./run-smoke-test.sh                           # Prefer Docker smoke automatically, fallback to host
 #   ./test-preview-in-container.sh branding       # Branding scan only
-#   ./test-preview-in-container.sh qemu-boot      # Full rebuild + QEMU boot test
-#   ./test-preview-in-container.sh qemu-smoke     # QEMU boot smoke only
+#   ./test-preview-in-container.sh qemu-boot      # Full rebuild + BIOS QEMU boot test
+#   ./test-preview-in-container.sh qemu-uefi      # Full rebuild + UEFI QEMU boot test
+#   ./test-preview-in-container.sh qemu-smoke     # BIOS QEMU boot smoke only
+#   ./test-preview-in-container.sh qemu-smoke-uefi # UEFI QEMU boot smoke only
 #   ./test-preview-in-container.sh interactive    # Drop into interactive shell
 #
 # Environment variables:
@@ -17,6 +19,7 @@
 #   KISMET_SMP              - QEMU CPU count (default: 4)
 #   QEMU_BOOT_WAIT_SECONDS  - Wait before screenshotting booted VM (default from boot script)
 #   QEMU_SENDKEYS           - Comma-separated QEMU monitor sendkey sequence (default: ret,ret)
+#   QEMU_FIRMWARE           - Override firmware mode passed to boot-preview-in-qemu.sh (bios or uefi)
 #   KISMET_SKIP_DOCKER_BUILD - Set to 1 to reuse the current kismet-ubuntu-build image
 
 set -euo pipefail
@@ -74,18 +77,33 @@ case "$MODE" in
     ;;
 
   qemu-boot|boot)
-    echo "==> Full build + QEMU boot test"
+    echo "==> Full build + BIOS QEMU boot test"
+    run_inner 'QEMU_FIRMWARE="${QEMU_FIRMWARE:-bios}" bash ./kismet-build/build-ubuntu-preview.sh
+               bash ./kismet-build/smoke-test-preview.sh
+               python3 ./kismet-build/scan-preview-branding.py
+               QEMU_FIRMWARE="${QEMU_FIRMWARE:-bios}" bash ./kismet-build/boot-preview-in-qemu.sh'
+    echo "==> BIOS QEMU boot test completed"
+    ;;
+
+  qemu-uefi)
+    echo "==> Full build + UEFI QEMU boot test"
     run_inner 'bash ./kismet-build/build-ubuntu-preview.sh
                bash ./kismet-build/smoke-test-preview.sh
                python3 ./kismet-build/scan-preview-branding.py
-               bash ./kismet-build/boot-preview-in-qemu.sh'
-    echo "==> QEMU boot test completed"
+               QEMU_FIRMWARE=uefi bash ./kismet-build/boot-preview-in-qemu.sh'
+    echo "==> UEFI QEMU boot test completed"
     ;;
 
   qemu-smoke)
-    echo "==> QEMU boot smoke only (requires existing ISO)"
-    run_inner 'bash ./kismet-build/boot-preview-in-qemu.sh'
-    echo "==> QEMU boot smoke completed"
+    echo "==> BIOS QEMU boot smoke only (requires existing ISO)"
+    run_inner 'QEMU_FIRMWARE="${QEMU_FIRMWARE:-bios}" bash ./kismet-build/boot-preview-in-qemu.sh'
+    echo "==> BIOS QEMU boot smoke completed"
+    ;;
+
+  qemu-smoke-uefi)
+    echo "==> UEFI QEMU boot smoke only (requires existing ISO)"
+    run_inner 'QEMU_FIRMWARE=uefi bash ./kismet-build/boot-preview-in-qemu.sh'
+    echo "==> UEFI QEMU boot smoke completed"
     ;;
 
   qemu-gnome)
@@ -111,7 +129,7 @@ case "$MODE" in
     ;;
 
   *)
-    echo "Usage: $0 [build|pipeline|smoke|branding|qemu-boot|qemu-smoke|qemu-gnome|interactive|prepare]" >&2
+    echo "Usage: $0 [build|pipeline|smoke|branding|qemu-boot|qemu-uefi|qemu-smoke|qemu-smoke-uefi|qemu-gnome|interactive|prepare]" >&2
     exit 1
     ;;
 esac

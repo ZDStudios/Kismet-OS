@@ -20,6 +20,10 @@ BOOT_WAIT_SECONDS="${QEMU_BOOT_WAIT_SECONDS:-45}"
 SCREENSHOT_WAIT_SECONDS="${QEMU_SCREENSHOT_WAIT_SECONDS:-10}"
 QEMU_BIN="${QEMU_BIN:-qemu-system-x86_64}"
 QEMU_SENDKEYS="${QEMU_SENDKEYS:-ret,ret}"
+QEMU_FIRMWARE="${QEMU_FIRMWARE:-bios}"
+QEMU_OVMF_CODE="${QEMU_OVMF_CODE:-}"
+QEMU_OVMF_VARS_TEMPLATE="${QEMU_OVMF_VARS_TEMPLATE:-}"
+OVMF_VARS_PATH="$RUNTIME_DIR/OVMF_VARS.fd"
 
 fail() {
   echo "[FAIL] $*" >&2
@@ -30,16 +34,72 @@ fail() {
 command -v "$QEMU_BIN" >/dev/null 2>&1 || fail "qemu-system-x86_64 not found"
 command -v python3 >/dev/null 2>&1 || fail "python3 is required for QEMU monitor access"
 
+resolve_ovmf_code() {
+  if [ -n "$QEMU_OVMF_CODE" ] && [ -f "$QEMU_OVMF_CODE" ]; then
+    printf '%s\n' "$QEMU_OVMF_CODE"
+    return 0
+  fi
+  for candidate in \
+    /usr/share/OVMF/OVMF_CODE.fd \
+    /usr/share/OVMF/OVMF_CODE_4M.fd \
+    /usr/share/edk2/ovmf/OVMF_CODE.fd \
+    /usr/share/edk2/x64/OVMF_CODE.fd; do
+    if [ -f "$candidate" ]; then
+      printf '%s\n' "$candidate"
+      return 0
+    fi
+  done
+  return 1
+}
+
+resolve_ovmf_vars_template() {
+  if [ -n "$QEMU_OVMF_VARS_TEMPLATE" ] && [ -f "$QEMU_OVMF_VARS_TEMPLATE" ]; then
+    printf '%s\n' "$QEMU_OVMF_VARS_TEMPLATE"
+    return 0
+  fi
+  for candidate in \
+    /usr/share/OVMF/OVMF_VARS.fd \
+    /usr/share/OVMF/OVMF_VARS_4M.fd \
+    /usr/share/edk2/ovmf/OVMF_VARS.fd \
+    /usr/share/edk2/x64/OVMF_VARS.fd; do
+    if [ -f "$candidate" ]; then
+      printf '%s\n' "$candidate"
+      return 0
+    fi
+  done
+  return 1
+}
+
 mkdir -p "$RUNTIME_DIR" "$ARTIFACT_DIR"
 rm -f "$MONITOR_SOCKET" "$SERIAL_LOG" "$SCREENSHOT_PATH" "$SCREENSHOT_PNG" "$MONITOR_LOG" \
-      "$ARTIFACT_SERIAL_LOG" "$ARTIFACT_MONITOR_LOG" "$ARTIFACT_SCREENSHOT_PPM" "$ARTIFACT_SCREENSHOT_PNG"
+      "$ARTIFACT_SERIAL_LOG" "$ARTIFACT_MONITOR_LOG" "$ARTIFACT_SCREENSHOT_PPM" "$ARTIFACT_SCREENSHOT_PNG" \
+      "$OVMF_VARS_PATH"
 echo "Runtime dir: $RUNTIME_DIR"
 echo "Artifact dir: $ARTIFACT_DIR"
+echo "Firmware mode: $QEMU_FIRMWARE"
 
 ACCEL_ARGS=("-machine" "q35")
 if [ -e /dev/kvm ] && [ -w /dev/kvm ]; then
   ACCEL_ARGS=("-machine" "q35,accel=kvm")
 fi
+
+FIRMWARE_ARGS=()
+case "$QEMU_FIRMWARE" in
+  bios|legacy)
+    ;;
+  uefi|efi)
+    OVMF_CODE_PATH="$(resolve_ovmf_code)" || fail "UEFI boot requested but no OVMF_CODE firmware was found"
+    OVMF_VARS_TEMPLATE_PATH="$(resolve_ovmf_vars_template)" || fail "UEFI boot requested but no OVMF_VARS template was found"
+    cp "$OVMF_VARS_TEMPLATE_PATH" "$OVMF_VARS_PATH"
+    FIRMWARE_ARGS=(
+      -drive "if=pflash,format=raw,readonly=on,file=$OVMF_CODE_PATH"
+      -drive "if=pflash,format=raw,file=$OVMF_VARS_PATH"
+    )
+    ;;
+  *)
+    fail "Unsupported QEMU_FIRMWARE value: $QEMU_FIRMWARE (expected bios or uefi)"
+    ;;
+esac
 
 cleanup() {
   if [ -f "$RUNTIME_DIR/qemu.pid" ]; then
@@ -51,6 +111,7 @@ trap cleanup EXIT
 
 "$QEMU_BIN" \
   "${ACCEL_ARGS[@]}" \
+  "${FIRMWARE_ARGS[@]}" \
   -m "$MEMORY_MB" \
   -smp "$SMP_CPUS" \
   -boot d \
@@ -168,6 +229,15 @@ if [ -s "$SERIAL_LOG" ]; then
   tail -n 40 "$SERIAL_LOG"
 else
   echo "(serial log is empty, expected for a graphical boot path)"
+fi
+
+if [ -s "$SERIAL_LOG" ]; then
+  if grep -Fq "grub_platform" "$SERIAL_LOG"; then
+    fail "GRUB hit a grub_platform error during boot smoke"
+  fi
+  if grep -Eq 'Try or Install Ubuntu|Welcome to Ubuntu|Ubuntu \(safe graphics\)' "$SERIAL_LOG"; then
+    fail "Boot menu still exposes Ubuntu branding in serial output"
+  fi
 fi
 
 echo "QEMU boot smoke run completed."
