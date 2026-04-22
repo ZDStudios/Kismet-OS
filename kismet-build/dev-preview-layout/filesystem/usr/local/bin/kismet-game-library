@@ -1,0 +1,87 @@
+#!/usr/bin/env python3
+import os
+import shutil
+import subprocess
+import sys
+
+GAMES = [
+    ("Aisleriot Solitaire", "aisleriot.desktop", "Classic card solitaire collection"),
+    ("GNOME 2048", "org.gnome.TwentyFortyEight.desktop", "Slide and combine tiles to reach 2048"),
+    ("GNOME Chess", "org.gnome.Chess.desktop", "Play chess locally or against the computer"),
+    ("GNOME Klotski", "org.gnome.Klotski.desktop", "Sliding block puzzle game"),
+    ("GNOME Mahjongg", "org.gnome.Mahjongg.desktop", "Match tiles and clear the board"),
+    ("GNOME Mines", "org.gnome.Mines.desktop", "Classic minesweeper puzzle"),
+    ("GNOME Nibbles", "org.gnome.Nibbles.desktop", "Snake-style arcade game"),
+    ("GNOME Robots", "org.gnome.Robots.desktop", "Escape and outsmart the robots"),
+    ("GNOME Sudoku", "org.gnome.Sudoku.desktop", "Number puzzle with multiple difficulties"),
+    ("Quadrapassel", "org.gnome.Quadrapassel.desktop", "Falling block puzzle"),
+    ("Five or More", "org.gnome.five-or-more.desktop", "Line up coloured balls"),
+    ("Four-in-a-Row", "org.gnome.Four-in-a-row.desktop", "Connect four against a friend or AI"),
+    ("Hitori", "org.gnome.Hitori.desktop", "Logic puzzle with line-of-sight rules"),
+    ("Iagno", "org.gnome.Iagno.desktop", "Reversi style board strategy"),
+    ("Lights Off", "org.gnome.LightsOff.desktop", "Toggle puzzle with chain reactions"),
+    ("Peg Solitaire", "org.gnome.PegSolitaire.desktop", "Classic peg-jumping puzzle"),
+    ("Swell Foop", "org.gnome.SwellFoop.desktop", "Match colour groups for high scores"),
+    ("Tali", "org.gnome.Tali.desktop", "Poker dice game"),
+    ("Atomix", "atomix.desktop", "Assemble molecules through movement puzzles"),
+    ("Frozen Bubble", "frozen-bubble.desktop", "Arcade bubble-popping action"),
+]
+
+
+def launcher_command():
+    for candidate in ("gtk-launch", "gio"):
+        path = shutil.which(candidate)
+        if path:
+            return candidate
+    return None
+
+
+def launch(desktop_id: str) -> int:
+    cmd = launcher_command()
+    if cmd == "gtk-launch":
+        return subprocess.call(["gtk-launch", desktop_id])
+    if cmd == "gio":
+        app_path = f"/usr/share/applications/{desktop_id}"
+        if os.path.exists(app_path):
+            return subprocess.call(["gio", "launch", app_path])
+    print(f"Could not find a desktop launcher for {desktop_id}.", file=sys.stderr)
+    return 1
+
+
+def print_menu():
+    print("\n=== Kismet Game Library ===\n")
+    print("20 ready games included in this preview image.\n")
+    for idx, (name, _desktop, desc) in enumerate(GAMES, start=1):
+        print(f"{idx:2}. {name}")
+        print(f"    {desc}")
+    print("\nChoose a game number, or press Enter to exit.\n")
+
+
+def main() -> int:
+    if len(sys.argv) > 1:
+        raw = " ".join(sys.argv[1:]).strip().lower()
+        for name, desktop_id, _desc in GAMES:
+            if raw in {name.lower(), desktop_id.lower(), name.lower().replace(' ', '-')}: 
+                return launch(desktop_id)
+        print(f"Unknown game selector: {raw}", file=sys.stderr)
+        return 1
+
+    while True:
+        print_menu()
+        choice = input("Launch> ").strip()
+        if not choice:
+            return 0
+        if not choice.isdigit():
+            print("Please enter a valid number.")
+            continue
+        selected = int(choice)
+        if not 1 <= selected <= len(GAMES):
+            print("That number is out of range.")
+            continue
+        name, desktop_id, _desc = GAMES[selected - 1]
+        print(f"Launching {name}...")
+        return launch(desktop_id)
+
+
+if __name__ == "__main__":
+    raise SystemExit(main())

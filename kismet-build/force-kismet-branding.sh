@@ -121,7 +121,7 @@ button-layout='appmenu:minimize,maximize,close'
 [org/gnome/shell]
 disable-user-extensions=false
 enabled-extensions=['ubuntu-dock@ubuntu.com','ding@rastersoft.com']
-favorite-apps=['org.gnome.Nautilus.desktop','google-chrome.desktop','org.gnome.Software.desktop','org.gnome.Settings.desktop','kismet-ai-center.desktop']
+favorite-apps=['org.gnome.Nautilus.desktop','google-chrome.desktop','org.gnome.Software.desktop','org.gnome.Settings.desktop','kismet-ai-center.desktop','kismet-game-library.desktop']
 
 [org/gnome/shell/extensions/ubuntu-dock]
 dock-position='BOTTOM'

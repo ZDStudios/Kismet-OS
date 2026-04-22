@@ -1,0 +1,11 @@
+[Desktop Entry]
+Type=Application
+Version=1.0
+Name=Kismet Game Library
+Comment=Browse and launch 20 included games in Kismet OS
+Exec=gnome-terminal -- /usr/local/bin/kismet-game-library
+Icon=applications-games
+Terminal=false
+Categories=Game;
+Keywords=games;arcade;puzzle;library;kismet;
+StartupNotify=true
