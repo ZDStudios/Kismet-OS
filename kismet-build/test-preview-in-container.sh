@@ -2,19 +2,21 @@
 # test-preview-in-container.sh - Run Kismet OS build and test inside Docker
 #
 # Usage:
-#   ./test-preview-in-container.sh build           # Full rebuild + smoke tests
-#   ./test-preview-in-container.sh smoke           # Smoke test existing ISO
-#   ./test-preview-in-container.sh branding        # Branding scan only
-#   ./test-preview-in-container.sh qemu-boot        # Full rebuild + QEMU boot test
-#   ./test-preview-in-container.sh qemu-smoke      # QEMU boot smoke only
-#   ./test-preview-in-container.sh interactive     # Drop into interactive shell
+#   ./test-preview-in-container.sh build          # Full pipeline rebuild + smoke tests + branding scan
+#   ./test-preview-in-container.sh pipeline       # Full pipeline rebuild only
+#   ./test-preview-in-container.sh smoke          # Smoke test existing ISO
+#   ./test-preview-in-container.sh branding       # Branding scan only
+#   ./test-preview-in-container.sh qemu-boot      # Full rebuild + QEMU boot test
+#   ./test-preview-in-container.sh qemu-smoke     # QEMU boot smoke only
+#   ./test-preview-in-container.sh interactive    # Drop into interactive shell
 #
 # Environment variables:
-#   KISMET_ISO_PATH   - Path to ISO (default: /workspace/kismet-build/output/kismet-os-dev-preview.iso)
-#   KISMET_MEMORY_MB  - QEMU RAM in MB (default: 4096)
-#   KISMET_SMP        - QEMU CPU count (default: 4)
-#   QEMU_BOOT_WAIT_SECONDS - Wait before screenshotting booted VM (default from boot script)
-#   QEMU_SENDKEYS     - Comma-separated QEMU monitor sendkey sequence (default: ret,ret)
+#   KISMET_ISO_PATH         - Path to ISO (default: /workspace/kismet-build/output/kismet-os-dev-preview.iso)
+#   KISMET_MEMORY_MB        - QEMU RAM in MB (default: 4096)
+#   KISMET_SMP              - QEMU CPU count (default: 4)
+#   QEMU_BOOT_WAIT_SECONDS  - Wait before screenshotting booted VM (default from boot script)
+#   QEMU_SENDKEYS           - Comma-separated QEMU monitor sendkey sequence (default: ret,ret)
+#   KISMET_SKIP_DOCKER_BUILD - Set to 1 to reuse the current kismet-ubuntu-build image
 
 set -euo pipefail
 
@@ -23,8 +25,10 @@ MODE="${1:-build}"
 
 cd "$ROOT_DIR"
 
-# Ensure docker image is up to date
-docker build -f kismet-build/Dockerfile.ubuntu-build -t kismet-ubuntu-build .
+# Ensure docker image is up to date unless explicitly skipped
+if [ "${KISMET_SKIP_DOCKER_BUILD:-0}" != "1" ]; then
+  docker build -f kismet-build/Dockerfile.ubuntu-build -t kismet-ubuntu-build .
+fi
 
 run_inner() {
   docker run --rm \
@@ -43,18 +47,17 @@ run_inner() {
 
 case "$MODE" in
   build)
-    echo "==> Full build: layout + branding + live-user + repack + smoke + branding-scan"
-    run_inner 'bash ./kismet-build/make-dev-preview-layout.sh
-               bash ./kismet-build/overlay-kismet-files.sh
-               bash ./kismet-build/apply-kismet-overlay.sh
-               bash ./kismet-build/install-kismet-packages-into-rootfs.sh
-               bash ./kismet-build/force-kismet-branding.sh
-               bash ./kismet-build/setup-live-user.sh
-               bash ./kismet-build/repack-live-rootfs.sh
-               bash ./kismet-build/rebuild-iso.sh
+    echo "==> Full build: containerized preview pipeline + smoke + branding-scan"
+    run_inner 'bash ./kismet-build/build-ubuntu-preview.sh
                bash ./kismet-build/smoke-test-preview.sh
                python3 ./kismet-build/scan-preview-branding.py'
     echo "==> Full build completed successfully"
+    ;;
+
+  pipeline)
+    echo "==> Full pipeline rebuild only"
+    run_inner 'bash ./kismet-build/build-ubuntu-preview.sh'
+    echo "==> Full pipeline rebuild completed"
     ;;
 
   smoke)
@@ -71,14 +74,7 @@ case "$MODE" in
 
   qemu-boot|boot)
     echo "==> Full build + QEMU boot test"
-    run_inner 'bash ./kismet-build/make-dev-preview-layout.sh
-               bash ./kismet-build/overlay-kismet-files.sh
-               bash ./kismet-build/apply-kismet-overlay.sh
-               bash ./kismet-build/install-kismet-packages-into-rootfs.sh
-               bash ./kismet-build/force-kismet-branding.sh
-               bash ./kismet-build/setup-live-user.sh
-               bash ./kismet-build/repack-live-rootfs.sh
-               bash ./kismet-build/rebuild-iso.sh
+    run_inner 'bash ./kismet-build/build-ubuntu-preview.sh
                bash ./kismet-build/smoke-test-preview.sh
                python3 ./kismet-build/scan-preview-branding.py
                bash ./kismet-build/boot-preview-in-qemu.sh'
@@ -114,7 +110,7 @@ case "$MODE" in
     ;;
 
   *)
-    echo "Usage: $0 [build|smoke|branding|qemu-boot|qemu-smoke|qemu-gnome|interactive|prepare]" >&2
+    echo "Usage: $0 [build|pipeline|smoke|branding|qemu-boot|qemu-smoke|qemu-gnome|interactive|prepare]" >&2
     exit 1
     ;;
 esac

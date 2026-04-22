@@ -47,6 +47,22 @@ cd kismet-test
 
 This validates the Ubuntu ISO build image, confirms the required remastering tools are present, and exercises the lightweight preview staging scripts without running the full ISO rebuild.
 
+Full remaster pipeline inside Docker:
+
+```bash
+cd ..
+./kismet-build/test-preview-in-container.sh pipeline
+```
+
+Full remaster pipeline plus validation inside Docker:
+
+```bash
+cd ..
+./kismet-build/test-preview-in-container.sh build
+```
+
+This now runs the end-to-end ISO path, not just the late-stage repack steps, so it is a better approximation of the real preview-image build.
+
 Live rootfs branding check:
 
 ```bash
