@@ -4,7 +4,7 @@ set -euo pipefail
 ROOT_DIR="$(cd "$(dirname "$0")/.." && pwd)"
 EDIT_DIR="$ROOT_DIR/kismet-build/work/live-rootfs-edit"
 KISMET_PACKAGES="ubuntu-desktop-minimal gnome-shell gdm3 gnome-terminal nautilus gnome-software gnome-system-monitor gnome-calculator gnome-calendar gnome-contacts gnome-text-editor gnome-disk-utility gnome-screenshot gnome-clocks gnome-weather cheese simple-scan yaru-theme-gnome-shell yaru-theme-gtk yaru-theme-icon yaru-theme-sound gnome-shell-extension-ubuntu-dock gnome-shell-extension-desktop-icons-ng nodejs npm python3-flask python3-psutil python3-requests python3-pip python3-venv python3-watchdog python3-pydantic python3-inotify curl wget git tmux zsh jq wine64 winetricks lutris winbind fonts-wine"
-KISMET_PURGE_PACKAGES="sddm plasma-desktop plasma-workspace plasma-widgets plasma-discover plasma-discover-backend-firmware plasma-discover-backend-packagekit kwin-x11 kwin-common kwin-runtime kwin-wayland kwin-effects kactivitymanagerd baloo baloo-kf5 kf5-baloo kdelibs kdelibs5plasma libkdegtk libkfontinst5 libkfontinstui5 libplasma3 libqt5svg5-private libKF5 KF5StatusNotifierWatcher kinfo centerim5 kdepim-addons akonadi-backend-mysql akonadi-backend-sqlite akonadi-backend-postgresql akonadi-mysql akonadi-sqlite akonadi-server akregator angelfont dragonplayer ffmpegthumbs filelight juk k3b kaffeine kdevelop kdev-php kdevpython khelpcenter kio-extras kleopatra kmag kmousetool knotes kopete kpat kwrited libkcompactdisc libkcddb libkcddb4 libkdcraw25 libkdepim libkdepim7b107 libkdepolkitcore0 libkdesu5 libkdfontviewkg libkdig libkdisplay libkf milter libkmbox libkoauth libkoket libksane libksane-data libksysguard libksysguard5 libktorrent libktorrent6 plasma-aurorae-theme-sddm sddm-theme-breeze systemsettings user-manager xul-ext-lightning kubuntu-notification-helper kubuntu-desktop kubuntu-settings-desktop kubuntu-settings-snap panoconsole kwebengine libQt5WebEngine5 libQt5WebEngineWidgets5 libqt5qml-private"
+KISMET_PURGE_PACKAGES="sddm plasma-desktop plasma-workspace plasma-discover kwin-x11 kwin-common kwin-wayland kactivitymanagerd kdepim-addons akonadi-backend-mysql akonadi-backend-sqlite akonadi-backend-postgresql akonadi-server akregator dragonplayer ffmpegthumbs filelight juk k3b kaffeine kdevelop khelpcenter kio-extras kleopatra kmag kmousetool knotes kopete kpat kwrited sddm-theme-breeze systemsettings kubuntu-notification-helper kubuntu-desktop kubuntu-settings-desktop"
 
 if [ ! -d "$EDIT_DIR" ]; then
   echo "Editable live rootfs not found. Run prepare-live-rootfs.sh first." >&2
@@ -71,10 +71,10 @@ exit 101
 EOF
 chmod +x "$EDIT_DIR/usr/sbin/policy-rc.d"
 
-chroot "$EDIT_DIR" env \
+chroot "$EDIT_DIR" /usr/bin/env \
   KISMET_PACKAGES="$KISMET_PACKAGES" \
   KISMET_PURGE_PACKAGES="$KISMET_PURGE_PACKAGES" \
-  bash -lc '
+  bash <<'EOF'
 set -e
 export DEBIAN_FRONTEND=noninteractive
 export NEEDRESTART_MODE=a
@@ -82,11 +82,19 @@ mkdir -p /etc/dpkg/dpkg.cfg.d
 printf "force-confdef\nforce-confold\n" > /etc/dpkg/dpkg.cfg.d/99kismet-ci
 apt-get update
 apt-get install -y --no-install-recommends $KISMET_PACKAGES
-apt-get purge -y $KISMET_PURGE_PACKAGES || true
+INSTALLED_PURGE_PACKAGES=""
+for pkg in $KISMET_PURGE_PACKAGES; do
+  if dpkg-query -W -f='${Status}' "$pkg" 2>/dev/null | grep -q 'install ok installed'; then
+    INSTALLED_PURGE_PACKAGES="$INSTALLED_PURGE_PACKAGES $pkg"
+  fi
+done
+if [ -n "$INSTALLED_PURGE_PACKAGES" ]; then
+  apt-get purge -y $INSTALLED_PURGE_PACKAGES || true
+fi
 apt-get autoremove -y --purge || true
 apt-get clean
 rm -rf /var/lib/apt/lists/* /tmp/* /var/tmp/*
-'
+EOF
 
 echo "$KISMET_PACKAGES" | tr ' ' '\n' | sed '/^$/d' > "$ROOT_DIR/kismet-build/output/installed-package-set.txt"
 

@@ -63,7 +63,7 @@ cat > "$EDIT_DIR/usr/share/gnome-background-properties/kismet-wallpapers.xml" <<
 <?xml version="1.0"?>
 <wallpapers>
   <wallpaper deleted="false">
-    <name>Kismet OS</name>
+    <name>Kismet Horizon</name>
     <filename>/usr/share/backgrounds/kismet/kismet-wallpaper.svg</filename>
     <options>zoom</options>
     <pcolor>#101828</pcolor>
@@ -84,6 +84,75 @@ cat > "$EDIT_DIR/usr/share/gnome-background-properties/kismet-wallpapers.xml" <<
     <scolor>#8a6cff</scolor>
   </wallpaper>
 </wallpapers>
+EOF
+
+mkdir -p "$EDIT_DIR/etc/dconf/profile" "$EDIT_DIR/etc/dconf/db/local.d" "$EDIT_DIR/etc/skel/.config/dconf"
+cat > "$EDIT_DIR/etc/dconf/profile/user" <<'EOF'
+user-db:user
+system-db:local
+EOF
+
+cat > "$EDIT_DIR/etc/dconf/db/local.d/00-kismet-desktop" <<'EOF'
+[org/gnome/desktop/background]
+picture-uri='file:///usr/share/backgrounds/kismet/kismet-wallpaper.svg'
+picture-uri-dark='file:///usr/share/backgrounds/kismet/kismet-wallpaper.svg'
+picture-options='zoom'
+primary-color='#101828'
+secondary-color='#1cb4ff'
+
+[org/gnome/desktop/interface]
+color-scheme='prefer-light'
+gtk-theme='Yaru-blue'
+icon-theme='Yaru-blue'
+cursor-theme='Yaru'
+font-name='Inter 10'
+document-font-name='Inter 10'
+monospace-font-name='JetBrains Mono 10'
+clock-format='12h'
+show-battery-percentage=true
+enable-hot-corners=false
+
+[org/gnome/desktop/peripherals/touchpad]
+tap-to-click=true
+
+[org/gnome/desktop/wm/preferences]
+button-layout='appmenu:minimize,maximize,close'
+
+[org/gnome/shell]
+disable-user-extensions=false
+enabled-extensions=['ubuntu-dock@ubuntu.com','ding@rastersoft.com']
+favorite-apps=['org.gnome.Nautilus.desktop','google-chrome.desktop','org.gnome.Software.desktop','org.gnome.Settings.desktop','kismet-ai-center.desktop']
+
+[org/gnome/shell/extensions/ubuntu-dock]
+dock-position='BOTTOM'
+dash-max-icon-size=42
+extend-height=false
+show-mounts=false
+show-trash=false
+transparency-mode='FIXED'
+background-opacity=0.18
+custom-theme-shrink=true
+multi-monitor=false
+
+[org/gnome/desktop/screensaver]
+lock-enabled=false
+ubuntu-lock-on-suspend=false
+
+[org/gnome/desktop/session]
+idle-delay=uint32 0
+EOF
+
+cat > "$EDIT_DIR/etc/dconf/db/local.d/01-kismet-favorite-app-folders" <<'EOF'
+[org/gnome/desktop/app-folders]
+folder-children=['Utilities','System']
+
+[org/gnome/desktop/app-folders/folders/Utilities]
+name='Utilities'
+apps=['org.gnome.Calculator.desktop','org.gnome.clocks.desktop','org.gnome.Screenshot.desktop','org.gnome.TextEditor.desktop']
+
+[org/gnome/desktop/app-folders/folders/System]
+name='System'
+apps=['org.gnome.Settings.desktop','org.gnome.SystemMonitor.desktop','org.gnome.DiskUtility.desktop','org.gnome.Logs.desktop']
 EOF
 
 if [ -f "$EDIT_DIR/usr/share/gnome-background-properties/noble-wallpapers.xml" ]; then
@@ -212,8 +281,10 @@ cat > "$GDM_DIR/custom.conf" <<'EOF'
 [daemon]
 WaylandEnable=true
 DefaultSession=gnome.desktop
-AutomaticLogin=admin
+AutomaticLogin=live
 AutomaticLoginDelay=0
+InitialSetupEnable=false
+TimedLoginEnable=false
 
 [security]
 DisallowTCP=true
@@ -230,6 +301,7 @@ cat > "$EDIT_DIR/etc/dconf/db/gdm.d/00-kismet-greeter" <<'DBCEOF'
 [org/gnome/login-screen]
 logo='/usr/share/pixmaps/kismet-logo.svg'
 disable-user-list=true
+banner-message-enable=false
 DBCEOF
 
 mkdir -p "$EDIT_DIR/etc/X11" "$EDIT_DIR/etc/systemd/system/graphical.target.wants"
@@ -256,4 +328,8 @@ for service in sddm.service gnome-initial-setup.service; do
   rm -f "$EDIT_DIR/usr/lib/systemd/system/$service" || true
 done
 
-echo "==> Forced Kismet branding, Kismet icon replacements, GNOME sessions, and GDM defaults into editable rootfs"
+if [ -x "$EDIT_DIR/usr/bin/dconf" ]; then
+  chroot "$EDIT_DIR" /usr/bin/dconf update >/dev/null 2>&1 || true
+fi
+
+echo "==> Forced Kismet branding, Zorin-style GNOME defaults, and GDM auto-login into editable rootfs"

@@ -5,13 +5,13 @@ set -euo pipefail
 
 ROOT_DIR="$(cd "$(dirname "$0")/.." && pwd)"
 EDIT_DIR="${EDIT_DIR:-$ROOT_DIR/kismet-build/work/live-rootfs-edit}"
-LIVE_USER="${LIVE_USER:-admin}"
-LIVE_UID="${LIVE_UID:-1000}"
-LIVE_GID="${LIVE_GID:-1000}"
-LIVE_GECOS="${LIVE_GECOS:-Administrator}"
+LIVE_USER="${LIVE_USER:-live}"
+LIVE_UID="${LIVE_UID:-999}"
+LIVE_GID="${LIVE_GID:-999}"
+LIVE_GECOS="${LIVE_GECOS:-Kismet Live User}"
 LIVE_SHELL="${LIVE_SHELL:-/bin/bash}"
 LIVE_HOME="${LIVE_HOME:-/home/$LIVE_USER}"
-LIVE_PASSWORD="${LIVE_PASSWORD:-admin}"
+LIVE_PASSWORD="${LIVE_PASSWORD:-kismet}"
 
 [ -d "$EDIT_DIR" ] || {
   echo "Editable live rootfs not found at $EDIT_DIR. Run prepare-live-rootfs.sh first." >&2

@@ -10,6 +10,7 @@ TARGET_NAME="$(basename "$TARGET_FS")"
 NEW_FS="$WORK_DIR/$TARGET_NAME"
 OUTPUT_DIR="$ROOT_DIR/kismet-build/output"
 OUTPUT_ISO="$OUTPUT_DIR/kismet-os-dev-preview.iso"
+OUTPUT_ZIP="$OUTPUT_DIR/kismet-os-dev-preview.zip"
 
 if [ ! -d "$EXTRACT_DIR" ]; then
   echo "Extracted ISO tree not found. Run extract-ubuntu-iso.sh first."
@@ -61,3 +62,16 @@ xorriso -as mkisofs \
   "$EXTRACT_DIR"
 
 echo "==> ISO written to $OUTPUT_ISO"
+
+if [ -f "$OUTPUT_ZIP" ]; then
+  echo "==> Removing previous zip package $OUTPUT_ZIP"
+  rm -f "$OUTPUT_ZIP"
+fi
+
+echo "==> Packaging ISO into zip"
+(
+  cd "$OUTPUT_DIR"
+  zip -q -j "$(basename "$OUTPUT_ZIP")" "$(basename "$OUTPUT_ISO")"
+)
+
+echo "==> Zip written to $OUTPUT_ZIP"
