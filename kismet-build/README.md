@@ -22,10 +22,14 @@ It is still an early preview path, but it now repacks the real Ubuntu live files
 ## Useful container entry points
 - `./kismet-build/run-preview-cycle.sh test` — rebuild the preview ISO, run smoke validation, then print fresh artifact sizes and hashes
 - `./kismet-build/run-preview-cycle.sh qemu` — rebuild, validate, run BIOS QEMU boot smoke, write screenshot/log artifacts to `kismet-build/output/qemu-smoke/`, then print fresh artifact sizes and hashes
+- `./kismet-build/run-preview-cycle.sh qemu-uefi` — rebuild, validate, run UEFI QEMU boot smoke, and keep the same screenshot/log artifact flow for firmware-specific boot debugging
+- `./kismet-build/run-preview-cycle.sh qemu-gnome` — rebuild, validate, then run a longer GNOME-focused QEMU boot smoke tuned for the graphical login/session path
 - `./kismet-build/run-preview-cycle.sh pipeline` — rebuild only, then print fresh artifact sizes and hashes
 - `./kismet-build/run-pipeline-in-container.sh preview` — rebuild the preview ISO inside Docker
 - `./kismet-build/run-pipeline-in-container.sh preview-test` — rebuild plus smoke tests and branding scan inside Docker
 - `./kismet-build/run-pipeline-in-container.sh preview-qemu` — rebuild plus smoke tests, branding scan, and BIOS QEMU boot smoke inside Docker
+- `./kismet-build/run-pipeline-in-container.sh preview-qemu-uefi` — rebuild plus smoke tests, branding scan, and UEFI QEMU boot smoke inside Docker
+- `./kismet-build/run-pipeline-in-container.sh preview-qemu-gnome` — rebuild plus smoke tests, then run a GNOME-focused QEMU smoke pass against the fresh preview ISO inside Docker
 - `./kismet-build/test-preview-in-container.sh qemu-uefi` — rebuild plus smoke tests, branding scan, and UEFI QEMU boot smoke inside Docker
 - `./kismet-build/test-preview-in-container.sh qemu-smoke-uefi` — run UEFI QEMU boot smoke against an existing preview ISO
 - `./kismet-build/test-preview-in-container.sh pipeline` — full pipeline rebuild without validation

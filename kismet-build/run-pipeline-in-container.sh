@@ -17,11 +17,17 @@ case "$MODE" in
   preview-qemu)
     INNER='./kismet-build/test-preview-in-container.sh qemu-boot'
     ;;
+  preview-qemu-uefi)
+    INNER='./kismet-build/test-preview-in-container.sh qemu-uefi'
+    ;;
+  preview-qemu-gnome)
+    INNER='./kismet-build/test-preview-in-container.sh build && ./kismet-build/test-preview-in-container.sh qemu-gnome'
+    ;;
   live-build)
     INNER='./kismet-base/build/live-build-auto/build-kismet-live.sh'
     ;;
   *)
-    echo "Usage: $0 [preview|preview-test|preview-qemu|live-build]" >&2
+    echo "Usage: $0 [preview|preview-test|preview-qemu|preview-qemu-uefi|preview-qemu-gnome|live-build]" >&2
     exit 1
     ;;
 esac

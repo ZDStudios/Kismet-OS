@@ -18,11 +18,20 @@ case "$MODE" in
     ./kismet-build/test-preview-in-container.sh build
     ;;
   qemu)
-    echo "==> Rebuilding preview ISO, validating, and running QEMU boot smoke in Docker"
+    echo "==> Rebuilding preview ISO, validating, and running BIOS QEMU boot smoke in Docker"
     ./kismet-build/test-preview-in-container.sh qemu-boot
     ;;
+  qemu-uefi)
+    echo "==> Rebuilding preview ISO, validating, and running UEFI QEMU boot smoke in Docker"
+    ./kismet-build/test-preview-in-container.sh qemu-uefi
+    ;;
+  qemu-gnome)
+    echo "==> Rebuilding preview ISO, validating, and running GNOME-focused QEMU boot smoke in Docker"
+    ./kismet-build/test-preview-in-container.sh build
+    ./kismet-build/test-preview-in-container.sh qemu-gnome
+    ;;
   *)
-    echo "Usage: $0 [pipeline|test|qemu]" >&2
+    echo "Usage: $0 [pipeline|test|qemu|qemu-uefi|qemu-gnome]" >&2
     exit 1
     ;;
 esac
