@@ -72,6 +72,17 @@ pass "Core GNOME session packages are installed"
 [ ! -f "$EDIT_DIR/usr/share/wayland-sessions/ubuntu-wayland.desktop" ] || fail "Ubuntu Wayland session still present"
 pass "Ubuntu session entries removed"
 
+# Verify Plymouth default theme wiring
+[ -f "$EDIT_DIR/usr/share/plymouth/themes/kismet/kismet.plymouth" ] || fail "Kismet Plymouth theme file missing"
+[ -L "$EDIT_DIR/etc/alternatives/default.plymouth" ] || fail "default.plymouth alternative link missing"
+[ -L "$EDIT_DIR/usr/share/plymouth/themes/default.plymouth" ] || fail "default Plymouth theme symlink missing"
+DEFAULT_PLYMOUTH_TARGET="$(readlink "$EDIT_DIR/etc/alternatives/default.plymouth")"
+[ "$DEFAULT_PLYMOUTH_TARGET" = "/usr/share/plymouth/themes/kismet/kismet.plymouth" ] || fail "default.plymouth does not point at Kismet theme"
+DEFAULT_PLYMOUTH_LINK="$(readlink "$EDIT_DIR/usr/share/plymouth/themes/default.plymouth")"
+[ "$DEFAULT_PLYMOUTH_LINK" = "/etc/alternatives/default.plymouth" ] || fail "default Plymouth theme symlink is not wired through alternatives"
+grep -q '^Theme=kismet$' "$EDIT_DIR/etc/plymouth/plymouthd.conf" || fail "plymouthd.conf is not selecting the Kismet theme"
+pass "Plymouth default theme wiring looks correct"
+
 # Verify display manager
 grep -q '/usr/sbin/gdm3' "$EDIT_DIR/etc/X11/default-display-manager" || fail "GDM is not set as the default display manager"
 pass "GDM is the default display manager"
@@ -83,6 +94,21 @@ if [ -f "$EDIT_DIR/etc/gdm3/custom.conf" ]; then
   grep -q 'InitialSetupEnable=false' "$EDIT_DIR/etc/gdm3/custom.conf" || fail "GDM initial setup is not disabled"
   pass "GDM auto-login for live user configured"
 fi
+
+# Verify display-manager systemd symlinks are wired to GDM
+[ -L "$EDIT_DIR/etc/systemd/system/display-manager.service" ] || fail "display-manager.service symlink missing"
+[ -L "$EDIT_DIR/etc/systemd/system/graphical.target.wants/display-manager.service" ] || fail "graphical.target display-manager symlink missing"
+DISPLAY_MANAGER_TARGET="$(readlink "$EDIT_DIR/etc/systemd/system/display-manager.service")"
+GRAPHICAL_DM_TARGET="$(readlink "$EDIT_DIR/etc/systemd/system/graphical.target.wants/display-manager.service")"
+case "$DISPLAY_MANAGER_TARGET" in
+  /lib/systemd/system/gdm.service|/usr/lib/systemd/system/gdm.service) ;;
+  *) fail "display-manager.service does not point to gdm.service" ;;
+esac
+case "$GRAPHICAL_DM_TARGET" in
+  /lib/systemd/system/gdm.service|/usr/lib/systemd/system/gdm.service) ;;
+  *) fail "graphical.target display-manager symlink does not point to gdm.service" ;;
+esac
+pass "display-manager systemd symlinks point to GDM"
 
 # Verify live account exists in the editable rootfs
 chroot "$EDIT_DIR" getent passwd live >/dev/null 2>&1 || fail "live user is missing from live rootfs"

@@ -234,6 +234,12 @@ Theme=kismet
 ShowDelay=0
 EOF
 
+mkdir -p "$EDIT_DIR/etc/alternatives"
+ln -sfn /usr/share/plymouth/themes/kismet/kismet.plymouth "$EDIT_DIR/etc/alternatives/default.plymouth"
+ln -sfn /etc/alternatives/default.plymouth "$EDIT_DIR/usr/share/plymouth/themes/default.plymouth"
+ln -sfn /usr/share/plymouth/themes/text/text.plymouth "$EDIT_DIR/etc/alternatives/text.plymouth"
+ln -sfn /etc/alternatives/text.plymouth "$EDIT_DIR/usr/share/plymouth/themes/text.plymouth"
+
 mkdir -p "$EDIT_DIR/usr/share/xsessions" "$EDIT_DIR/usr/share/wayland-sessions"
 
 # GNOME sessions (Zorin OS style)
