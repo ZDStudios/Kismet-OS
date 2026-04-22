@@ -113,4 +113,10 @@ If you found the original landing page and thought, "this is ambitious," yes. Th
 
 Kismet OS is being built in public, but the aim is to keep the repo grounded. The vision can be bold. The implementation should stay honest.
 
-Also Kismet is super sigma
+Other notes:
+- Kismet is sigma and the best
+- dont copy pls
+- copyright if copy i think
+- also its cool
+- did i mention its cool
+- best OS for devs
