@@ -4,11 +4,16 @@ set -euo pipefail
 ROOT_DIR="$(cd "$(dirname "$0")/.." && pwd)"
 ISO_PATH="${1:-$ROOT_DIR/kismet-build/output/kismet-os-dev-preview.iso}"
 RUNTIME_DIR="${QEMU_RUNTIME_DIR:-/tmp/kismet-qemu-smoke}"
+ARTIFACT_DIR="${QEMU_ARTIFACT_DIR:-$ROOT_DIR/kismet-build/output/qemu-smoke}"
 MONITOR_SOCKET="$RUNTIME_DIR/monitor.sock"
 SERIAL_LOG="$RUNTIME_DIR/serial.log"
 SCREENSHOT_PATH="$RUNTIME_DIR/boot-screenshot.ppm"
 SCREENSHOT_PNG="$RUNTIME_DIR/boot-screenshot.png"
 MONITOR_LOG="$RUNTIME_DIR/monitor.log"
+ARTIFACT_SERIAL_LOG="$ARTIFACT_DIR/serial.log"
+ARTIFACT_MONITOR_LOG="$ARTIFACT_DIR/monitor.log"
+ARTIFACT_SCREENSHOT_PPM="$ARTIFACT_DIR/boot-screenshot.ppm"
+ARTIFACT_SCREENSHOT_PNG="$ARTIFACT_DIR/boot-screenshot.png"
 MEMORY_MB="${QEMU_MEMORY_MB:-4096}"
 SMP_CPUS="${QEMU_SMP_CPUS:-4}"
 BOOT_WAIT_SECONDS="${QEMU_BOOT_WAIT_SECONDS:-45}"
@@ -25,9 +30,11 @@ fail() {
 command -v "$QEMU_BIN" >/dev/null 2>&1 || fail "qemu-system-x86_64 not found"
 command -v python3 >/dev/null 2>&1 || fail "python3 is required for QEMU monitor access"
 
-mkdir -p "$RUNTIME_DIR"
-rm -f "$MONITOR_SOCKET" "$SERIAL_LOG" "$SCREENSHOT_PATH" "$SCREENSHOT_PNG" "$MONITOR_LOG"
+mkdir -p "$RUNTIME_DIR" "$ARTIFACT_DIR"
+rm -f "$MONITOR_SOCKET" "$SERIAL_LOG" "$SCREENSHOT_PATH" "$SCREENSHOT_PNG" "$MONITOR_LOG" \
+      "$ARTIFACT_SERIAL_LOG" "$ARTIFACT_MONITOR_LOG" "$ARTIFACT_SCREENSHOT_PPM" "$ARTIFACT_SCREENSHOT_PNG"
 echo "Runtime dir: $RUNTIME_DIR"
+echo "Artifact dir: $ARTIFACT_DIR"
 
 ACCEL_ARGS=("-machine" "q35")
 if [ -e /dev/kvm ] && [ -w /dev/kvm ]; then
@@ -101,15 +108,62 @@ for _ in range(int(os.environ['SCREENSHOT_WAIT_SECONDS'])):
     time.sleep(1)
 PY
 
+cp -f "$SERIAL_LOG" "$ARTIFACT_SERIAL_LOG" 2>/dev/null || true
+cp -f "$MONITOR_LOG" "$ARTIFACT_MONITOR_LOG" 2>/dev/null || true
+
 if [ -f "$SCREENSHOT_PATH" ] && head -c 2 "$SCREENSHOT_PATH" 2>/dev/null | grep -q '^P6'; then
-  echo "Screenshot: $SCREENSHOT_PATH"
-  strings "$SCREENSHOT_PATH" 2>/dev/null | grep -E -i 'oh no|administrator|kismet|gnome|plasma|try or install' | head -n 20 || true
+  cp -f "$SCREENSHOT_PATH" "$ARTIFACT_SCREENSHOT_PPM"
+  python3 - "$SCREENSHOT_PATH" "$ARTIFACT_SCREENSHOT_PNG" <<'PY'
+import struct
+import sys
+import zlib
+from pathlib import Path
+
+src = Path(sys.argv[1])
+dst = Path(sys.argv[2])
+with src.open('rb') as f:
+    if f.readline().strip() != b'P6':
+        raise SystemExit('Unsupported PPM header')
+
+    def next_token(handle):
+        while True:
+            line = handle.readline()
+            if not line:
+                raise SystemExit('Unexpected EOF while parsing PPM')
+            line = line.strip()
+            if not line or line.startswith(b'#'):
+                continue
+            return line
+
+    dims = next_token(f)
+    width, height = map(int, dims.split())
+    maxval = int(next_token(f))
+    if maxval != 255:
+        raise SystemExit(f'Unsupported PPM maxval: {maxval}')
+    pixels = f.read(width * height * 3)
+    if len(pixels) != width * height * 3:
+        raise SystemExit('PPM pixel data truncated')
+
+raw = b''.join(b'\x00' + pixels[row * width * 3:(row + 1) * width * 3] for row in range(height))
+compressed = zlib.compress(raw, 9)
+
+def chunk(kind, data):
+    return struct.pack('!I', len(data)) + kind + data + struct.pack('!I', zlib.crc32(kind + data) & 0xffffffff)
+
+png = [b'\x89PNG\r\n\x1a\n']
+png.append(chunk(b'IHDR', struct.pack('!IIBBBBB', width, height, 8, 2, 0, 0, 0)))
+png.append(chunk(b'IDAT', compressed))
+png.append(chunk(b'IEND', b''))
+dst.write_bytes(b''.join(png))
+PY
+  echo "Screenshot: $ARTIFACT_SCREENSHOT_PNG"
+  strings "$ARTIFACT_SCREENSHOT_PPM" 2>/dev/null | grep -E -i 'oh no|administrator|kismet|gnome|plasma|try or install' | head -n 20 || true
 else
   echo "Screenshot: unavailable"
-  [ -f "$MONITOR_LOG" ] && echo "Monitor log: $MONITOR_LOG"
 fi
 
-echo "Serial log: $SERIAL_LOG"
+echo "Monitor log: $ARTIFACT_MONITOR_LOG"
+echo "Serial log: $ARTIFACT_SERIAL_LOG"
 if [ -s "$SERIAL_LOG" ]; then
   tail -n 40 "$SERIAL_LOG"
 else
