@@ -19,5 +19,13 @@ grep -q '^disable-user-list=true$' "$EDIT_DIR/etc/dconf/db/gdm.d/00-kismet-greet
 test -x "$EDIT_DIR/usr/local/bin/kismet-game-library"
 test -f "$EDIT_DIR/etc/skel/.local/share/applications/kismet-game-library.desktop"
 grep -q 'kismet-game-library.desktop' "$EDIT_DIR/etc/dconf/db/local.d/00-kismet-desktop"
+for icon in kismet-ai-suite kismet-ai-center kismet-hermes kismet-opencode kismet-run-exe; do
+  test -f "$EDIT_DIR/usr/share/icons/hicolor/scalable/apps/${icon}.svg"
+done
+grep -q '^Icon=kismet-ai-suite$' "$EDIT_DIR/etc/skel/.local/share/applications/kismet.desktop"
+grep -q '^Icon=kismet-ai-center$' "$EDIT_DIR/etc/skel/.local/share/applications/kismet-ai-center.desktop"
+grep -q '^Icon=kismet-hermes$' "$EDIT_DIR/etc/skel/.local/share/applications/kismet-hermes.desktop"
+grep -q '^Icon=kismet-opencode$' "$EDIT_DIR/etc/skel/.local/share/applications/kismet-opencode.desktop"
+grep -q '^Icon=kismet-run-exe$' "$EDIT_DIR/etc/skel/.local/share/applications/kismet-run-exe.desktop"
 
-echo "==> Live rootfs GNOME and game-library validation passed"
+echo "==> Live rootfs GNOME, game-library, and custom app icon validation passed"

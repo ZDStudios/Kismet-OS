@@ -90,9 +90,23 @@ fi
 [ -f "$EDIT_DIR/usr/local/bin/kismet" ] || fail "kismet CLI missing"
 [ -f "$EDIT_DIR/usr/local/bin/kismet-game-library" ] || fail "kismet-game-library launcher missing"
 [ -f "$EDIT_DIR/etc/skel/.local/share/applications/kismet-game-library.desktop" ] || fail "Kismet Game Library desktop entry missing"
+for icon in kismet-ai-suite kismet-ai-center kismet-hermes kismet-opencode kismet-run-exe; do
+  [ -f "$EDIT_DIR/usr/share/icons/hicolor/scalable/apps/${icon}.svg" ] || fail "Missing Kismet app icon in live rootfs: ${icon}.svg"
+done
+for entry in \
+  "$EDIT_DIR/etc/skel/.local/share/applications/kismet.desktop:kismet-ai-suite" \
+  "$EDIT_DIR/etc/skel/.local/share/applications/kismet-ai-center.desktop:kismet-ai-center" \
+  "$EDIT_DIR/etc/skel/.local/share/applications/kismet-hermes.desktop:kismet-hermes" \
+  "$EDIT_DIR/etc/skel/.local/share/applications/kismet-opencode.desktop:kismet-opencode" \
+  "$EDIT_DIR/etc/skel/.local/share/applications/kismet-run-exe.desktop:kismet-run-exe"; do
+  desktop_file="${entry%%:*}"
+  expected_icon="${entry##*:}"
+  [ -f "$desktop_file" ] || fail "Missing desktop entry: $(basename "$desktop_file")"
+  grep -q "^Icon=${expected_icon}$" "$desktop_file" || fail "Desktop entry $(basename "$desktop_file") is not wired to ${expected_icon}"
+done
 chmod +x "$EDIT_DIR/usr/local/bin/kismet" 2>/dev/null || true
 chmod +x "$EDIT_DIR/usr/local/bin/kismet-game-library" 2>/dev/null || true
-pass "Kismet CLI, game library launcher, and branding assets are present"
+pass "Kismet CLI, game library launcher, and per-app icon wiring are present"
 
 # Verify bundled game packages are present
 for pkg in aisleriot gnome-2048 gnome-chess gnome-mahjongg gnome-mines gnome-sudoku frozen-bubble atomix; do
