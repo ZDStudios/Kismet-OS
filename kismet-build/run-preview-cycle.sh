@@ -4,6 +4,7 @@ set -euo pipefail
 ROOT_DIR="$(cd "$(dirname "$0")/.." && pwd)"
 ISO_PATH="$ROOT_DIR/kismet-build/output/kismet-os-dev-preview.iso"
 ZIP_PATH="$ROOT_DIR/kismet-build/output/kismet-os-dev-preview.zip"
+MANIFEST_PATH="$ROOT_DIR/kismet-build/output/kismet-os-dev-preview.sha256"
 MODE="${1:-test}"
 
 cd "$ROOT_DIR"
@@ -46,9 +47,17 @@ ls -lh "$ISO_PATH"
 if [ -f "$ZIP_PATH" ]; then
   ls -lh "$ZIP_PATH"
 fi
+if [ -f "$MANIFEST_PATH" ]; then
+  ls -lh "$MANIFEST_PATH"
+fi
+ls -lh "$ROOT_DIR"/kismet-build/output/kismet-os-dev-preview.zip.part-* 2>/dev/null || true
 
 printf '\n==> SHA256\n'
-sha256sum "$ISO_PATH"
-if [ -f "$ZIP_PATH" ]; then
-  sha256sum "$ZIP_PATH"
+if [ -f "$MANIFEST_PATH" ]; then
+  cat "$MANIFEST_PATH"
+else
+  sha256sum "$ISO_PATH"
+  if [ -f "$ZIP_PATH" ]; then
+    sha256sum "$ZIP_PATH"
+  fi
 fi

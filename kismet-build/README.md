@@ -12,20 +12,25 @@ This directory is the beginnings of the Kismet OS build pipeline.
 - `smoke-test-preview.sh` — validates the rebuilt ISO, squashfs metadata, Kismet branding, and patched installer surfaces
 - `scan-preview-branding.py` — scans the editable rootfs for non-whitelisted legacy branding regressions
 - `test-preview-in-container.sh` — runs smoke tests, branding scans, or a full build plus validation inside the Kismet build Docker image, including BIOS and UEFI QEMU smoke paths
-- `run-preview-cycle.sh` — single entrypoint to rebuild the preview, optionally validate/QEMU boot it, then print fresh artifact sizes and hashes
+- `run-preview-cycle.sh` — single entrypoint to rebuild the preview, optionally validate/QEMU boot it, then print fresh artifact sizes, checksum manifest output, and any split zip parts
 - `boot-preview-in-qemu.sh` — host-side QEMU smoke boot helper that captures a persistent boot screenshot plus serial and monitor logs under `kismet-build/output/qemu-smoke/`, with optional UEFI boot via OVMF
 
 ## Current result
 The preview pipeline can now emit a rebuilt ISO artifact at `kismet-build/output/kismet-os-dev-preview.iso`.
-It is still an early preview path, but it now repacks the real live filesystem used by the Kismet OS preview build, refreshes key size metadata, patches deeper branding surfaces, and preserves the source ISO boot structure during rebuild.
+It is still an early preview path, but it now repacks the real live filesystem used by the Kismet OS preview build, refreshes key size metadata, patches deeper branding surfaces, preserves the source ISO boot structure during rebuild, and emits a checksum manifest plus optional split zip parts for easier transfer of multi-gig preview artifacts.
 
 ## Useful container entry points
 - `./kismet-build/run-preview-cycle.sh test` — rebuild the preview ISO, run smoke validation, then print fresh artifact sizes and hashes
 - `./kismet-build/run-preview-cycle.sh qemu` — rebuild, validate, run BIOS QEMU boot smoke, write screenshot/log artifacts to `kismet-build/output/qemu-smoke/`, then print fresh artifact sizes and hashes
 - `./kismet-build/run-preview-cycle.sh qemu-uefi` — rebuild, validate, run UEFI QEMU boot smoke, and keep the same screenshot/log artifact flow for firmware-specific boot debugging
 - `./kismet-build/run-preview-cycle.sh qemu-gnome` — rebuild, validate, then run a longer GNOME-focused QEMU boot smoke tuned for the graphical login/session path
-- `./kismet-build/run-preview-cycle.sh pipeline` — rebuild only, then print fresh artifact sizes and hashes
+- `./kismet-build/run-preview-cycle.sh pipeline` — rebuild only, then print fresh artifact sizes, checksum manifest entries, and any split zip parts
 - `./kismet-build/run-pipeline-in-container.sh preview` — rebuild the preview ISO inside Docker
+
+## Artifact packaging helpers
+- `kismet-build/output/kismet-os-dev-preview.sha256` — checksum manifest for the latest ISO and zip package
+- `KISMET_ZIP_SPLIT_SIZE_MB=1900 ./kismet-build/build-ubuntu-preview.sh` — override the split threshold in MiB when you want smaller or larger transfer chunks
+- if the preview zip exceeds the configured threshold, the rebuild step now emits `kismet-os-dev-preview.zip.part-*` files automatically for easier upload/copy workflows
 - `./kismet-build/run-pipeline-in-container.sh preview-test` — rebuild plus smoke tests and branding scan inside Docker
 - `./kismet-build/run-pipeline-in-container.sh preview-qemu` — rebuild plus smoke tests, branding scan, and BIOS QEMU boot smoke inside Docker
 - `./kismet-build/run-pipeline-in-container.sh preview-qemu-uefi` — rebuild plus smoke tests, branding scan, and UEFI QEMU boot smoke inside Docker

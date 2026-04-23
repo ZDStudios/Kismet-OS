@@ -11,6 +11,9 @@ NEW_FS="$WORK_DIR/$TARGET_NAME"
 OUTPUT_DIR="$ROOT_DIR/kismet-build/output"
 OUTPUT_ISO="$OUTPUT_DIR/kismet-os-dev-preview.iso"
 OUTPUT_ZIP="$OUTPUT_DIR/kismet-os-dev-preview.zip"
+OUTPUT_MANIFEST="$OUTPUT_DIR/kismet-os-dev-preview.sha256"
+ZIP_SPLIT_SIZE_MB="${KISMET_ZIP_SPLIT_SIZE_MB:-1900}"
+ZIP_PART_PREFIX="$OUTPUT_ZIP.part-"
 
 if [ ! -d "$EXTRACT_DIR" ]; then
   echo "Extracted ISO tree not found. Run extract-ubuntu-iso.sh first."
@@ -68,6 +71,11 @@ if [ -f "$OUTPUT_ZIP" ]; then
   rm -f "$OUTPUT_ZIP"
 fi
 
+if ls "${ZIP_PART_PREFIX}"* >/dev/null 2>&1; then
+  echo "==> Removing previous split zip parts"
+  rm -f "${ZIP_PART_PREFIX}"*
+fi
+
 echo "==> Packaging ISO into zip"
 (
   cd "$OUTPUT_DIR"
@@ -75,3 +83,19 @@ echo "==> Packaging ISO into zip"
 )
 
 echo "==> Zip written to $OUTPUT_ZIP"
+
+echo "==> Writing checksum manifest"
+(
+  cd "$OUTPUT_DIR"
+  sha256sum "$(basename "$OUTPUT_ISO")" "$(basename "$OUTPUT_ZIP")" > "$(basename "$OUTPUT_MANIFEST")"
+)
+
+echo "==> Checksum manifest written to $OUTPUT_MANIFEST"
+
+ZIP_SIZE_BYTES="$(stat -c '%s' "$OUTPUT_ZIP")"
+ZIP_SPLIT_SIZE_BYTES="$((ZIP_SPLIT_SIZE_MB * 1024 * 1024))"
+if [ "$ZIP_SIZE_BYTES" -gt "$ZIP_SPLIT_SIZE_BYTES" ]; then
+  echo "==> Splitting zip into ${ZIP_SPLIT_SIZE_MB} MiB parts for easier transfer"
+  split -d -a 2 -b "${ZIP_SPLIT_SIZE_MB}m" "$OUTPUT_ZIP" "$ZIP_PART_PREFIX"
+  ls -lh "${ZIP_PART_PREFIX}"*
+fi
