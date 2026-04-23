@@ -201,7 +201,8 @@ if command -v unsquashfs >/dev/null 2>&1 && command -v mksquashfs >/dev/null 2>&
     [ -f "$snap_path" ] || continue
     snap_name="$(basename "$snap_path")"
     snap_dir="$SNAP_WORK/${snap_name%.snap}"
-    rm -rf "$snap_dir"
+    tmp_snap="$SNAP_WORK/$snap_name"
+    rm -rf "$snap_dir" "$tmp_snap"
     unsquashfs -d "$snap_dir" "$snap_path" >/dev/null 2>&1 || continue
     find "$snap_dir" -type f -name 'gnome-initial-setup.desktop' | while read -r desktop_file; do
       sed -i 's/Welcome to Ubuntu/Welcome to Kismet OS/g' "$desktop_file" 2>/dev/null || true
@@ -211,8 +212,11 @@ if command -v unsquashfs >/dev/null 2>&1 && command -v mksquashfs >/dev/null 2>&
       sed -i 's/Icon=ubuntu-logo/Icon=kismet-logo/g' "$desktop_file" 2>/dev/null || true
       sed -i 's/Ubuntu/Kismet OS/g' "$desktop_file" 2>/dev/null || true
     done
-    rm -f "$snap_path"
-    mksquashfs "$snap_dir" "$snap_path" -comp xz -noappend >/dev/null 2>&1 || true
+    if mksquashfs "$snap_dir" "$tmp_snap" -comp xz -noappend >/dev/null 2>&1 && unsquashfs -s "$tmp_snap" >/dev/null 2>&1; then
+      cp -f "$tmp_snap" "$snap_path"
+    else
+      echo "==> Warning: failed to rebuild branded snap $snap_name, keeping original" >&2
+    fi
   done
 fi
 

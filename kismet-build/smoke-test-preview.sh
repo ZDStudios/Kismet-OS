@@ -44,6 +44,19 @@ ISO_LABEL="$(xorriso -indev "$OUTPUT_ISO" -pvd_info 2>/dev/null | awk -F': ' '/V
 [ "$ISO_LABEL" = "KISMET_DEV_PREVIEW" ] || fail "Unexpected ISO label: ${ISO_LABEL:-<empty>}"
 pass "ISO label is $ISO_LABEL"
 
+# Verify bootloader branding/config in extracted ISO tree
+GRUB_CFG="$EXTRACT_DIR/boot/grub/grub.cfg"
+LOOPBACK_CFG="$EXTRACT_DIR/boot/grub/loopback.cfg"
+[ -f "$GRUB_CFG" ] || fail "GRUB config missing from extracted ISO"
+grep -q 'menuentry "Try or Install Kismet OS"' "$GRUB_CFG" || fail "GRUB menu still lacks Kismet primary entry"
+! grep -q 'menuentry "Try or Install Ubuntu"' "$GRUB_CFG" || fail "GRUB menu still exposes Ubuntu branding"
+! grep -q '^grub_platform$' "$GRUB_CFG" || fail "GRUB config still contains stray grub_platform command"
+if [ -f "$LOOPBACK_CFG" ]; then
+  grep -q 'menuentry "Try or Install Kismet OS"' "$LOOPBACK_CFG" || fail "loopback GRUB menu still lacks Kismet primary entry"
+  ! grep -q 'menuentry "Try or Install Ubuntu"' "$LOOPBACK_CFG" || fail "loopback GRUB menu still exposes Ubuntu branding"
+fi
+pass "Bootloader branding/config looks correct"
+
 # Verify os-release
 OS_RELEASE="$EDIT_DIR/etc/os-release"
 grep -q 'NAME="Kismet OS"' "$OS_RELEASE" || fail "os-release still lacks Kismet branding"

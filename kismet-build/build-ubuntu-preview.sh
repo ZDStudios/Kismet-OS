@@ -21,6 +21,7 @@ if command -v bsdtar >/dev/null 2>&1; then
   "$ROOT_DIR/kismet-build/install-kismet-packages-into-rootfs.sh"
   "$ROOT_DIR/kismet-build/setup-live-user.sh"
   "$ROOT_DIR/kismet-build/force-kismet-branding.sh"
+  "$ROOT_DIR/kismet-build/patch-bootloader-branding.sh"
   "$ROOT_DIR/kismet-build/repack-live-rootfs.sh"
   "$ROOT_DIR/kismet-build/rebuild-iso.sh"
 else
