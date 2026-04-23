@@ -3,8 +3,13 @@ set -euo pipefail
 
 ROOT_DIR="$(cd "$(dirname "$0")/.." && pwd)"
 EDIT_DIR="$ROOT_DIR/kismet-build/work/live-rootfs-edit"
-KISMET_PACKAGES="ubuntu-desktop-minimal gnome-shell gdm3 gnome-terminal nautilus gnome-software gnome-system-monitor gnome-calculator gnome-calendar gnome-contacts gnome-text-editor gnome-disk-utility gnome-screenshot gnome-clocks gnome-weather cheese simple-scan yaru-theme-gnome-shell yaru-theme-gtk yaru-theme-icon yaru-theme-sound gnome-shell-extension-ubuntu-dock gnome-shell-extension-desktop-icons-ng nodejs npm python3-flask python3-psutil python3-requests python3-pip python3-venv python3-watchdog python3-pydantic python3-inotify curl wget git tmux zsh jq wine64 winetricks lutris winbind fonts-wine aisleriot gnome-2048 gnome-chess gnome-klotski gnome-mahjongg gnome-mines gnome-nibbles gnome-robots gnome-sudoku quadrapassel five-or-more four-in-a-row hitori iagno lightsoff pegsolitaire swell-foop tali atomix frozen-bubble"
 KISMET_PURGE_PACKAGES="sddm plasma-desktop plasma-workspace plasma-discover kwin-x11 kwin-common kwin-wayland kactivitymanagerd kdepim-addons akonadi-backend-mysql akonadi-backend-sqlite akonadi-backend-postgresql akonadi-server akregator dragonplayer ffmpegthumbs filelight juk k3b kaffeine kdevelop khelpcenter kio-extras kleopatra kmag kmousetool knotes kopete kpat kwrited sddm-theme-breeze systemsettings kubuntu-notification-helper kubuntu-desktop kubuntu-settings-desktop"
+
+# shellcheck source=./package-manifest-utils.sh
+source "$ROOT_DIR/kismet-build/package-manifest-utils.sh"
+
+mapfile -t KISMET_PACKAGE_ARRAY < <(manifest_packages core desktop dev)
+KISMET_PACKAGES="ubuntu-desktop-minimal ${KISMET_PACKAGE_ARRAY[*]}"
 
 if [ ! -d "$EDIT_DIR" ]; then
   echo "Editable live rootfs not found. Run prepare-live-rootfs.sh first." >&2

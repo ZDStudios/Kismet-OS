@@ -6,13 +6,10 @@ OUT_DIR="$ROOT_DIR/kismet-build/output"
 mkdir -p "$OUT_DIR"
 OUT_FILE="$OUT_DIR/chroot-install-packages.sh"
 
-mapfile -t packages < <(
-  cat \
-    "$ROOT_DIR/kismet-base/manifests/core.txt" \
-    "$ROOT_DIR/kismet-base/manifests/desktop.txt" \
-    "$ROOT_DIR/kismet-base/manifests/dev.txt" \
-  | sed '/^#/d;/^$/d'
-)
+# shellcheck source=./package-manifest-utils.sh
+source "$ROOT_DIR/kismet-build/package-manifest-utils.sh"
+
+mapfile -t packages < <(manifest_packages core desktop dev)
 
 {
   echo '#!/usr/bin/env bash'
@@ -23,7 +20,7 @@ mapfile -t packages < <(
     printf ' %s' "$pkg"
   done
   printf '\n\n'
-  echo '# AI packages and vendor installers are handled separately.'
+  echo '# AI/vendor packages are intentionally excluded here until their repo/bundle install path is wired.'
 } > "$OUT_FILE"
 
 chmod +x "$OUT_FILE"

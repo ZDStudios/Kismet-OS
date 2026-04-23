@@ -19,6 +19,8 @@ This directory is the beginnings of the Kismet OS build pipeline.
 The preview pipeline can now emit a rebuilt ISO artifact at `kismet-build/output/kismet-os-dev-preview.iso`.
 It is still an early preview path, but it now repacks the real live filesystem used by the Kismet OS preview build, refreshes key size metadata, patches deeper branding surfaces, preserves the source ISO boot structure during rebuild, and emits a checksum manifest plus optional split zip parts for easier transfer of multi-gig preview artifacts.
 
+The package-install path is now manifest-driven, so the live-rootfs installer, rendered chroot install script, and package plan stay aligned. Ubuntu-installable preview packages come from `kismet-base/manifests/{core,desktop,dev}.txt`, while `ai.txt` remains documented as a deferred vendor/bundle layer until its installer path is wired.
+
 ## Useful container entry points
 - `./kismet-build/run-preview-cycle.sh test` — rebuild the preview ISO, run smoke validation, then print fresh artifact sizes and hashes
 - `./kismet-build/run-preview-cycle.sh qemu` — rebuild, validate, run BIOS QEMU boot smoke, write screenshot/log artifacts to `kismet-build/output/qemu-smoke/`, then print fresh artifact sizes and hashes
