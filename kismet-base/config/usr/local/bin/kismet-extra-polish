@@ -1,0 +1,19 @@
+#!/usr/bin/env bash
+set -euo pipefail
+
+mkdir -p "$HOME/.config/gtk-4.0"
+if [ -d /usr/share/themes/catppuccin-mocha-blue-standard+default/gtk-4.0 ]; then
+  ln -sfn /usr/share/themes/catppuccin-mocha-blue-standard+default/gtk-4.0/assets "$HOME/.config/gtk-4.0/assets"
+  cp -f /usr/share/themes/catppuccin-mocha-blue-standard+default/gtk-4.0/gtk.css "$HOME/.config/gtk-4.0/gtk.css" 2>/dev/null || true
+  cp -f /usr/share/themes/catppuccin-mocha-blue-standard+default/gtk-4.0/gtk-dark.css "$HOME/.config/gtk-4.0/gtk-dark.css" 2>/dev/null || true
+fi
+
+if command -v gsettings >/dev/null 2>&1; then
+  gsettings set org.gnome.desktop.interface enable-animations true
+  gsettings set org.gnome.desktop.calendar show-weekdate true 2>/dev/null || true
+  gsettings set org.gnome.desktop.interface locate-pointer true 2>/dev/null || true
+  gsettings set org.gnome.mutter center-new-windows true 2>/dev/null || true
+  gsettings set org.gnome.desktop.sound allow-volume-above-100-percent true 2>/dev/null || true
+fi
+
+echo "==> Extra Kismet polish applied"

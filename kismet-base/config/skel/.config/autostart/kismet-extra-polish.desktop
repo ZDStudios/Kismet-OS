@@ -1,0 +1,9 @@
+[Desktop Entry]
+Type=Application
+Name=Kismet Extra Polish
+Comment=Apply extra Kismet desktop polish on first login
+Exec=/usr/local/bin/kismet-extra-polish
+Terminal=false
+Hidden=false
+NoDisplay=false
+X-GNOME-Autostart-enabled=true

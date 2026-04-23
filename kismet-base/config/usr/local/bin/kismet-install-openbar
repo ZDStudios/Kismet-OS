@@ -1,0 +1,25 @@
+#!/usr/bin/env bash
+set -euo pipefail
+
+EXT_SRC="/usr/share/gnome-shell/extensions/openbar@neuromorph"
+SYS_EXT_DIR="/usr/share/gnome-shell/extensions"
+USER_EXT_DIR="$HOME/.local/share/gnome-shell/extensions"
+
+if [ ! -d "$EXT_SRC" ]; then
+  echo "Open Bar extension source not found at $EXT_SRC" >&2
+  exit 0
+fi
+
+mkdir -p "$USER_EXT_DIR"
+rm -rf "$USER_EXT_DIR/openbar@neuromorph"
+cp -a "$EXT_SRC" "$USER_EXT_DIR/"
+
+if command -v glib-compile-schemas >/dev/null 2>&1 && [ -d "$USER_EXT_DIR/openbar@neuromorph/schemas" ]; then
+  glib-compile-schemas "$USER_EXT_DIR/openbar@neuromorph/schemas" >/dev/null 2>&1 || true
+fi
+
+if command -v gnome-extensions >/dev/null 2>&1; then
+  gnome-extensions enable openbar@neuromorph 2>/dev/null || true
+fi
+
+echo "==> Open Bar installed into user GNOME extensions"

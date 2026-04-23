@@ -1,4 +1,4 @@
-# Kismet OS starter package manifest (Ubuntu-first)
+# Kismet OS starter package manifest (current base pipeline)
 # Intended as the first practical baseline, not the final distro image.
 
 # Desktop

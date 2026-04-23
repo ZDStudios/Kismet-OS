@@ -17,6 +17,8 @@ mkdir -p "$LAYOUT_DIR/filesystem/usr/share/plymouth/themes/kismet"
 mkdir -p "$LAYOUT_DIR/filesystem/usr/share/backgrounds/kismet"
 mkdir -p "$LAYOUT_DIR/filesystem/usr/share/sddm/themes/kismet"
 mkdir -p "$LAYOUT_DIR/filesystem/usr/share/icons/hicolor/scalable/apps"
+mkdir -p "$LAYOUT_DIR/filesystem/usr/share/themes"
+mkdir -p "$LAYOUT_DIR/filesystem/usr/share/gnome-shell/extensions"
 mkdir -p "$LAYOUT_DIR/filesystem/etc/openclaw"
 
 cp -f "$ROOT_DIR/kismet-base/config/usr/local/bin/kismet-firstboot" "$LAYOUT_DIR/filesystem/usr/local/bin/"
@@ -30,8 +32,12 @@ cp -f "$ROOT_DIR/kismet-base/config/usr/local/bin/kismet-plasma-polish" "$LAYOUT
 cp -f "$ROOT_DIR/kismet-base/config/usr/local/bin/kismet-run-exe" "$LAYOUT_DIR/filesystem/usr/local/bin/"
 cp -f "$ROOT_DIR/kismet-base/config/usr/local/bin/kismet" "$LAYOUT_DIR/filesystem/usr/local/bin/"
 cp -f "$ROOT_DIR/kismet-base/config/usr/local/bin/kismet-gnome-polish" "$LAYOUT_DIR/filesystem/usr/local/bin/"
+cp -f "$ROOT_DIR/kismet-base/config/usr/local/bin/kismet-extra-polish" "$LAYOUT_DIR/filesystem/usr/local/bin/"
+cp -f "$ROOT_DIR/kismet-base/config/usr/local/bin/kismet-install-openbar" "$LAYOUT_DIR/filesystem/usr/local/bin/"
 chmod +x "$LAYOUT_DIR/filesystem/usr/local/bin/kismet"
 chmod +x "$LAYOUT_DIR/filesystem/usr/local/bin/kismet-gnome-polish"
+chmod +x "$LAYOUT_DIR/filesystem/usr/local/bin/kismet-extra-polish"
+chmod +x "$LAYOUT_DIR/filesystem/usr/local/bin/kismet-install-openbar"
 cp -f "$ROOT_DIR/kismet-base/config/usr/local/lib/kismet/kismet_agent.py" "$LAYOUT_DIR/filesystem/usr/local/lib/kismet/"
 cp -f "$ROOT_DIR/kismet-base/config/usr/local/lib/kismet/habit_tracker.py" "$LAYOUT_DIR/filesystem/usr/local/lib/kismet/"
 cp -f "$ROOT_DIR/kismet-base/config/usr/local/lib/kismet/hw_monitor.py" "$LAYOUT_DIR/filesystem/usr/local/lib/kismet/"
@@ -54,6 +60,7 @@ cp -f "$ROOT_DIR/kismet-base/config/skel/.config/kdeglobals" "$LAYOUT_DIR/filesy
 cp -f "$ROOT_DIR/kismet-base/config/skel/.config/konsolerc" "$LAYOUT_DIR/filesystem/etc/skel/.config/"
 cp -f "$ROOT_DIR/kismet-base/config/skel/.config/autostart/kismet-plasma-polish.desktop" "$LAYOUT_DIR/filesystem/etc/skel/.config/autostart/"
 cp -f "$ROOT_DIR/kismet-base/config/skel/.config/autostart/kismet-gnome-polish.desktop" "$LAYOUT_DIR/filesystem/etc/skel/.config/autostart/"
+cp -f "$ROOT_DIR/kismet-base/config/skel/.config/autostart/kismet-extra-polish.desktop" "$LAYOUT_DIR/filesystem/etc/skel/.config/autostart/"
 cp -f "$ROOT_DIR/kismet-base/config/skel/.config/gtk-3.0/settings.ini" "$LAYOUT_DIR/filesystem/etc/skel/.config/gtk-3.0/"
 cp -f "$ROOT_DIR/kismet-base/config/skel/.local/share/applications/kismet-ai-center.desktop" "$LAYOUT_DIR/filesystem/etc/skel/.local/share/applications/"
 cp -f "$ROOT_DIR/kismet-base/config/skel/.local/share/applications/kismet-hermes.desktop" "$LAYOUT_DIR/filesystem/etc/skel/.local/share/applications/"
@@ -73,6 +80,18 @@ for wallpaper in "$ROOT_DIR"/kismet-theme/wallpapers/*; do
   cp -f "$wallpaper" "$LAYOUT_DIR/filesystem/usr/share/backgrounds/kismet/"
 done
 
+if [ -d "$ROOT_DIR/kismet-theme/vendor/catppuccin-tmp/catppuccin-mocha-blue-standard+default" ]; then
+  rm -rf "$LAYOUT_DIR/filesystem/usr/share/themes/catppuccin-mocha-blue-standard+default"
+  cp -a "$ROOT_DIR/kismet-theme/vendor/catppuccin-tmp/catppuccin-mocha-blue-standard+default" \
+    "$LAYOUT_DIR/filesystem/usr/share/themes/"
+fi
+
+if [ -d "$ROOT_DIR/kismet-theme/vendor/openbar-tmp/openbar@neuromorph" ]; then
+  rm -rf "$LAYOUT_DIR/filesystem/usr/share/gnome-shell/extensions/openbar@neuromorph"
+  cp -a "$ROOT_DIR/kismet-theme/vendor/openbar-tmp/openbar@neuromorph" \
+    "$LAYOUT_DIR/filesystem/usr/share/gnome-shell/extensions/"
+fi
+
 chmod +x "$LAYOUT_DIR/filesystem/usr/local/bin/kismet-firstboot"
 chmod +x "$LAYOUT_DIR/filesystem/usr/local/bin/kismet-firstboot-wizard"
 chmod +x "$LAYOUT_DIR/filesystem/usr/local/bin/kismet-ctl"
@@ -82,6 +101,8 @@ chmod +x "$LAYOUT_DIR/filesystem/usr/local/bin/kismet-ai-launch"
 chmod +x "$LAYOUT_DIR/filesystem/usr/local/bin/kismet-ai-bootstrap"
 chmod +x "$LAYOUT_DIR/filesystem/usr/local/bin/kismet-plasma-polish"
 chmod +x "$LAYOUT_DIR/filesystem/usr/local/bin/kismet-run-exe"
+chmod +x "$LAYOUT_DIR/filesystem/usr/local/bin/kismet-extra-polish"
+chmod +x "$LAYOUT_DIR/filesystem/usr/local/bin/kismet-install-openbar"
 chmod +x "$LAYOUT_DIR/filesystem/usr/local/lib/kismet/kismet_agent.py"
 chmod +x "$LAYOUT_DIR/filesystem/usr/local/lib/kismet/habit_tracker.py"
 chmod +x "$LAYOUT_DIR/filesystem/usr/local/lib/kismet/hw_monitor.py"

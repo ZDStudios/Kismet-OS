@@ -105,8 +105,8 @@ primary-color='#101828'
 secondary-color='#1cb4ff'
 
 [org/gnome/desktop/interface]
-color-scheme='prefer-light'
-gtk-theme='Yaru-blue'
+color-scheme='prefer-dark'
+gtk-theme='catppuccin-mocha-blue-standard+default'
 icon-theme='Yaru-blue'
 cursor-theme='Yaru'
 font-name='Inter 10'
@@ -124,19 +124,59 @@ button-layout='appmenu:minimize,maximize,close'
 
 [org/gnome/shell]
 disable-user-extensions=false
-enabled-extensions=['ubuntu-dock@ubuntu.com','ding@rastersoft.com']
-favorite-apps=['org.gnome.Nautilus.desktop','google-chrome.desktop','org.gnome.Software.desktop','org.gnome.Settings.desktop','kismet-ai-center.desktop','kismet-game-library.desktop']
+enabled-extensions=['ubuntu-dock@ubuntu.com','ding@rastersoft.com','openbar@neuromorph']
+favorite-apps=['org.gnome.Nautilus.desktop','google-chrome.desktop','org.gnome.Software.desktop','org.gnome.Terminal.desktop','kismet-ai-center.desktop','kismet-game-library.desktop','org.gnome.Settings.desktop']
 
 [org/gnome/shell/extensions/ubuntu-dock]
-dock-position='BOTTOM'
-dash-max-icon-size=42
+dock-position='LEFT'
+dash-max-icon-size=36
 extend-height=false
 show-mounts=false
 show-trash=false
 transparency-mode='FIXED'
-background-opacity=0.18
-custom-theme-shrink=true
+background-opacity=0.12
+custom-theme-shrink=false
 multi-monitor=false
+show-apps-at-top=true
+dock-fixed=true
+autohide=false
+intellihide=false
+panel-mode=true
+
+[org/gnome/shell/extensions/openbar]
+bartype='Floating'
+position='Top'
+bgalpha=0.72
+bgcolor=['0.1176470588','0.1215686275','0.1803921569']
+fgcolor=['0.8039215686','0.8392156863','0.9568627451']
+bcolor=['0.5372549020','0.7058823529','0.9803921569']
+balpha=0.85
+iscolor=['0.1176470588','0.1215686275','0.1803921569']
+isalpha=0.78
+hcolor=['0.5372549020','0.7058823529','0.9803921569']
+halpha=0.35
+mbgcolor=['0.1176470588','0.1215686275','0.1803921569']
+mbgalpha=0.96
+mfgcolor=['0.8039215686','0.8392156863','0.9568627451']
+mhcolor=['0.5372549020','0.7058823529','0.9803921569']
+mhalpha=0.30
+mscolor=['0.5372549020','0.7058823529','0.9803921569']
+msalpha=0.45
+margin=6.0
+height=36.0
+bradius=18.0
+bordertype='solid'
+bwidth=1.0
+neon=true
+shadow=false
+gradient=false
+heffect=true
+menustyle=true
+autotheme='Dark'
+variation='Alt'
+autotheme-refresh=true
+accent-override=true
+accent-color=['0.5372549020','0.7058823529','0.9803921569']
 
 [org/gnome/desktop/screensaver]
 lock-enabled=false
@@ -350,8 +390,12 @@ for service in sddm.service gnome-initial-setup.service; do
   rm -f "$EDIT_DIR/usr/lib/systemd/system/$service" || true
 done
 
+if [ -x "$EDIT_DIR/usr/bin/glib-compile-schemas" ] && [ -d "$EDIT_DIR/usr/share/gnome-shell/extensions/openbar@neuromorph/schemas" ]; then
+  chroot "$EDIT_DIR" /usr/bin/glib-compile-schemas /usr/share/gnome-shell/extensions/openbar@neuromorph/schemas >/dev/null 2>&1 || true
+fi
+
 if [ -x "$EDIT_DIR/usr/bin/dconf" ]; then
   chroot "$EDIT_DIR" /usr/bin/dconf update >/dev/null 2>&1 || true
 fi
 
-echo "==> Forced Kismet branding, Zorin-style GNOME defaults, and GDM auto-login into editable rootfs"
+echo "==> Forced Kismet branding, Catppuccin GNOME defaults, Open Bar styling, and GDM auto-login into editable rootfs"

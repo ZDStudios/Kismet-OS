@@ -5,8 +5,15 @@ set -euo pipefail
 
 wallpaper='file:///usr/share/backgrounds/kismet/kismet-wallpaper.svg'
 
+install_openbar() {
+  if command -v kismet-install-openbar >/dev/null 2>&1; then
+    kismet-install-openbar >/dev/null 2>&1 || true
+  fi
+}
+
 if command -v gsettings >/dev/null 2>&1; then
-  gsettings set org.gnome.desktop.interface gtk-theme 'Yaru-blue-dark'
+  install_openbar
+  gsettings set org.gnome.desktop.interface gtk-theme 'catppuccin-mocha-blue-standard+default'
   gsettings set org.gnome.desktop.interface icon-theme 'Yaru-blue'
   gsettings set org.gnome.desktop.interface cursor-theme 'Yaru'
   gsettings set org.gnome.desktop.interface cursor-size 24
@@ -14,7 +21,7 @@ if command -v gsettings >/dev/null 2>&1; then
 
   gsettings set org.gnome.desktop.interface font-name 'Inter 10'
   gsettings set org.gnome.desktop.interface document-font-name 'Inter 10'
-  gsettings set org.gnome.desktop.interface monospace-font-name 'Ubuntu Mono 11'
+  gsettings set org.gnome.desktop.interface monospace-font-name 'JetBrains Mono 10'
 
   gsettings set org.gnome.desktop.background picture-uri "$wallpaper"
   gsettings set org.gnome.desktop.background picture-uri-dark "$wallpaper"
@@ -35,6 +42,7 @@ if command -v gsettings >/dev/null 2>&1; then
   gsettings set org.gnome.desktop.sound input-feedback-sounds false
 
   gsettings set org.gnome.shell disable-user-extensions false
+  gsettings set org.gnome.shell enabled-extensions "['ubuntu-dock@ubuntu.com', 'ding@rastersoft.com', 'openbar@neuromorph']"
   gsettings set org.gnome.shell favorite-apps "[
     'org.gnome.Nautilus.desktop',
     'firefox.desktop',
@@ -50,27 +58,47 @@ if command -v gsettings >/dev/null 2>&1; then
   gsettings set org.gnome.settings-daemon.plugins.power sleep-inactive-ac-type 'nothing'
   gsettings set org.gnome.settings-daemon.plugins.power sleep-inactive-battery-type 'suspend'
 
-  gsettings set org.gnome.shell.extensions.dash-to-dock dock-position 'BOTTOM' 2>/dev/null || true
+  gsettings set org.gnome.shell.extensions.dash-to-dock dock-position 'LEFT' 2>/dev/null || true
   gsettings set org.gnome.shell.extensions.dash-to-dock extend-height false 2>/dev/null || true
-  gsettings set org.gnome.shell.extensions.dash-to-dock panel-mode false 2>/dev/null || true
+  gsettings set org.gnome.shell.extensions.dash-to-dock panel-mode true 2>/dev/null || true
   gsettings set org.gnome.shell.extensions.dash-to-dock dock-fixed true 2>/dev/null || true
   gsettings set org.gnome.shell.extensions.dash-to-dock autohide false 2>/dev/null || true
   gsettings set org.gnome.shell.extensions.dash-to-dock intellihide false 2>/dev/null || true
   gsettings set org.gnome.shell.extensions.dash-to-dock transparency-mode 'FIXED' 2>/dev/null || true
-  gsettings set org.gnome.shell.extensions.dash-to-dock background-opacity 0.78 2>/dev/null || true
-  gsettings set org.gnome.shell.extensions.dash-to-dock dash-max-icon-size 40 2>/dev/null || true
+  gsettings set org.gnome.shell.extensions.dash-to-dock background-opacity 0.12 2>/dev/null || true
+  gsettings set org.gnome.shell.extensions.dash-to-dock dash-max-icon-size 36 2>/dev/null || true
   gsettings set org.gnome.shell.extensions.dash-to-dock show-trash false 2>/dev/null || true
   gsettings set org.gnome.shell.extensions.dash-to-dock show-mounts false 2>/dev/null || true
   gsettings set org.gnome.shell.extensions.dash-to-dock show-show-apps-button true 2>/dev/null || true
   gsettings set org.gnome.shell.extensions.dash-to-dock show-apps-at-top true 2>/dev/null || true
+  gsettings set org.gnome.shell.extensions.dash-to-dock dock-fixed true 2>/dev/null || true
+  gsettings set org.gnome.shell.extensions.dash-to-dock autohide false 2>/dev/null || true
+  gsettings set org.gnome.shell.extensions.dash-to-dock intellihide false 2>/dev/null || true
   gsettings set org.gnome.shell.extensions.dash-to-dock isolate-workspaces false 2>/dev/null || true
+  gsettings set org.gnome.shell.extensions.openbar bartype 'Floating' 2>/dev/null || true
+  gsettings set org.gnome.shell.extensions.openbar position 'Top' 2>/dev/null || true
+  gsettings set org.gnome.shell.extensions.openbar bgalpha 0.72 2>/dev/null || true
+  gsettings set org.gnome.shell.extensions.openbar margin 6.0 2>/dev/null || true
+  gsettings set org.gnome.shell.extensions.openbar height 36.0 2>/dev/null || true
+  gsettings set org.gnome.shell.extensions.openbar bradius 18.0 2>/dev/null || true
+  gsettings set org.gnome.shell.extensions.openbar border-type 'solid' 2>/dev/null || true
+  gsettings set org.gnome.shell.extensions.openbar neon true 2>/dev/null || true
+  gsettings set org.gnome.shell.extensions.openbar menustyle true 2>/dev/null || true
+  gsettings set org.gnome.shell.extensions.openbar autotheme 'Dark' 2>/dev/null || true
+  gsettings set org.gnome.shell.extensions.openbar variation 'Alt' 2>/dev/null || true
+  gsettings set org.gnome.shell.extensions.openbar accent-override true 2>/dev/null || true
+  gsettings set org.gnome.shell.extensions.openbar accent-color "['0.5372549020', '0.7058823529', '0.9803921569']" 2>/dev/null || true
+  gsettings set org.gnome.shell.extensions.openbar bgcolor "['0.1176470588', '0.1215686275', '0.1803921569']" 2>/dev/null || true
+  gsettings set org.gnome.shell.extensions.openbar fgcolor "['0.8039215686', '0.8392156863', '0.9568627451']" 2>/dev/null || true
+  gsettings set org.gnome.shell.extensions.openbar bcolor "['0.5372549020', '0.7058823529', '0.9803921569']" 2>/dev/null || true
 fi
 
 if command -v gnome-extensions >/dev/null 2>&1; then
   gnome-extensions enable ubuntu-dock@ubuntu.com 2>/dev/null || true
   gnome-extensions enable ding@rastersoft.com 2>/dev/null || true
+  gnome-extensions enable openbar@neuromorph 2>/dev/null || true
   gnome-extensions disable dash-to-dock@micahg.github.com 2>/dev/null || true
   gnome-extensions disable desktop-icons@csoriano 2>/dev/null || true
 fi
 
-echo "==> Kismet GNOME polish applied (Zorin-inspired GNOME style)"
+echo "==> Kismet GNOME polish applied (Catppuccin + Open Bar GNOME style)"
