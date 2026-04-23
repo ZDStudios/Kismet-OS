@@ -15,8 +15,10 @@
 #
 # Environment variables:
 #   KISMET_ISO_PATH         - Path to ISO (default: /workspace/kismet-build/output/kismet-os-dev-preview.iso)
-#   KISMET_MEMORY_MB        - QEMU RAM in MB (default: 4096)
-#   KISMET_SMP              - QEMU CPU count (default: 4)
+#   KISMET_MEMORY_MB        - QEMU RAM in MB (default: 4096, also mapped to QEMU_MEMORY_MB)
+#   KISMET_SMP              - QEMU CPU count (default: 4, also mapped to QEMU_SMP_CPUS)
+#   QEMU_MEMORY_MB          - Direct RAM override consumed by boot-preview-in-qemu.sh
+#   QEMU_SMP_CPUS           - Direct CPU override consumed by boot-preview-in-qemu.sh
 #   QEMU_BOOT_WAIT_SECONDS  - Wait before screenshotting booted VM (default from boot script)
 #   QEMU_SENDKEYS           - Comma-separated QEMU monitor sendkey sequence (default: ret,ret)
 #   QEMU_FIRMWARE           - Override firmware mode passed to boot-preview-in-qemu.sh (bios or uefi)
@@ -42,9 +44,12 @@ run_inner() {
     -e KISMET_ISO_PATH="${KISMET_ISO_PATH:-}" \
     -e KISMET_MEMORY_MB="${KISMET_MEMORY_MB:-4096}" \
     -e KISMET_SMP="${KISMET_SMP:-4}" \
+    -e QEMU_MEMORY_MB="${QEMU_MEMORY_MB:-${KISMET_MEMORY_MB:-4096}}" \
+    -e QEMU_SMP_CPUS="${QEMU_SMP_CPUS:-${KISMET_SMP:-4}}" \
     -e QEMU_BIN=/usr/bin/qemu-system-x86_64 \
     -e QEMU_BOOT_WAIT_SECONDS="${QEMU_BOOT_WAIT_SECONDS:-}" \
     -e QEMU_SENDKEYS="${QEMU_SENDKEYS:-}" \
+    -e QEMU_FIRMWARE="${QEMU_FIRMWARE:-}" \
     kismet-ubuntu-build \
     bash -lc "$1"
 }
@@ -113,7 +118,7 @@ case "$MODE" in
     ;;
 
   interactive|shell)
-    echo "==> Dropping into interactive shell in build container"
+    echo "==> Dropping into interactive shell in Kismet build container"
     docker run --rm -it \
       --privileged \
       -v "$ROOT_DIR":/workspace \
