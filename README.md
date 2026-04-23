@@ -1,5 +1,10 @@
 # Kismet OS
 
+## Download
+
+Download Kismet OS here: https://tinyurl.com/kismetos
+
+
 Kismet OS is an AI-first desktop Linux concept focused on local intelligence, developer ergonomics, and a clean, deeply integrated workflow.
 
 It is not trying to be magic. The goal is simpler and harder than that: build a Linux environment that feels thoughtfully assembled for modern developers, with local AI, strong defaults, and room for deeper system automation over time.
