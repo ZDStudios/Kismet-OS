@@ -4,7 +4,6 @@ git
 vim
 neovim
 htop
-fastfetch
 unzip
 zip
 tmux

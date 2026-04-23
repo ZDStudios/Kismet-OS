@@ -1,0 +1,83 @@
+#!/usr/bin/env python3
+import os
+import shutil
+import subprocess
+import sys
+from textwrap import dedent
+
+GAMES = [
+    ("Aisleriot", "Solitaire collection", ["aisleriot"]),
+    ("Atomix", "Molecule puzzle", ["atomix"]),
+    ("Five or More", "Match and clear colored balls", ["five-or-more"]),
+    ("Four-in-a-Row", "Connect four", ["four-in-a-row"]),
+    ("Frozen Bubble", "Bubble shooter", ["frozen-bubble"]),
+    ("GNOME 2048", "Slide tiles to 2048", ["gnome-2048"]),
+    ("GNOME Chess", "Classic chess", ["gnome-chess"]),
+    ("GNOME Klotski", "Sliding block puzzle", ["gnome-klotski"]),
+    ("GNOME Mahjongg", "Tile matching", ["gnome-mahjongg"]),
+    ("GNOME Mines", "Minefield puzzle", ["gnome-mines"]),
+    ("GNOME Nibbles", "Snake arcade game", ["gnome-nibbles"]),
+    ("GNOME Robots", "Escape the robots", ["gnome-robots"]),
+    ("GNOME Sudoku", "Sudoku", ["gnome-sudoku"]),
+    ("Hitori", "Logic puzzle", ["hitori"]),
+    ("Iagno", "Reversi strategy", ["iagno"]),
+    ("Lightsoff", "Turn all the lights off", ["lightsoff"]),
+    ("Peg Solitaire", "Single-piece board puzzle", ["pegsolitaire"]),
+    ("Quadrapassel", "Falling blocks", ["quadrapassel"]),
+    ("Swell Foop", "Color matching puzzle", ["swell-foop"]),
+    ("Tali", "Dice game", ["tali"]),
+]
+
+
+def run_dialog(message: str, title: str = "Kismet Game Library") -> bool:
+    if os.environ.get("DISPLAY"):
+        if shutil.which("zenity"):
+            return subprocess.call(["zenity", "--info", "--title", title, "--width=560", f"--text={message}"]) == 0
+        if shutil.which("kdialog"):
+            return subprocess.call(["kdialog", "--title", title, "--msgbox", message]) == 0
+    print(message)
+    return True
+
+
+def choose_game():
+    choices = []
+    for name, desc, _ in GAMES:
+        choices.extend([name, desc])
+    if os.environ.get("DISPLAY") and shutil.which("zenity"):
+        result = subprocess.run([
+            "zenity", "--list", "--title=Kismet Game Library", "--width=760", "--height=640",
+            "--text=Choose one of the bundled games", "--column=Game", "--column=Description",
+            *choices
+        ], capture_output=True, text=True)
+        return result.stdout.strip() if result.returncode == 0 else None
+    message = "Kismet Game Library\n\n"
+    for idx, (name, desc, _) in enumerate(GAMES, 1):
+        message += f"{idx:>2}. {name} - {desc}\n"
+    print(message)
+    choice = input("Select a game number (or press Enter to quit): ").strip()
+    if not choice:
+        return None
+    try:
+        return GAMES[int(choice) - 1][0]
+    except Exception:
+        return None
+
+
+def launch(name: str):
+    for game_name, _desc, commands in GAMES:
+        if game_name == name:
+            for cmd in commands:
+                path = shutil.which(cmd)
+                if path:
+                    os.execvp(path, [path])
+            run_dialog(f"{name} is not installed in this preview image yet.")
+            return 1
+    run_dialog("Unknown game selection.")
+    return 1
+
+
+if __name__ == "__main__":
+    picked = choose_game()
+    if not picked:
+        sys.exit(0)
+    sys.exit(launch(picked))

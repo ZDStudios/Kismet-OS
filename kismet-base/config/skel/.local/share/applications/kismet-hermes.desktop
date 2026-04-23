@@ -2,7 +2,7 @@
 Type=Application
 Version=1.0
 Name=Hermes AI Agent
-Comment=Launch the Kismet Hermes provider in a terminal
+Comment=Launch Hermes, or show a preview-image availability notice
 Exec=/usr/local/bin/kismet-ai-launch hermes
 Icon=kismet-hermes
 Terminal=true

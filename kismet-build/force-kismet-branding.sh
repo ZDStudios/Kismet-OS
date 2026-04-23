@@ -394,8 +394,16 @@ if [ -x "$EDIT_DIR/usr/bin/glib-compile-schemas" ] && [ -d "$EDIT_DIR/usr/share/
   chroot "$EDIT_DIR" /usr/bin/glib-compile-schemas /usr/share/gnome-shell/extensions/openbar@neuromorph/schemas >/dev/null 2>&1 || true
 fi
 
+if [ -x "$EDIT_DIR/usr/bin/gtk-update-icon-cache" ] && [ -d "$EDIT_DIR/usr/share/icons/hicolor" ]; then
+  chroot "$EDIT_DIR" /usr/bin/gtk-update-icon-cache -f /usr/share/icons/hicolor >/dev/null 2>&1 || true
+fi
+
+if [ -x "$EDIT_DIR/usr/bin/update-desktop-database" ] && [ -d "$EDIT_DIR/usr/share/applications" ]; then
+  chroot "$EDIT_DIR" /usr/bin/update-desktop-database /usr/share/applications >/dev/null 2>&1 || true
+fi
+
 if [ -x "$EDIT_DIR/usr/bin/dconf" ]; then
   chroot "$EDIT_DIR" /usr/bin/dconf update >/dev/null 2>&1 || true
 fi
 
-echo "==> Forced Kismet branding, Catppuccin GNOME defaults, Open Bar styling, and GDM auto-login into editable rootfs"
+echo "==> Forced Kismet branding, Catppuccin GNOME defaults, Open Bar styling, icon caches, and GDM auto-login into editable rootfs"

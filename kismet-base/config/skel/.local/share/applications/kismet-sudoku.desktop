@@ -1,0 +1,10 @@
+[Desktop Entry]
+Type=Application
+Version=1.0
+Name=Kismet Sudoku
+Comment=Launch the sudoku game
+Exec=gnome-sudoku
+Icon=kismet-sudoku
+Terminal=false
+Categories=Game;
+StartupNotify=true

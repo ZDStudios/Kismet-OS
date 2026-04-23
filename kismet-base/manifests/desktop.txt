@@ -16,7 +16,6 @@ gnome-weather
 cheese
 simple-scan
 yaru-gtk-theme
-yaru-qt-theme
 papirus-icon-theme
 plymouth
 plymouth-themes

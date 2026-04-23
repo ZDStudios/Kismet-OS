@@ -1,0 +1,11 @@
+[Desktop Entry]
+Type=Application
+Version=1.0
+Name=Kismet Game Library
+Comment=Browse and launch bundled games in Kismet OS
+Exec=/usr/local/bin/kismet-game-library
+Icon=kismet-game-library
+Terminal=false
+Categories=Game;
+Keywords=games;arcade;puzzle;library;kismet;
+StartupNotify=true

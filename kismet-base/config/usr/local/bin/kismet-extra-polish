@@ -14,6 +14,13 @@ if command -v gsettings >/dev/null 2>&1; then
   gsettings set org.gnome.desktop.interface locate-pointer true 2>/dev/null || true
   gsettings set org.gnome.mutter center-new-windows true 2>/dev/null || true
   gsettings set org.gnome.desktop.sound allow-volume-above-100-percent true 2>/dev/null || true
+  gsettings set org.gnome.desktop.interface gtk-theme 'catppuccin-mocha-blue-standard+default' 2>/dev/null || true
+  gsettings set org.gnome.desktop.interface icon-theme 'Yaru-blue' 2>/dev/null || true
+  gsettings set org.gnome.desktop.interface color-scheme 'prefer-dark' 2>/dev/null || true
+fi
+
+if command -v gtk-update-icon-cache >/dev/null 2>&1 && [ -d /usr/share/icons/hicolor ]; then
+  gtk-update-icon-cache -f /usr/share/icons/hicolor >/dev/null 2>&1 || true
 fi
 
 echo "==> Extra Kismet polish applied"

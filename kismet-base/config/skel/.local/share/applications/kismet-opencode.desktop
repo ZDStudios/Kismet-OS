@@ -2,7 +2,7 @@
 Type=Application
 Version=1.0
 Name=OpenCode
-Comment=Launch the Kismet coding provider in a terminal
+Comment=Launch OpenCode, or show a preview-image availability notice
 Exec=/usr/local/bin/kismet-ai-launch opencode
 Icon=kismet-opencode
 Terminal=true

@@ -19,6 +19,9 @@ It is the first concrete layer that turns Kismet OS from a concept repo into a b
 
 ## Recent preview polish
 
+- Added Kismet-owned desktop launchers and icons for the game library plus featured games so the preview stops falling back to generic Ubuntu/Yaru game entries.
+- Hermes and OpenCode launchers now fail gracefully with explicit preview-image availability messaging instead of misleading fallbacks.
+- Icon cache refresh is now part of the build polish path to reduce missing icon glitches on first boot.
 - Catppuccin Mocha Blue is now bundled as the default GTK theme for the GNOME preview.
 - Open Bar is bundled and preconfigured for a floating glass-style top bar.
 - Ubuntu Dock is shifted to a left-side launcher layout for a more Zorin-like feel.

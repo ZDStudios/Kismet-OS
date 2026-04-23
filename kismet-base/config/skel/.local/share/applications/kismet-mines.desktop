@@ -1,0 +1,10 @@
+[Desktop Entry]
+Type=Application
+Version=1.0
+Name=Kismet Mines
+Comment=Launch the mines puzzle game
+Exec=gnome-mines
+Icon=kismet-mines
+Terminal=false
+Categories=Game;
+StartupNotify=true

@@ -41,10 +41,10 @@ launch_in_terminal() {
 
 case "$provider" in
   hermes)
-    cmd="$(find_command kismet-hermes hermes openclaw claude || true)"
+    cmd="$(find_command kismet-hermes hermes || true)"
     ;;
   opencode)
-    cmd="$(find_command opencode claude openclaw || true)"
+    cmd="$(find_command opencode || true)"
     ;;
   openclaw)
     cmd="$(find_command openclaw || true)"
@@ -59,7 +59,17 @@ case "$provider" in
 esac
 
 if [ -z "$cmd" ]; then
-  show_message "$provider is not installed in this preview image yet."
+  case "$provider" in
+    hermes)
+      show_message "Hermes AI Agent is not available in this preview image yet."
+      ;;
+    opencode)
+      show_message "OpenCode is not available in this preview image yet."
+      ;;
+    *)
+      show_message "$provider is not installed in this preview image yet."
+      ;;
+  esac
   exit 1
 fi
 
