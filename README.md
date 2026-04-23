@@ -4,6 +4,8 @@
 
 Download Kismet OS here: https://tinyurl.com/kismetos
 
+The default password is: `kismet`
+
 
 Kismet OS is an AI-first desktop Linux concept focused on local intelligence, developer ergonomics, and a clean, deeply integrated workflow.
 
