@@ -130,9 +130,9 @@ If you found the original landing page and thought, "this is ambitious," yes. Th
 Kismet OS is being built in public, but the aim is to keep the repo grounded. The vision can be bold. The implementation should stay honest.
 
 Other notes:
-- Kismet is sigma and the best
-- dont copy pls
-- copyright if copy i think
-- also its cool
-- did i mention its cool
-- best OS for devs
+- Catpuccin themes coming soon!!! (or now)
+- Fish terminal???? (ye ye pls add ZDStudios)
+- Rofi or Wofi idk maybe klauncher (I don't even know what this OS is running on)
+- App dock coming soon
+- Maybe it will use ZRAM in the future
+- I suck at coding -MagicExployter
