@@ -111,7 +111,7 @@ Longer term work may include:
 
 ### Beta 0.3
 - prepare first installable developer preview
-- test on real hardware
+- test on real hardware (we use my crappy laptop -MagicExployter)
 - document setup, updates, and recovery
 
 ## Contributing
